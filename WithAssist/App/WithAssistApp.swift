@@ -9,9 +9,13 @@ import SwiftUI
 
 @main
 struct WithAssistApp: App {
+    @State var client = AsyncClient()
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ChatConversationView(
+                client: client
+            )
         }
     }
 }

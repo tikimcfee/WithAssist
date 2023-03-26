@@ -14,6 +14,8 @@
 		B73CB08829C662610047831E /* WithAssistTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B73CB08729C662610047831E /* WithAssistTests.swift */; };
 		B73CB09229C662610047831E /* WithAssistUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B73CB09129C662610047831E /* WithAssistUITests.swift */; };
 		B73CB09429C662610047831E /* WithAssistUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B73CB09329C662610047831E /* WithAssistUITestsLaunchTests.swift */; };
+		B73CB0A429C662980047831E /* CoreConversation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B73CB0A329C662980047831E /* CoreConversation.swift */; };
+		B7DBD15929D0D32400776412 /* OpenAI in Frameworks */ = {isa = PBXBuildFile; productRef = B7DBD15829D0D32400776412 /* OpenAI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,6 +47,8 @@
 		B73CB08D29C662610047831E /* WithAssistUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WithAssistUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B73CB09129C662610047831E /* WithAssistUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithAssistUITests.swift; sourceTree = "<group>"; };
 		B73CB09329C662610047831E /* WithAssistUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithAssistUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		B73CB0A329C662980047831E /* CoreConversation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreConversation.swift; sourceTree = "<group>"; };
+		B7DBD15429D0D2BB00776412 /* OpenAI */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = OpenAI; path = ../../../../udev/manicmind/mefolks/OpenAI; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B7DBD15929D0D32400776412 /* OpenAI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -75,10 +80,12 @@
 		B73CB06929C662600047831E = {
 			isa = PBXGroup;
 			children = (
+				B7DBD15329D0D2BB00776412 /* Packages */,
 				B73CB07429C662600047831E /* WithAssist */,
 				B73CB08629C662610047831E /* WithAssistTests */,
 				B73CB09029C662610047831E /* WithAssistUITests */,
 				B73CB07329C662600047831E /* Products */,
+				B7DBD15729D0D32400776412 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -95,8 +102,9 @@
 		B73CB07429C662600047831E /* WithAssist */ = {
 			isa = PBXGroup;
 			children = (
-				B73CB07529C662600047831E /* WithAssistApp.swift */,
-				B73CB07729C662600047831E /* ContentView.swift */,
+				B73CB0A229C662890047831E /* Writeups */,
+				B73CB0A129C6627E0047831E /* App */,
+				B73CB0A029C662710047831E /* Views */,
 				B73CB07929C662610047831E /* Assets.xcassets */,
 				B73CB07B29C662610047831E /* WithAssist.entitlements */,
 				B73CB07C29C662610047831E /* Preview Content */,
@@ -129,6 +137,45 @@
 			path = WithAssistUITests;
 			sourceTree = "<group>";
 		};
+		B73CB0A029C662710047831E /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B73CB07729C662600047831E /* ContentView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B73CB0A129C6627E0047831E /* App */ = {
+			isa = PBXGroup;
+			children = (
+				B73CB07529C662600047831E /* WithAssistApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		B73CB0A229C662890047831E /* Writeups */ = {
+			isa = PBXGroup;
+			children = (
+				B73CB0A329C662980047831E /* CoreConversation.swift */,
+			);
+			path = Writeups;
+			sourceTree = "<group>";
+		};
+		B7DBD15329D0D2BB00776412 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				B7DBD15429D0D2BB00776412 /* OpenAI */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		B7DBD15729D0D32400776412 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -143,8 +190,12 @@
 			buildRules = (
 			);
 			dependencies = (
+				B7DBD15629D0D31D00776412 /* PBXTargetDependency */,
 			);
 			name = WithAssist;
+			packageProductDependencies = (
+				B7DBD15829D0D32400776412 /* OpenAI */,
+			);
 			productName = WithAssist;
 			productReference = B73CB07229C662600047831E /* WithAssist.app */;
 			productType = "com.apple.product-type.application";
@@ -217,6 +268,8 @@
 				Base,
 			);
 			mainGroup = B73CB06929C662600047831E;
+			packageReferences = (
+			);
 			productRefGroup = B73CB07329C662600047831E /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -261,6 +314,7 @@
 			files = (
 				B73CB07829C662600047831E /* ContentView.swift in Sources */,
 				B73CB07629C662600047831E /* WithAssistApp.swift in Sources */,
+				B73CB0A429C662980047831E /* CoreConversation.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -293,6 +347,10 @@
 			isa = PBXTargetDependency;
 			target = B73CB07129C662600047831E /* WithAssist */;
 			targetProxy = B73CB08E29C662610047831E /* PBXContainerItemProxy */;
+		};
+		B7DBD15629D0D31D00776412 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = B7DBD15529D0D31D00776412 /* OpenAI */;
 		};
 /* End PBXTargetDependency section */
 
@@ -612,6 +670,17 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B7DBD15529D0D31D00776412 /* OpenAI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = OpenAI;
+		};
+		B7DBD15829D0D32400776412 /* OpenAI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = OpenAI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B73CB06A29C662600047831E /* Project object */;
 }
