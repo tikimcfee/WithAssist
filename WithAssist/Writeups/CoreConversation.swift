@@ -17,7 +17,9 @@ private let OPENAI_API_KEY = "your-key-here"
 
 class AsyncClient {
     private static let defaultClient = makeAPIClient()
-    private static let defaultChat = Chat(openAI: defaultClient)
+    private static let defaultChat = Chat(
+        openAI: defaultClient
+    )
     
     var client: OpenAI = makeAPIClient()
     var chat: Chat
@@ -61,7 +63,7 @@ struct Snapshot {
     var results: [OpenAI.ChatResult] = []
 }
 
-struct Draft {
+struct Draft: Equatable, Hashable {
     var content: String = ""
     
     var isReadyForSubmit: Bool {
@@ -70,13 +72,30 @@ struct Draft {
 }
 
 extension AsyncClient {
-    actor Chat: ObservableObject {
-        
+    
+    class Chat: ObservableObject {
         let openAI: OpenAI
         var chatModel: Model
-        var currentSnapshot: Snapshot
+
+        @Published var currentSnapshot: Snapshot
         
-        let continueConversation: Bool = true
+        @Published var useTemperature = false
+        @Published var temperature: Double = 0.7
+        
+        @Published var useTopProbabilityMass = false
+        @Published var topProbabilityMass: Double = 0.7
+        
+        @Published var completions: Int = 1
+        @Published var maxTokens: Int = 2048
+        
+        @Published var usePresencePenalty = false
+        @Published var presencePenalty: Double = 0.5
+        
+        @Published var useFrequencyPenalty = false
+        @Published var frequencyPenalty: Double = 0.5
+        
+        @Published var useLogitBias = false
+        @Published var logitBias: [String: Int]? = nil
         
         init(
             openAI: OpenAI,
@@ -91,12 +110,21 @@ extension AsyncClient {
         var chatQuery: OpenAI.ChatQuery {
             OpenAI.ChatQuery(
                 model: chatModel,
-                messages: currentSnapshot.chatMessages
+                messages: currentSnapshot.chatMessages,
+                temperature: temperature,
+                top_p: topProbabilityMass,
+                n: completions,
+                stream: false,
+                max_tokens: maxTokens,
+                presence_penalty: usePresencePenalty ? presencePenalty : nil,
+                frequency_penalty: useFrequencyPenalty ? frequencyPenalty : nil,
+                logit_bias: useLogitBias ? logitBias : nil,
+                user: "lugo-core-conversation-query"
             )
         }
         
-        func addMessage(_ message: String) async -> Snapshot {
-            return await addMessage(
+        func addMessage(_ message: String) async {
+            await addMessage(
                 OpenAI.Chat(
                     role: .user,
                     content: message
@@ -104,48 +132,70 @@ extension AsyncClient {
             )
         }
         
-        func addMessage(_ chat: OpenAI.Chat) async -> Snapshot {
-            currentSnapshot.chatMessages.append(chat)
-            return await updateSnapshot()
+        func addMessage(_ chat: OpenAI.Chat) async {
+            await modifySnapshot {
+                $0.chatMessages.append(chat)
+            }
+            await updateSnapshot()
         }
         
-        func resetPrompt(to prompt: String) async -> Snapshot {
-            currentSnapshot = Snapshot(
-                chatMessages: [
-                    OpenAI.Chat(
-                        role: .system,
-                        content: prompt
-                    )
-                ]
-            )
-            return await updateSnapshot()
-        }
-        
-        func updateSnapshot() async -> Snapshot {
-            do {
-                let result = try await openAI.chats(query: chatQuery)
-                currentSnapshot.results.append(result)
-                
-                if continueConversation, let choice = makeChoice(result) {
-                    currentSnapshot.chatMessages.append(
+        func resetPrompt(to prompt: String) async {
+            await setSnapshot(
+                Snapshot(
+                    chatMessages: [
                         OpenAI.Chat(
-                            role: choice.message.role,
-                            content: choice.message.content
+                            role: .system,
+                            content: prompt
                         )
-                    )
+                    ]
+                )
+            )
+            await updateSnapshot()
+        }
+        
+        private func performChatQuery() async throws -> OpenAI.ChatResult {
+            let name = String(cString: __dispatch_queue_get_label(nil))
+            print("--- Performing query on: \(name)")
+            
+            return try await openAI.chats(query: chatQuery)
+        }
+        
+        private func updateSnapshot() async {
+            do {
+                let result = try await performChatQuery()
+                let choice = makeChoice(result)
+                
+                await modifySnapshot {
+                    $0.results.append(result)
+                    if let choice {
+                        $0.chatMessages.append(choice.message)
+                    }
                 }
             } catch {
-                currentSnapshot.errors.append(
-                    AppError.wrapped(error, UUID())
-                )
                 print(error)
+                await modifySnapshot {
+                    $0.errors.append(
+                        AppError.wrapped(error, UUID())
+                    )
+                }
+                
             }
-            
-            return currentSnapshot
         }
         
         func makeChoice(_ result: OpenAI.ChatResult) -> OpenAI.ChatResult.Choice? {
             result.choices.first
+        }
+        
+        private func setSnapshot(_ snapshot: Snapshot) async {
+            await MainActor.run {
+                self.currentSnapshot = snapshot
+            }
+        }
+        
+        private func modifySnapshot(_ snapshot: (inout Snapshot) -> Void) async {
+            await MainActor.run {
+                snapshot(&currentSnapshot)
+            }
         }
     }
 }

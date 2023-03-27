@@ -14,7 +14,7 @@ struct WithAssistApp: App {
     var body: some Scene {
         WindowGroup {
             ChatConversationView(
-                client: client
+                client: client.chat
             )
         }
     }

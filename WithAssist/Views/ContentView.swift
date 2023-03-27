@@ -9,16 +9,8 @@ import SwiftUI
 import OpenAI
 
 struct ChatConversationView: View {
-    let client: AsyncClient
-    
-    enum Presentation {
-        case waiting
-        case ready(Snapshot)
-    }
-    
-    @State var presentation: Presentation = .waiting
-    @State var refreshTask: Task<(), Never>?
-    @State var hoveredCell: OpenAI.Chat?
+    @ObservedObject var client: AsyncClient.Chat
+    @State var isLoading: Bool = false
     
     var body: some View {
         makeBodyView()
@@ -27,22 +19,12 @@ struct ChatConversationView: View {
     
     @ViewBuilder
     func makeBodyView() -> some View {
-        switch presentation {
-        case .waiting:
-            waitingView()
-            
-        case .ready(let snapshot):
-            snapshotView(snapshot)
-        }
+        snapshotView(client.currentSnapshot)
     }
     
     @ViewBuilder
     func waitingView() -> some View {
         Text("Waiting for a thing to happen")
-            .task {
-                let current = await client.chat.currentSnapshot
-                self.presentation = .ready(current)
-            }
     }
     
     @ViewBuilder
@@ -50,25 +32,36 @@ struct ChatConversationView: View {
         ZStack(alignment: .top) {
             HStack {
                 VStack(alignment: .leading){
-                    Text("Conversation View")
-                    List {
-                        ForEach(snapshot.chatMessages) { message in
-                            messageCell(message)
-                        }
-                    }
-                    
+                    prompInjectorView(
+                        snapshot.chatMessages.first(where: {
+                            $0.role == OpenAI.Chat.Role.system.rawValue
+                        })?.content ?? ""
+                    )
                     Divider()
+                    
                     inputView()
-                    
                     Divider()
-                    prompInjectorView()
-                }
+                    
+                    SettingsView(chat: client)
+                    Divider()
 
-                errorView(snapshot: snapshot)
+                    errorView(snapshot: snapshot)
+                }
+                .overlay(loadingOverlayView())
+                .disabled(isLoading)
+
+                conversationView(snapshot)
             }
         }
-        
-        EmptyView()
+    }
+    
+    @ViewBuilder
+    func loadingOverlayView() -> some View {
+        if isLoading {
+            ProgressView()
+        } else {
+            EmptyView()
+        }
     }
     
     @ViewBuilder
@@ -81,39 +74,41 @@ struct ChatConversationView: View {
             Text(message.content)
                 .frame(maxWidth: 600, alignment: .leading)
         }
-        .padding()
-        .background(
-            hoveredCell == message
-                ? Color.gray.opacity(0.3)
-                : Color.clear
-        )
-        .onHover(perform: { isHovering in
-            if isHovering {
-                hoveredCell = message
+    }
+    
+    @ViewBuilder
+    func conversationView(_ snapshot: Snapshot) -> some View {
+        VStack(alignment: .leading) {
+            Text("Conversation")
+            List {
+                ForEach(snapshot.chatMessages) { message in
+                    messageCell(message)
+                }
             }
-        })
+        }
     }
     
     @ViewBuilder
     func inputView() -> some View {
         ChatInputView { draft in
-            Task {
-                let nextSnapshot = await client.chat.addMessage(draft.content)
-                await update(nextSnapshot)
+            doAsync {
+                await client.addMessage(draft.content)
             }
         }
     }
     
     @ViewBuilder
-    func prompInjectorView() -> some View {
-        PromptInjectorView { draft in
-            Task {
-                let nextSnapshot = await client.chat.resetPrompt(to: draft.content)
-                await update(nextSnapshot)
+    func prompInjectorView(_ prompt: String) -> some View {
+        PromptInjectorView(
+            draft: Draft(
+                content: prompt
+            )
+        ) { draft in
+            doAsync {
+                await client.resetPrompt(to: draft.content)
             }
         }
     }
-    
     
     @ViewBuilder
     func errorView(snapshot: Snapshot) -> some View {
@@ -124,27 +119,15 @@ struct ChatConversationView: View {
         }
     }
     
-    @ViewBuilder
-    func refreshView() -> some View {
-        Button(
-            action: { updatePresentation() },
-            label: {
-                Text("Refresh")
+    func doAsync(_ action: @escaping () async -> Void) {
+        Task.detached(priority: .userInitiated) {
+            await MainActor.run {
+                isLoading = true
             }
-        )
-    }
-    
-    func updatePresentation() {
-        refreshTask?.cancel()
-        refreshTask = Task(priority: .userInitiated) {
-            let nextSnapshot = await client.chat.updateSnapshot()
-            await update(nextSnapshot)
-        }
-    }
-    
-    func update(_ snapshot: Snapshot) async {
-        await MainActor.run {
-            self.presentation = .ready(snapshot)
+            await action()
+            await MainActor.run {
+                isLoading = false
+            }
         }
     }
 }
@@ -161,6 +144,87 @@ extension OpenAI.Chat: Identifiable, Hashable, Equatable {
         left.role == right.role
         && left.content == right.content
     }
+}
+
+struct SettingsView: View {
+    @ObservedObject var chat: AsyncClient.Chat
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+//            HStack {
+//                Toggle("Logit Bias", isOn: $chat.useLogitBias)
+//            }
+            ToggleSlider(
+                name: "Tokens",
+                use: .constant(true),
+                value: .init(
+                    get: { Double(chat.maxTokens) },
+                    set: { chat.maxTokens = Int($0) }
+                ),
+                range: 0.0...4095
+            )
+            
+            ToggleSlider(
+                name: "Probability Mass (top-p)",
+                use: $chat.useTopProbabilityMass,
+                value: $chat.topProbabilityMass,
+                range: 0.0...1.0
+            )
+            
+            ToggleSlider(
+                name: "Temperature",
+                use: $chat.useTemperature,
+                value: $chat.temperature,
+                range: 0.0...2.0
+            )
+            
+            ToggleSlider(
+                name: "Frequency Penalty",
+                use: $chat.useFrequencyPenalty,
+                value: $chat.frequencyPenalty,
+                range: -2.0...2.0
+            )
+            
+            ToggleSlider(
+                name: "Presence Penalty",
+                use: $chat.usePresencePenalty,
+                value: $chat.presencePenalty,
+                range: -2.0...2.0
+            )
+        }
+    }
+}
+
+struct ToggleSlider: View {
+    let name: String
+    @Binding var use: Bool
+    @Binding var value: Double
+    var range: ClosedRange<Double>
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Toggle(name, isOn: $use)
+            if use {
+                Slider(
+                    value: $value,
+                    in: range,
+                    label: {
+                        Text("\(value, format: .number)")
+                    },
+                    minimumValueLabel: {
+                        Text("\(range.lowerBound, format: .number)")
+                    },
+                    maximumValueLabel: {
+                        Text("\(range.upperBound, format: .number)")
+                    }
+                )
+            }
+        }
+        .padding(
+            [.bottom], use ? 12.0 : 8.0
+        )
+    }
+    
 }
 
 struct ChatInputView: View {
@@ -183,7 +247,23 @@ struct ChatInputView: View {
 
 struct PromptInjectorView: View {
     @State var draft = Draft()
+    @State var changePrompt = false
+    
+    private var originalDraft: Draft
     let didRequestSetPrompt: (Draft) -> Void
+    
+    var madeChange: Bool {
+        draft != originalDraft
+    }
+    
+    init(
+        draft: Draft,
+        didRequestSetPrompt: @escaping (Draft) -> Void
+    ) {
+        self.draft = draft
+        self.originalDraft = draft
+        self.didRequestSetPrompt = didRequestSetPrompt
+    }
     
     var body: some View {
         VStack(alignment: .leading){
@@ -191,16 +271,41 @@ struct PromptInjectorView: View {
                 .lineLimit(5, reservesSpace: true)
                 .textFieldStyle(.squareBorder)
                 .onSubmit {
-                    guard draft.isReadyForSubmit else { return }
-                    didRequestSetPrompt(draft)
-                    draft = Draft()
+                    guard madeChange else { return }
+                    changePrompt = true
                 }
         }
+        .alert(
+            "Save new prompt?",
+            isPresented: $changePrompt,
+            actions: {
+                Button("Yes", role: .destructive) {
+                    defer { changePrompt = false }
+                    
+                    guard draft.isReadyForSubmit else { return }
+                    didRequestSetPrompt(draft)
+                }
+                
+                Button("No", role: .cancel) {
+                    changePrompt = false
+                }
+            },
+            message: {
+                Text("""
+                From:
+                \(originalDraft.content)
+
+                To:
+                \(draft.content)
+                """)
+            }
+        )
     }
 }
 
-
 struct ContentView_Previews: PreviewProvider {
+    static let openAI = AsyncClient.makeAPIClient()
+    
     static let snapshot = Snapshot(
         chatMessages: [
             .init(role: .system, content: "Hello, this is dog"),
@@ -209,14 +314,16 @@ struct ContentView_Previews: PreviewProvider {
         ]
     )
     
+    static let chat: AsyncClient.Chat = {
+        AsyncClient.Chat(
+            openAI: openAI,
+            currentSnapshot: snapshot
+        )
+    }()
+    
     static let client: AsyncClient = {
-        let openAI = AsyncClient.makeAPIClient()
-        
         let client = AsyncClient(
-            chat: AsyncClient.Chat(
-                openAI: openAI,
-                currentSnapshot: snapshot
-            )
+            chat: chat
         )
         
         return client
@@ -224,8 +331,7 @@ struct ContentView_Previews: PreviewProvider {
     
     static var previews: some View {
         ChatConversationView(
-            client: client,
-            presentation: .ready(snapshot)
+            client: client.chat
         )
     }
 }
