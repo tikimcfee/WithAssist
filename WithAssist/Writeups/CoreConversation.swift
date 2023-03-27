@@ -52,7 +52,7 @@ enum AppError: Identifiable {
     var message: String {
         switch self {
         case .wrapped(let error, _):
-            return error.localizedDescription
+            return String(describing: error)
         }
     }
 }
@@ -183,7 +183,7 @@ extension AsyncClient {
         }
         
         func makeChoice(_ result: OpenAI.ChatResult) -> OpenAI.ChatResult.Choice? {
-            result.choices.first
+            result.choices?.first
         }
         
         private func setSnapshot(_ snapshot: Snapshot) async {

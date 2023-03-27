@@ -29,30 +29,32 @@ struct ChatConversationView: View {
     
     @ViewBuilder
     func snapshotView(_ snapshot: Snapshot) -> some View {
-        ZStack(alignment: .top) {
-            HStack {
-                VStack(alignment: .leading){
-                    prompInjectorView(
-                        snapshot.chatMessages.first(where: {
-                            $0.role == OpenAI.Chat.Role.system.rawValue
-                        })?.content ?? ""
-                    )
-                    Divider()
-                    
-                    inputView()
-                    Divider()
-                    
-                    SettingsView(chat: client)
-                    Divider()
-
-                    errorView(snapshot: snapshot)
-                }
-                .overlay(loadingOverlayView())
-                .disabled(isLoading)
-
-                conversationView(snapshot)
-            }
+        HStack {
+            mainInteractionsView(snapshot)
+            conversationView(snapshot)
         }
+    }
+    
+    @ViewBuilder
+    func mainInteractionsView(_ snapshot: Snapshot) -> some View {
+        VStack(alignment: .leading){
+            prompInjectorView(
+                snapshot.chatMessages.first(where: {
+                    $0.role == OpenAI.Chat.Role.system.rawValue
+                })?.content ?? ""
+            )
+            Divider()
+            
+            inputView()
+            Divider()
+            
+            SettingsView(chat: client)
+            Divider()
+            
+            errorView(snapshot: snapshot)
+        }
+        .overlay(loadingOverlayView())
+        .disabled(isLoading)
     }
     
     @ViewBuilder
@@ -71,6 +73,7 @@ struct ChatConversationView: View {
                 .italic()
                 .fontWeight(.light)
                 .font(.caption)
+            
             Text(message.content)
                 .frame(maxWidth: 600, alignment: .leading)
         }
@@ -80,9 +83,19 @@ struct ChatConversationView: View {
     func conversationView(_ snapshot: Snapshot) -> some View {
         VStack(alignment: .leading) {
             Text("Conversation")
-            List {
-                ForEach(snapshot.chatMessages) { message in
-                    messageCell(message)
+            
+            ScrollViewReader { proxy in
+                List {
+                    ForEach(snapshot.chatMessages.dropFirst()) { message in
+                        messageCell(message)
+                            .tag(message.id)
+                    }
+                }
+                .onChange(of: snapshot.chatMessages) { new in
+                    if let last = new.last {
+                        print("Scroll to: \(last.id)")
+                        proxy.scrollTo(last.id, anchor: .bottom)
+                    }
                 }
             }
         }
@@ -224,7 +237,6 @@ struct ToggleSlider: View {
             [.bottom], use ? 12.0 : 8.0
         )
     }
-    
 }
 
 struct ChatInputView: View {
