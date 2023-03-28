@@ -9,13 +9,110 @@ import SwiftUI
 
 @main
 struct WithAssistApp: App {
-    @State var client = AsyncClient()
+    @ObservedObject
+    private var userSettingsStorage =
+        CodableFileStorage<Snapshot>(
+            storageObject: .empty,
+            appFile: .defaultSnapshot
+        )
+    
+    @State
+    var client = Self.makeClient()
     
     var body: some Scene {
         WindowGroup {
             ChatConversationView(
                 client: client.chat
             )
+            .overlay(overlayView(userSettingsStorage.state))
+            .task {
+                await userSettingsStorage.load()
+                if let snapshot = userSettingsStorage.state.maybeValue {
+                    client.chat.currentSnapshot = snapshot
+                }
+            }
+            .onDisappear {
+                doSave()
+            }
         }
+    }
+    
+    func doSave() {
+        Task {
+            userSettingsStorage.state = .loaded(value: client.chat.currentSnapshot)
+            await userSettingsStorage.save()
+        }
+    }
+    
+    @ViewBuilder
+    private func overlayView(_ state: CodableFileStorage<Snapshot>.StorageState) -> some View {
+        switch state {
+        case .idle(_):
+            EmptyView()
+            
+        case .loading:
+            ProgressView()
+            
+        case .loaded(_):
+            EmptyView()
+            
+        case .saving:
+            ProgressView()
+            
+        case .saved(_):
+            EmptyView()
+            
+        case .error(let error):
+            ZStack(alignment: .bottom) {
+                Text(String(describing: error))
+                    .padding()
+                    .background(Color.red.opacity(0.67))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+            }
+            .padding(32)
+        }
+    }
+    
+    func saveState(_ state: Snapshot) async {
+        guard state != Snapshot.empty else {
+            return
+        }
+        userSettingsStorage.state = .loaded(value: state)
+        await userSettingsStorage.save()
+    }
+    
+    func updateState(_ state: CodableFileStorage<Snapshot>.StorageState) {
+        switch state {
+        case .idle(value: let value):
+            client.chat.currentSnapshot = value
+            
+        case .loading:
+            break
+            
+        case .loaded(value: let value):
+            client.chat.currentSnapshot = value
+            
+        case .saving:
+            break
+            
+        case .saved(value: let value):
+            client.chat.currentSnapshot = value
+            
+        case .error(let error):
+            print(error)
+        }
+    }
+    
+    static func makeClient() -> AsyncClient {
+        let api = AsyncClient.makeAPIClient()
+        
+        let client = AsyncClient(
+            client: api,
+            chat: AsyncClient.Chat(
+                openAI: api
+            )
+        )
+        
+        return client
     }
 }

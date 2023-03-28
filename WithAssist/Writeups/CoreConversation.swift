@@ -39,8 +39,8 @@ class AsyncClient {
     }
 }
 
-enum AppError: Identifiable {
-    case wrapped(Error, UUID)
+enum AppError: Identifiable, Codable, Equatable, Hashable {
+    case wrapped(String, UUID)
     
     var id: UUID {
         switch self {
@@ -51,16 +51,18 @@ enum AppError: Identifiable {
     
     var message: String {
         switch self {
-        case .wrapped(let error, _):
-            return String(describing: error)
+        case .wrapped(let message, _):
+            return message
         }
     }
 }
 
-struct Snapshot {
+struct Snapshot: Codable, Equatable, Hashable {
     var chatMessages: [OpenAI.Chat] = []
     var errors: [AppError] = []
     var results: [OpenAI.ChatResult] = []
+    
+    static let empty: Snapshot = Snapshot()
 }
 
 struct Draft: Equatable, Hashable {
@@ -100,7 +102,7 @@ extension AsyncClient {
         init(
             openAI: OpenAI,
             chatModel: Model = .gpt3_5Turbo,
-            currentSnapshot: Snapshot = Snapshot()
+            currentSnapshot: Snapshot = .empty
         ) {
             self.openAI = openAI
             self.chatModel = chatModel
@@ -175,10 +177,12 @@ extension AsyncClient {
                 print(error)
                 await modifySnapshot {
                     $0.errors.append(
-                        AppError.wrapped(error, UUID())
+                        AppError.wrapped(
+                            String(describing: error),
+                            UUID()
+                        )
                     )
                 }
-                
             }
         }
         

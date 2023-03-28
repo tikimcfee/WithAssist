@@ -8,18 +8,28 @@
 import SwiftUI
 import OpenAI
 
+extension OpenAI.Chat: Identifiable {
+    public var id: Int { hashValue }
+}
+
 struct ChatConversationView: View {
     @ObservedObject var client: AsyncClient.Chat
     @State var isLoading: Bool = false
     
     var body: some View {
-        makeBodyView()
-            .padding()
-    }
-    
-    @ViewBuilder
-    func makeBodyView() -> some View {
-        snapshotView(client.currentSnapshot)
+        NavigationSplitView(
+            sidebar: {
+                
+            },
+            content: {
+                mainInteractionsView(client.currentSnapshot)
+                    .padding()
+            },
+            detail: {
+                conversationView(client.currentSnapshot)
+            }
+        )
+        .navigationSplitViewStyle(.balanced)
     }
     
     @ViewBuilder
@@ -28,30 +38,15 @@ struct ChatConversationView: View {
     }
     
     @ViewBuilder
-    func snapshotView(_ snapshot: Snapshot) -> some View {
-        HStack {
-            mainInteractionsView(snapshot)
-            conversationView(snapshot)
-        }
-    }
-    
-    @ViewBuilder
     func mainInteractionsView(_ snapshot: Snapshot) -> some View {
-        VStack(alignment: .leading){
-            prompInjectorView(
-                snapshot.chatMessages.first(where: {
-                    $0.role == OpenAI.Chat.Role.system.rawValue
-                })?.content ?? ""
-            )
-            Divider()
-            
+        VStack {
+            promptInjectorView(snapshot)
             inputView()
-            Divider()
-            
             SettingsView(chat: client)
-            Divider()
             
-            errorView(snapshot: snapshot)
+            if !snapshot.errors.isEmpty {
+                errorView(snapshot: snapshot)
+            }
         }
         .overlay(loadingOverlayView())
         .disabled(isLoading)
@@ -75,27 +70,22 @@ struct ChatConversationView: View {
                 .font(.caption)
             
             Text(message.content)
-                .frame(maxWidth: 600, alignment: .leading)
+                .textSelection(.enabled)
         }
     }
     
     @ViewBuilder
     func conversationView(_ snapshot: Snapshot) -> some View {
-        VStack(alignment: .leading) {
-            Text("Conversation")
-            
-            ScrollViewReader { proxy in
-                List {
-                    ForEach(snapshot.chatMessages.dropFirst()) { message in
-                        messageCell(message)
-                            .tag(message.id)
-                    }
-                }
-                .onChange(of: snapshot.chatMessages) { new in
-                    if let last = new.last {
-                        print("Scroll to: \(last.id)")
-                        proxy.scrollTo(last.id, anchor: .bottom)
-                    }
+        ScrollViewReader { proxy in
+            List(snapshot.chatMessages.dropFirst()) { message in
+                messageCell(message)
+                    .tag(message.id)
+            }
+            .listStyle(.inset)
+            .onChange(of: snapshot.chatMessages) { new in
+                if let last = new.last {
+                    print("Scroll to: \(last.id)")
+                    proxy.scrollTo(last.id, anchor: .bottom)
                 }
             }
         }
@@ -111,16 +101,16 @@ struct ChatConversationView: View {
     }
     
     @ViewBuilder
-    func prompInjectorView(_ prompt: String) -> some View {
+    func promptInjectorView(_ snapshot: Snapshot) -> some View {
         PromptInjectorView(
-            draft: Draft(
-                content: prompt
-            )
-        ) { draft in
-            doAsync {
-                await client.resetPrompt(to: draft.content)
+            draft: snapshot.chatMessages.first?.content ?? "",
+            originalDraft: snapshot.chatMessages.first?.content ?? "",
+            didRequestSetPrompt: { updatedPrompt in
+                doAsync {
+                    await client.resetPrompt(to: updatedPrompt)
+                }
             }
-        }
+        ).id(snapshot.hashValue)
     }
     
     @ViewBuilder
@@ -130,6 +120,7 @@ struct ChatConversationView: View {
                 Text(error.message)
             }
         }
+        .frame(maxHeight: 256.0)
     }
     
     func doAsync(_ action: @escaping () async -> Void) {
@@ -145,173 +136,69 @@ struct ChatConversationView: View {
     }
 }
 
-extension OpenAI.Chat: Identifiable, Hashable, Equatable {
-    public var id: Int { hashValue }
-    
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(self.role)
-        hasher.combine(self.content)
-    }
-    
-    public static func == (left: OpenAI.Chat, right: OpenAI.Chat) -> Bool {
-        left.role == right.role
-        && left.content == right.content
-    }
-}
-
-struct SettingsView: View {
-    @ObservedObject var chat: AsyncClient.Chat
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-//            HStack {
-//                Toggle("Logit Bias", isOn: $chat.useLogitBias)
-//            }
-            ToggleSlider(
-                name: "Tokens",
-                use: .constant(true),
-                value: .init(
-                    get: { Double(chat.maxTokens) },
-                    set: { chat.maxTokens = Int($0) }
-                ),
-                range: 0.0...4095
-            )
-            
-            ToggleSlider(
-                name: "Probability Mass (top-p)",
-                use: $chat.useTopProbabilityMass,
-                value: $chat.topProbabilityMass,
-                range: 0.0...1.0
-            )
-            
-            ToggleSlider(
-                name: "Temperature",
-                use: $chat.useTemperature,
-                value: $chat.temperature,
-                range: 0.0...2.0
-            )
-            
-            ToggleSlider(
-                name: "Frequency Penalty",
-                use: $chat.useFrequencyPenalty,
-                value: $chat.frequencyPenalty,
-                range: -2.0...2.0
-            )
-            
-            ToggleSlider(
-                name: "Presence Penalty",
-                use: $chat.usePresencePenalty,
-                value: $chat.presencePenalty,
-                range: -2.0...2.0
-            )
-        }
-    }
-}
-
-struct ToggleSlider: View {
-    let name: String
-    @Binding var use: Bool
-    @Binding var value: Double
-    var range: ClosedRange<Double>
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Toggle(name, isOn: $use)
-            if use {
-                Slider(
-                    value: $value,
-                    in: range,
-                    label: {
-                        Text("\(value, format: .number)")
-                    },
-                    minimumValueLabel: {
-                        Text("\(range.lowerBound, format: .number)")
-                    },
-                    maximumValueLabel: {
-                        Text("\(range.upperBound, format: .number)")
-                    }
-                )
-            }
-        }
-        .padding(
-            [.bottom], use ? 12.0 : 8.0
-        )
-    }
-}
-
 struct ChatInputView: View {
     @State var draft = Draft()
     let didRequestSend: (Draft) -> Void
     
     var body: some View {
-        VStack(alignment: .leading){
-            TextField("You:", text: $draft.content, axis: .vertical)
-                .lineLimit(5, reservesSpace: true)
-                .textFieldStyle(.squareBorder)
-                .onSubmit {
-                    guard draft.isReadyForSubmit else { return }
-                    didRequestSend(draft)
-                    draft = Draft()
-                }
-        }
+        TextField("You", text: $draft.content, axis: .vertical)
+            .lineLimit(6, reservesSpace: true)
+            .onSubmit {
+                guard draft.isReadyForSubmit else { return }
+                didRequestSend(draft)
+                draft = Draft()
+            }
     }
 }
 
 struct PromptInjectorView: View {
-    @State var draft = Draft()
+    @State var draft: String
     @State var changePrompt = false
     
-    private var originalDraft: Draft
-    let didRequestSetPrompt: (Draft) -> Void
+    let originalDraft: String
+    let didRequestSetPrompt: (String) -> Void
     
     var madeChange: Bool {
         draft != originalDraft
     }
     
-    init(
-        draft: Draft,
-        didRequestSetPrompt: @escaping (Draft) -> Void
-    ) {
-        self.draft = draft
-        self.originalDraft = draft
-        self.didRequestSetPrompt = didRequestSetPrompt
+    var body: some View {
+        mainTextField
     }
     
-    var body: some View {
-        VStack(alignment: .leading){
-            TextField("Prompt:", text: $draft.content, axis: .vertical)
-                .lineLimit(5, reservesSpace: true)
-                .textFieldStyle(.squareBorder)
-                .onSubmit {
-                    guard madeChange else { return }
-                    changePrompt = true
-                }
-        }
-        .alert(
-            "Save new prompt?",
-            isPresented: $changePrompt,
-            actions: {
-                Button("Yes", role: .destructive) {
-                    defer { changePrompt = false }
-                    
-                    guard draft.isReadyForSubmit else { return }
-                    didRequestSetPrompt(draft)
-                }
-                
-                Button("No", role: .cancel) {
-                    changePrompt = false
-                }
-            },
-            message: {
-                Text("""
-                From:
-                \(originalDraft.content)
-
-                To:
-                \(draft.content)
-                """)
+    @ViewBuilder
+    var mainTextField: some View {
+        TextField("Prompt", text: $draft, axis: .vertical)
+            .lineLimit(6, reservesSpace: true)
+            .onSubmit {
+                guard madeChange else { return }
+                changePrompt = true
             }
-        )
+            .alert(
+                "Save new prompt?",
+                isPresented: $changePrompt,
+                actions: {
+                    Button("Yes", role: .destructive) {
+                        defer { changePrompt = false }
+                        
+                        guard !draft.isEmpty else { return }
+                        didRequestSetPrompt(draft)
+                    }
+                    
+                    Button("No", role: .cancel) {
+                        changePrompt = false
+                    }
+                },
+                message: {
+                    Text("""
+                    From:
+                    \(originalDraft)
+                    
+                    To:
+                    \(draft)
+                    """)
+                }
+            )
     }
 }
 

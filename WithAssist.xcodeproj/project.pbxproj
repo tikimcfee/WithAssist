@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B730F94029D28867005808D6 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B730F93F29D28867005808D6 /* SettingsView.swift */; };
 		B73CB07629C662600047831E /* WithAssistApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B73CB07529C662600047831E /* WithAssistApp.swift */; };
 		B73CB07829C662600047831E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B73CB07729C662600047831E /* ContentView.swift */; };
 		B73CB07A29C662610047831E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B73CB07929C662610047831E /* Assets.xcassets */; };
@@ -16,6 +17,8 @@
 		B73CB09429C662610047831E /* WithAssistUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B73CB09329C662610047831E /* WithAssistUITestsLaunchTests.swift */; };
 		B73CB0A429C662980047831E /* CoreConversation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B73CB0A329C662980047831E /* CoreConversation.swift */; };
 		B7DBD15929D0D32400776412 /* OpenAI in Frameworks */ = {isa = PBXBuildFile; productRef = B7DBD15829D0D32400776412 /* OpenAI */; };
+		B7DBD15B29D13B9900776412 /* FileStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7DBD15A29D13B9900776412 /* FileStorage.swift */; };
+		B7DBD15D29D1404000776412 /* CodableAppStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7DBD15C29D1404000776412 /* CodableAppStorage.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,6 +39,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		B730F93F29D28867005808D6 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		B73CB07229C662600047831E /* WithAssist.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WithAssist.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B73CB07529C662600047831E /* WithAssistApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithAssistApp.swift; sourceTree = "<group>"; };
 		B73CB07729C662600047831E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -49,6 +53,8 @@
 		B73CB09329C662610047831E /* WithAssistUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithAssistUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		B73CB0A329C662980047831E /* CoreConversation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreConversation.swift; sourceTree = "<group>"; };
 		B7DBD15429D0D2BB00776412 /* OpenAI */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = OpenAI; path = ../../../../udev/manicmind/mefolks/OpenAI; sourceTree = "<group>"; };
+		B7DBD15A29D13B9900776412 /* FileStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileStorage.swift; sourceTree = "<group>"; };
+		B7DBD15C29D1404000776412 /* CodableAppStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodableAppStorage.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -141,6 +147,7 @@
 			isa = PBXGroup;
 			children = (
 				B73CB07729C662600047831E /* ContentView.swift */,
+				B730F93F29D28867005808D6 /* SettingsView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -157,6 +164,8 @@
 			isa = PBXGroup;
 			children = (
 				B73CB0A329C662980047831E /* CoreConversation.swift */,
+				B7DBD15A29D13B9900776412 /* FileStorage.swift */,
+				B7DBD15C29D1404000776412 /* CodableAppStorage.swift */,
 			);
 			path = Writeups;
 			sourceTree = "<group>";
@@ -313,6 +322,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				B73CB07829C662600047831E /* ContentView.swift in Sources */,
+				B7DBD15D29D1404000776412 /* CodableAppStorage.swift in Sources */,
+				B7DBD15B29D13B9900776412 /* FileStorage.swift in Sources */,
+				B730F94029D28867005808D6 /* SettingsView.swift in Sources */,
 				B73CB07629C662600047831E /* WithAssistApp.swift in Sources */,
 				B73CB0A429C662980047831E /* CoreConversation.swift in Sources */,
 			);
