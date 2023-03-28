@@ -7,11 +7,14 @@
 
 import SwiftUI
 
+typealias Store = CodableFileStorage<SnapshotStore>
+typealias StoreItem = CodableFileStorage<SnapshotStore>.StorageState
+
 @main
 struct WithAssistApp: App {
     @ObservedObject
     private var userSettingsStorage =
-        CodableFileStorage<Snapshot>(
+        CodableFileStorage<SnapshotStore>(
             storageObject: .empty,
             appFile: .defaultSnapshot
         )
@@ -23,13 +26,14 @@ struct WithAssistApp: App {
         WindowGroup {
             ChatConversationView(
                 client: client.chat
+            ) {
+                doSave()
+            }
+            .overlay(
+                overlayView(userSettingsStorage.state)
             )
-            .overlay(overlayView(userSettingsStorage.state))
             .task {
-                await userSettingsStorage.load()
-                if let snapshot = userSettingsStorage.state.maybeValue {
-                    client.chat.currentSnapshot = snapshot
-                }
+                await doLoad()
             }
             .onDisappear {
                 doSave()
@@ -37,15 +41,23 @@ struct WithAssistApp: App {
         }
     }
     
+    func doLoad() async {
+        await userSettingsStorage.load()
+        if let snapshot = userSettingsStorage.state.maybeValue?.snapshots.last {
+            client.chat.currentSnapshot = snapshot
+        }
+    }
+    
     func doSave() {
         Task {
-            userSettingsStorage.state = .loaded(value: client.chat.currentSnapshot)
-            await userSettingsStorage.save()
+            await userSettingsStorage.updateValue {
+                $0?.update(client.chat.currentSnapshot)
+            }
         }
     }
     
     @ViewBuilder
-    private func overlayView(_ state: CodableFileStorage<Snapshot>.StorageState) -> some View {
+    private func overlayView(_ state: StoreItem) -> some View {
         switch state {
         case .idle(_):
             EmptyView()
@@ -72,15 +84,7 @@ struct WithAssistApp: App {
             .padding(32)
         }
     }
-    
-    func saveState(_ state: Snapshot) async {
-        guard state != Snapshot.empty else {
-            return
-        }
-        userSettingsStorage.state = .loaded(value: state)
-        await userSettingsStorage.save()
-    }
-    
+
     func updateState(_ state: CodableFileStorage<Snapshot>.StorageState) {
         switch state {
         case .idle(value: let value):

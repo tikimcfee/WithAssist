@@ -15,6 +15,7 @@ extension OpenAI.Chat: Identifiable {
 struct ChatConversationView: View {
     @ObservedObject var client: AsyncClient.Chat
     @State var isLoading: Bool = false
+    let saveRequested: () -> Void
     
     var body: some View {
         NavigationSplitView(
@@ -128,7 +129,10 @@ struct ChatConversationView: View {
             await MainActor.run {
                 isLoading = true
             }
+            
             await action()
+            saveRequested()
+            
             await MainActor.run {
                 isLoading = false
             }
@@ -231,6 +235,8 @@ struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ChatConversationView(
             client: client.chat
-        )
+        ) {
+            
+        }
     }
 }

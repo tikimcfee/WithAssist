@@ -45,6 +45,11 @@ class CodableFileStorage<T: Codable>: ObservableObject {
         }
     }
     
+    func updateValue(_ receiver: (inout T?) -> Void) async {
+        receiver(&state.maybeValue)
+        await save()
+    }
+    
     enum StorageState {
         case idle(value: T)
         case loading
@@ -54,24 +59,41 @@ class CodableFileStorage<T: Codable>: ObservableObject {
         case error(Error)
         
         var maybeValue: T? {
-            switch self {
-            case .idle(let value):
-                return value
-                
-            case .loading:
-                return nil
-                
-            case .loaded(let value):
-                return value
-                
-            case .saving:
-                return nil
-                
-            case .saved(let value):
-                return value
-                
-            case .error:
-                return nil
+            get {
+                switch self {
+                case .idle(let value):
+                    return value
+                    
+                case .loaded(let value):
+                    return value
+                    
+                case .saved(let value):
+                    return value
+                    
+                case .loading:
+                    return nil
+                    
+                case .saving:
+                    return nil
+                    
+                case .error:
+                    return nil
+                }
+            }
+            set {
+                switch (self, newValue) {
+                case (.idle, .some(let value)):
+                    self = .idle(value: value)
+                    
+                case (.loaded, .some(let value)):
+                    self = .loaded(value: value)
+                    
+                case (.saved, .some(let value)):
+                    self = .saved(value: value)
+                    
+                default:
+                    break
+                }
             }
         }
     }

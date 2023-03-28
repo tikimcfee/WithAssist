@@ -57,7 +57,21 @@ enum AppError: Identifiable, Codable, Equatable, Hashable {
     }
 }
 
-struct Snapshot: Codable, Equatable, Hashable {
+struct SnapshotStore: Codable, Equatable, Hashable {
+    var id = UUID()
+    var snapshots: [Snapshot] = []
+    
+    static let empty: SnapshotStore = SnapshotStore()
+    
+    mutating func update(_ snapshot: Snapshot) {
+        if let updateIndex = snapshots.firstIndex(where: { $0.id == snapshot.id }) {
+            snapshots[updateIndex] = snapshot
+        }
+    }
+}
+
+struct Snapshot: Identifiable, Codable, Equatable, Hashable {
+    var id = UUID()
     var chatMessages: [OpenAI.Chat] = []
     var errors: [AppError] = []
     var results: [OpenAI.ChatResult] = []
