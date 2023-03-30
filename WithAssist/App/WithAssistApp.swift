@@ -102,7 +102,7 @@ struct WithAssistApp: App {
     func updateState(_ state: CodableFileStorage<Snapshot>.StorageState) {
         switch state {
         case .idle(value: let value):
-            client.chat.currentSnapshot = value
+            client.chat.currentSnapshot = value()
             
         case .loading:
             break

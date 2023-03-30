@@ -15,7 +15,7 @@ class CodableFileStorage<T: Codable>: ObservableObject {
     private let fileStorage = FileStorage()
     private let appFile: AppFile
     
-    init(storageObject: T, appFile: AppFile) {
+    init(storageObject: @autoclosure @escaping () -> T, appFile: AppFile) {
         self.appFile = appFile
         self.state = .idle(value: storageObject)
     }
@@ -24,7 +24,7 @@ class CodableFileStorage<T: Codable>: ObservableObject {
         do {
             if case .idle(let value) = state {
                 state = .loading
-                let object = try await fileStorage.load(T.self, from: appFile, defaultValue: value)
+                let object = try await fileStorage.load(T.self, from: appFile, defaultValue: value())
                 state = .loaded(value: object)
             } else {
                 throw FileStorageError.invalidState
@@ -55,7 +55,7 @@ class CodableFileStorage<T: Codable>: ObservableObject {
     }
     
     enum StorageState {
-        case idle(value: T)
+        case idle(value: () -> T)
         case loading
         case loaded(value: T)
         case saving
@@ -66,7 +66,7 @@ class CodableFileStorage<T: Codable>: ObservableObject {
             get {
                 switch self {
                 case .idle(let value):
-                    return value
+                    return value()
                     
                 case .loaded(let value):
                     return value
@@ -87,7 +87,7 @@ class CodableFileStorage<T: Codable>: ObservableObject {
             set {
                 switch (self, newValue) {
                 case (.idle, .some(let value)):
-                    self = .idle(value: value)
+                    self = .idle(value: { value })
                     
                 case (.loaded, .some(let value)):
                     self = .loaded(value: value)
