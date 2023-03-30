@@ -8,55 +8,59 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @ObservedObject var chat: AsyncClient.Chat
+    @ObservedObject var chat: Chat
     
     var body: some View {
         List {
+            textBody()
             sliderBody()
         }
         .listStyle(.sidebar)
     }
     
     @ViewBuilder
+    func textBody() -> some View {
+        TextField("User", text: $chat.chatParams.user)
+            .underline()
+    }
+    
+    @ViewBuilder
     func sliderBody() -> some View {
-        //        HStack {
-        //            Toggle("Logit Bias", isOn: $chat.useLogitBias)
-        //        }
         ToggleSlider(
             name: "Tokens",
             use: .constant(true),
             value: .init(
-                get: { Double(chat.maxTokens) },
-                set: { chat.maxTokens = Int($0) }
+                get: { Double(chat.chatParams.maxTokens) },
+                set: { chat.chatParams.maxTokens = Int($0) }
             ),
             range: 0.0...8000
         )
         
         ToggleSlider(
             name: "Probability Mass (top-p)",
-            use: $chat.useTopProbabilityMass,
-            value: $chat.topProbabilityMass,
+            use: $chat.chatParams.useTopProbabilityMass,
+            value: $chat.chatParams.topProbabilityMass,
             range: 0.0...1.0
         )
         
         ToggleSlider(
             name: "Temperature",
-            use: $chat.useTemperature,
-            value: $chat.temperature,
+            use: $chat.chatParams.useTemperature,
+            value: $chat.chatParams.temperature,
             range: 0.0...2.0
         )
         
         ToggleSlider(
             name: "Frequency Penalty",
-            use: $chat.useFrequencyPenalty,
-            value: $chat.frequencyPenalty,
+            use: $chat.chatParams.useFrequencyPenalty,
+            value: $chat.chatParams.frequencyPenalty,
             range: -2.0...2.0
         )
         
         ToggleSlider(
             name: "Presence Penalty",
-            use: $chat.usePresencePenalty,
-            value: $chat.presencePenalty,
+            use: $chat.chatParams.usePresencePenalty,
+            value: $chat.chatParams.presencePenalty,
             range: -2.0...2.0
         )
     }

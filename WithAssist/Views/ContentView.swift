@@ -42,7 +42,7 @@ struct SnapshotListView: View {
 }
 
 struct ChatConversationView: View {
-    @ObservedObject var client: AsyncClient.Chat
+    @ObservedObject var client: Chat
     @State var isLoading: Bool = false
     
     let saveRequested: () -> Void
@@ -292,8 +292,8 @@ struct ContentView_Previews: PreviewProvider {
         ]
     )
     
-    static let chat: AsyncClient.Chat = {
-        AsyncClient.Chat(
+    static let chat: Chat = {
+        Chat(
             openAI: openAI,
             currentSnapshot: snapshot
         )

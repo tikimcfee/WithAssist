@@ -126,7 +126,7 @@ struct WithAssistApp: App {
         
         let client = AsyncClient(
             client: api,
-            chat: AsyncClient.Chat(
+            chat: Chat(
                 openAI: api,
                 chatModel: .gpt4
             )
