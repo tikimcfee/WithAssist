@@ -92,8 +92,8 @@ struct MainAppView: View {
                         .tag(message.id)
                 }
                 .listStyle(.inset)
-                .onChange(of: snapshot.chatMessages) { new in
-                    if let last = new.last {
+                .onChange(of: snapshot.results) { _ in
+                    if let last = snapshot.chatMessages.last {
                         print("Scroll to: \(last.id)")
                         proxy.scrollTo(last.id, anchor: .bottom)
                     }
@@ -140,11 +140,18 @@ struct MainAppView: View {
     
     @ViewBuilder
     func inputView() -> some View {
-        ChatInputView { draft in
-            doAsync {
-                await client.addMessage(draft.content)
+        ChatInputView(
+            didRequestSend: { draft in
+                doAsync {
+                    await client.addMessage(draft.content)
+                }
+            },
+            didRequestResend: { draft in
+                doAsync {
+                    await client.updateSnapshotWithNewQuery()
+                }
             }
-        }
+        )
     }
     
     @ViewBuilder
@@ -171,7 +178,7 @@ struct MainAppView: View {
     }
     
     func doAsync(_ action: @escaping () async -> Void) {
-        Task.detached(priority: .userInitiated) {
+        Task {
             await MainActor.run {
                 isLoading = true
             }
@@ -189,15 +196,24 @@ struct MainAppView: View {
 struct ChatInputView: View {
     @State var draft = Draft()
     let didRequestSend: (Draft) -> Void
+    let didRequestResend: (Draft) -> Void
     
     var body: some View {
-        TextField("You", text: $draft.content, axis: .vertical)
-            .lineLimit(6, reservesSpace: true)
-            .onSubmit {
-                guard draft.isReadyForSubmit else { return }
-                didRequestSend(draft)
-                draft = Draft()
+        VStack(alignment: .trailing) {
+            TextField("You", text: $draft.content, axis: .vertical)
+                .lineLimit(6, reservesSpace: true)
+                .onSubmit {
+                    guard draft.isReadyForSubmit else { return }
+                    didRequestSend(draft)
+                    draft = Draft()
+                }
+            
+            if draft.isReadyForSubmit {
+                Button("Resend") {
+                    didRequestResend(draft)
+                }
             }
+        }
     }
 }
 
@@ -221,7 +237,6 @@ struct PromptInjectorView: View {
         TextField("Prompt", text: $draft, axis: .vertical)
             .lineLimit(6, reservesSpace: true)
             .onSubmit {
-                guard madeChange else { return }
                 changePrompt = true
             }
             .alert(

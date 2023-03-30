@@ -43,9 +43,10 @@ struct SettingsView: View {
             use: .constant(true),
             value: .init(
                 get: { Double(chat.chatParams.maxTokens) },
-                set: { chat.chatParams.maxTokens = Int($0) }
+                set: { chat.chatParams.maxTokens = Int($0.rounded()) }
             ),
-            range: 0.0...8000
+            range: 0.0...8000,
+            step: 500
         )
         
         ToggleSlider(
@@ -83,6 +84,7 @@ struct ToggleSlider: View {
     @Binding var use: Bool
     @Binding var value: Double
     var range: ClosedRange<Double>
+    var step: Double?
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -91,6 +93,7 @@ struct ToggleSlider: View {
                 Slider(
                     value: $value,
                     in: range,
+                    step: step ?? Double.Stride(),
                     label: {
                         Text("\(value, format: .number)")
                     },

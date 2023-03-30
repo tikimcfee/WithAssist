@@ -76,14 +76,14 @@ class Chat: ObservableObject {
         await modifySnapshot {
             $0.chatMessages.append(chat)
         }
-        await updateSnapshot()
+        await updateSnapshotWithNewQuery()
     }
     
     func resetPrompt(to prompt: String) async {
         await MainActor.run {
             self.currentSnapshot.resetForNewPrompt(prompt)
         }
-        await updateSnapshot()
+        await updateSnapshotWithNewQuery()
     }
     
     private func performChatQuery() async throws -> OpenAI.ChatResult {
@@ -91,11 +91,12 @@ class Chat: ObservableObject {
         print("--- Performing query on: \(name)")
         
         return try await openAI.chats(
-            query: makeChatQuery()
+            query: makeChatQuery(),
+            timeoutInterval: 60.0 * 3
         )
     }
     
-    func updateSnapshot() async {
+    func updateSnapshotWithNewQuery() async {
         do {
             let result = try await performChatQuery()
             let choice = makeChoice(result)
@@ -107,7 +108,7 @@ class Chat: ObservableObject {
                 }
             }
         } catch {
-            print(error)
+            print("[!!error \(#fileID)]: \(error)")
             await modifySnapshot {
                 $0.errors.append(
                     AppError.wrapped(
