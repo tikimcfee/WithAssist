@@ -127,8 +127,7 @@ struct WithAssistApp: App {
         let client = ClientStore(
             client: api,
             chat: Chat(
-                openAI: api,
-                chatModel: .gpt4
+                openAI: api
             )
         )
         

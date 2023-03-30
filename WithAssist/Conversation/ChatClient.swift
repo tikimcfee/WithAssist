@@ -29,28 +29,27 @@ struct ChatRequest {
     
     var useLogitBias = false
     var logitBias: [String: Int]? = nil
+    
+    var chatModel: Model = .gpt4
 }
 
 class Chat: ObservableObject {
     let openAI: OpenAI
-    var chatModel: Model
-    
+        
     @Published var currentSnapshot: Snapshot
     @Published var chatParams: ChatRequest = ChatRequest()
     
     init(
         openAI: OpenAI,
-        chatModel: Model = .gpt3_5Turbo,
         currentSnapshot: Snapshot = .empty
     ) {
         self.openAI = openAI
-        self.chatModel = chatModel
         self.currentSnapshot = currentSnapshot
     }
     
     func makeChatQuery() -> OpenAI.ChatQuery {
         OpenAI.ChatQuery(
-            model: chatModel,
+            model: chatParams.chatModel,
             messages: currentSnapshot.chatMessages,
             temperature: chatParams.temperature,
             top_p: chatParams.topProbabilityMass,

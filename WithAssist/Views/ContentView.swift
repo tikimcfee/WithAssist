@@ -22,7 +22,6 @@ struct ChatConversationView: View {
                 SnapshotListView(
                     currentSnapshot: $client.currentSnapshot
                 )
-                
             },
             content: {
                 mainInteractionsView(client.currentSnapshot)
@@ -63,6 +62,7 @@ struct ChatConversationView: View {
             nameView()
             promptInjectorView(snapshot)
             inputView()
+            
             SettingsView(chat: client)
             
             if !snapshot.errors.isEmpty {

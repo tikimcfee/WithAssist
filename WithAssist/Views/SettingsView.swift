@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OpenAI
 
 struct SettingsView: View {
     @ObservedObject var chat: Chat
@@ -13,6 +14,7 @@ struct SettingsView: View {
     var body: some View {
         List {
             textBody()
+            modelPickerView()
             sliderBody()
         }
         .listStyle(.sidebar)
@@ -22,6 +24,16 @@ struct SettingsView: View {
     func textBody() -> some View {
         TextField("User", text: $chat.chatParams.user)
             .underline()
+    }
+    
+    @ViewBuilder
+    func modelPickerView() -> some View {
+        Picker("GPT Model", selection: $chat.chatParams.chatModel) {
+            ForEach(Model.allCases) { model in
+                Text(model.rawValue)
+                    .tag(model)
+            }
+        }
     }
     
     @ViewBuilder
