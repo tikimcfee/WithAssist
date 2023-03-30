@@ -21,11 +21,11 @@ extension OpenAI.Chat: Identifiable {
 
 class ClientStore {
     var client: OpenAI
-    var chat: Chat
+    var chat: ChatController
     
     init(
         client: OpenAI = defaultClient,
-        chat: Chat = defaultChat
+        chat: ChatController = defaultChat
     ) {
         self.client = client
         self.chat = chat
@@ -35,7 +35,7 @@ class ClientStore {
 extension ClientStore {
     private static let defaultClient = makeAPIClient()
     
-    private static let defaultChat = Chat(
+    private static let defaultChat = ChatController(
         openAI: defaultClient
     )
     

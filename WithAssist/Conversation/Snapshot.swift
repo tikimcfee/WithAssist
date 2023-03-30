@@ -36,9 +36,9 @@ struct SnapshotStore: Codable, Equatable, Hashable {
     
     static let empty: SnapshotStore = SnapshotStore()
     
-    mutating func setNewSnapshotAsCurrent(in chat: Chat) {
+    mutating func setNewSnapshotAsCurrent(in chat: ChatController) {
         let snapshot = Snapshot()
-        chat.currentSnapshot = snapshot
+        chat.snapshot.current = snapshot
         snapshots.append(snapshot)
     }
     

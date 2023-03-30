@@ -10,7 +10,7 @@ import OpenAI
 import Combine
 
 struct MainAppView: View {
-    @ObservedObject var client: Chat
+    @ObservedObject var client: ChatController
     @State var isLoading: Bool = false
     
     let requestCurrentStateSave: () -> Void
@@ -20,15 +20,15 @@ struct MainAppView: View {
         NavigationSplitView(
             sidebar: {
                 SnapshotListView(
-                    currentSnapshot: $client.currentSnapshot
+                    currentSnapshot: $client.snapshot.current
                 )
             },
             content: {
-                mainInteractionsView(client.currentSnapshot)
+                mainInteractionsView(client.snapshot.current)
                     .padding()
             },
             detail: {
-                conversationView(client.currentSnapshot)
+                conversationView(client.snapshot.current)
                     .toolbar {
                         ToolbarItem(placement:  .primaryAction) {
                             newConversationView
@@ -127,10 +127,10 @@ struct MainAppView: View {
     @ViewBuilder
     func nameView() -> some View {
         TextField(
-            client.currentSnapshot.name,
+            client.snapshot.current.name,
             text: Binding<String>(
-                get: { client.currentSnapshot.name },
-                set: { client.currentSnapshot.name = $0 }
+                get: { client.snapshot.current.name },
+                set: { client.snapshot.current.name = $0 }
             )
         )
         .onSubmit {
@@ -284,8 +284,8 @@ struct ContentView_Previews: PreviewProvider {
         ]
     )
     
-    static let chat: Chat = {
-        Chat(
+    static let chat: ChatController = {
+        ChatController(
             openAI: openAI,
             currentSnapshot: snapshot
         )

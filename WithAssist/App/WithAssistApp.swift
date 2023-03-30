@@ -50,14 +50,14 @@ struct WithAssistApp: App {
         await userSettingsStorage.load()
         if let snapshot = userSettingsStorage.state.maybeValue?.snapshots.last {
             print("loaded \(snapshot.id)")
-            client.chat.currentSnapshot = snapshot
+            client.chat.snapshot.current = snapshot
         }
     }
     
     func doSave() {
         Task {
             await userSettingsStorage.updateValue {
-                $0?.update(client.chat.currentSnapshot)
+                $0?.update(client.chat.snapshot.current)
             }
         }
     }
@@ -84,10 +84,7 @@ struct WithAssistApp: App {
             
         case .saving:
             ProgressView()
-            
-//        case .saved(_):
-//            EmptyView()
-            
+
         case .error(let error):
             ZStack(alignment: .bottom) {
                 Text(String(describing: error))
@@ -102,19 +99,16 @@ struct WithAssistApp: App {
     func updateState(_ state: CodableFileStorage<Snapshot>.StorageState) {
         switch state {
         case .idle(value: let value):
-            client.chat.currentSnapshot = value()
+            client.chat.snapshot.current = value()
             
         case .loading:
             break
             
         case .loaded(value: let value):
-            client.chat.currentSnapshot = value
+            client.chat.snapshot.current = value
             
         case .saving:
             break
-            
-//        case .saved(value: let value):
-//            client.chat.currentSnapshot = value
             
         case .error(let error):
             print(error)
@@ -123,12 +117,11 @@ struct WithAssistApp: App {
     
     static func makeClient() -> ClientStore {
         let api = ClientStore.makeAPIClient()
+        let chat = ChatController(openAI: api)
         
         let client = ClientStore(
             client: api,
-            chat: Chat(
-                openAI: api
-            )
+            chat: chat
         )
         
         return client

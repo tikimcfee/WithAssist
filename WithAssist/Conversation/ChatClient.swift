@@ -9,7 +9,7 @@ import Foundation
 import OpenAI
 
 struct ChatRequest {
-    var useUser = false
+    var useUser = true
     var user: String = "lugo-core-conversation-query"
     
     var useTemperature = false
@@ -19,7 +19,7 @@ struct ChatRequest {
     var topProbabilityMass: Double = 0.7
     
     var completions: Int = 1
-    var maxTokens: Int = 3072
+    var maxTokens: Int = 4000
     
     var usePresencePenalty = false
     var presencePenalty: Double = 0.5
@@ -33,34 +33,41 @@ struct ChatRequest {
     var chatModel: Model = .gpt4
 }
 
-class Chat: ObservableObject {
-    let openAI: OpenAI
+extension ChatController {
+    class SnapshotState: ObservableObject {
+        @Published var current: Snapshot
         
-    @Published var currentSnapshot: Snapshot
-    @Published var chatParams: ChatRequest = ChatRequest()
+        init(
+            _ currentSnapshot: Snapshot
+        ) {
+            self.current = currentSnapshot
+        }
+    }
+    
+    class ParamState: ObservableObject {
+        @Published var current: ChatRequest
+        
+        init(
+            _ chatParams: ChatRequest = ChatRequest()
+        ) {
+            self.current = chatParams
+        }
+    }
+}
+
+class ChatController: ObservableObject {
+    let openAI: OpenAI
+    
+    @Published var snapshot: SnapshotState
+    @Published var chatParams: ParamState
     
     init(
         openAI: OpenAI,
         currentSnapshot: Snapshot = .empty
     ) {
         self.openAI = openAI
-        self.currentSnapshot = currentSnapshot
-    }
-    
-    func makeChatQuery() -> OpenAI.ChatQuery {
-        OpenAI.ChatQuery(
-            model: chatParams.chatModel,
-            messages: currentSnapshot.chatMessages,
-            temperature: chatParams.temperature,
-            top_p: chatParams.topProbabilityMass,
-            n: chatParams.completions,
-            stream: false,
-            max_tokens: chatParams.maxTokens,
-            presence_penalty: chatParams.usePresencePenalty ? chatParams.presencePenalty : nil,
-            frequency_penalty: chatParams.useFrequencyPenalty ? chatParams.frequencyPenalty : nil,
-            logit_bias: chatParams.useLogitBias ? chatParams.logitBias : nil,
-            user: chatParams.user
-        )
+        self.snapshot = SnapshotState(currentSnapshot)
+        self.chatParams = ParamState()
     }
     
     func addMessage(_ message: String) async {
@@ -80,9 +87,7 @@ class Chat: ObservableObject {
     }
     
     func resetPrompt(to prompt: String) async {
-        await MainActor.run {
-            self.currentSnapshot.resetForNewPrompt(prompt)
-        }
+        await resetPrompt(prompt)
         await updateSnapshotWithNewQuery()
     }
     
@@ -126,7 +131,31 @@ class Chat: ObservableObject {
     
     private func modifySnapshot(_ snapshot: (inout Snapshot) -> Void) async {
         await MainActor.run {
-            snapshot(&currentSnapshot)
+            snapshot(&(self.snapshot.current))
         }
+    }
+}
+
+extension ChatController {
+    func resetPrompt(_ prompt: String) async {
+        await MainActor.run { [snapshot] in
+            snapshot.current.resetForNewPrompt(prompt)
+        }
+    }
+    
+    func makeChatQuery() -> OpenAI.ChatQuery {
+        OpenAI.ChatQuery(
+            model: chatParams.current.chatModel,
+            messages: snapshot.current.chatMessages,
+            temperature: chatParams.current.temperature,
+            top_p: chatParams.current.topProbabilityMass,
+            n: chatParams.current.completions,
+            stream: false,
+            max_tokens: chatParams.current.maxTokens,
+            presence_penalty: chatParams.current.presencePenalty,
+            frequency_penalty: chatParams.current.frequencyPenalty,
+            logit_bias: chatParams.current.logitBias,
+            user: chatParams.current.user
+        )
     }
 }
