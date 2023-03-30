@@ -43,7 +43,7 @@ class CodableFileStorage<T: Codable>: ObservableObject {
         state = .saving
         do {
             try await fileStorage.save(value, to: appFile)
-            state = .saved(value: value)
+            state = .loaded(value: value)
         } catch {
             state = .error(error)
         }
@@ -59,7 +59,7 @@ class CodableFileStorage<T: Codable>: ObservableObject {
         case loading
         case loaded(value: T)
         case saving
-        case saved(value: T)
+//        case saved(value: T)
         case error(Error)
         
         var maybeValue: T? {
@@ -71,8 +71,8 @@ class CodableFileStorage<T: Codable>: ObservableObject {
                 case .loaded(let value):
                     return value
                     
-                case .saved(let value):
-                    return value
+//                case .saved(let value):
+//                    return value
                     
                 case .loading:
                     return nil
@@ -92,8 +92,8 @@ class CodableFileStorage<T: Codable>: ObservableObject {
                 case (.loaded, .some(let value)):
                     self = .loaded(value: value)
                     
-                case (.saved, .some(let value)):
-                    self = .saved(value: value)
+//                case (.saved, .some(let value)):
+//                    self = .saved(value: value)
                     
                 default:
                     break
@@ -119,6 +119,7 @@ class FileStorage {
     
     func load<T: Codable>(_ type: T.Type, from file: AppFile, defaultValue: T) async throws -> T {
         let url = try await getURL(for: file)
+        print("[\(#fileID)] Loading \(url)")
         if !FileManager.default.fileExists(atPath: url.path) {
             // Create the file with the default value if it doesn't exist
             try await save(defaultValue, to: file)

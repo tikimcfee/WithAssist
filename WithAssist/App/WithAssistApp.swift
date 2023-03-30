@@ -24,7 +24,7 @@ struct WithAssistApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ChatConversationView(
+            MainAppView(
                 client: client.chat,
                 requestCurrentStateSave: {
                     doSave()
@@ -85,8 +85,8 @@ struct WithAssistApp: App {
         case .saving:
             ProgressView()
             
-        case .saved(_):
-            EmptyView()
+//        case .saved(_):
+//            EmptyView()
             
         case .error(let error):
             ZStack(alignment: .bottom) {
@@ -113,8 +113,8 @@ struct WithAssistApp: App {
         case .saving:
             break
             
-        case .saved(value: let value):
-            client.chat.currentSnapshot = value
+//        case .saved(value: let value):
+//            client.chat.currentSnapshot = value
             
         case .error(let error):
             print(error)

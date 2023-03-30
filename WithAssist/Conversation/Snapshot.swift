@@ -20,6 +20,14 @@ struct Snapshot: Identifiable, Codable, Equatable, Hashable {
         print("----- Snapshot.empty set as \(empty.id) -----")
         return empty
     }()
+    
+    mutating func resetForNewPrompt(_ prompt: String) {
+        chatMessages = [
+            OpenAI.Chat(role: .system, content: prompt)
+        ]
+        errors = []
+        results = []
+    }
 }
 
 struct SnapshotStore: Codable, Equatable, Hashable {

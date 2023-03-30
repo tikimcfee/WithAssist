@@ -9,7 +9,7 @@ import SwiftUI
 import OpenAI
 import Combine
 
-struct ChatConversationView: View {
+struct MainAppView: View {
     @ObservedObject var client: Chat
     @State var isLoading: Bool = false
     
@@ -133,6 +133,9 @@ struct ChatConversationView: View {
                 set: { client.currentSnapshot.name = $0 }
             )
         )
+        .onSubmit {
+            requestCurrentStateSave()
+        }
     }
     
     @ViewBuilder
@@ -149,9 +152,9 @@ struct ChatConversationView: View {
         PromptInjectorView(
             draft: snapshot.chatMessages.first?.content ?? "",
             originalDraft: snapshot.chatMessages.first?.content ?? "",
-            didRequestSetPrompt: { updatedPrompt in
+            didRequestSetPrompt: { updatedPromptText in
                 doAsync {
-                    await client.resetPrompt(to: updatedPrompt)
+                    await client.resetPrompt(to: updatedPromptText)
                 }
             }
         ).id(snapshot.hashValue)
@@ -174,7 +177,7 @@ struct ChatConversationView: View {
             }
             
             await action()
-            requestNewConversation()
+            requestCurrentStateSave()
             
             await MainActor.run {
                 isLoading = false
@@ -282,7 +285,7 @@ struct ContentView_Previews: PreviewProvider {
     }()
     
     static var previews: some View {
-        ChatConversationView(
+        MainAppView(
             client: client.chat,
             requestCurrentStateSave: { },
             requestNewConversation: { }

@@ -80,16 +80,9 @@ class Chat: ObservableObject {
     }
     
     func resetPrompt(to prompt: String) async {
-        await setSnapshot(
-            Snapshot(
-                chatMessages: [
-                    OpenAI.Chat(
-                        role: .system,
-                        content: prompt
-                    )
-                ]
-            )
-        )
+        await MainActor.run {
+            self.currentSnapshot.resetForNewPrompt(prompt)
+        }
         await updateSnapshot()
     }
     
@@ -102,7 +95,7 @@ class Chat: ObservableObject {
         )
     }
     
-    private func updateSnapshot() async {
+    func updateSnapshot() async {
         do {
             let result = try await performChatQuery()
             let choice = makeChoice(result)
@@ -128,12 +121,6 @@ class Chat: ObservableObject {
     
     func makeChoice(_ result: OpenAI.ChatResult) -> OpenAI.ChatResult.Choice? {
         result.choices?.first
-    }
-    
-    private func setSnapshot(_ snapshot: Snapshot) async {
-        await MainActor.run {
-            self.currentSnapshot = snapshot
-        }
     }
     
     private func modifySnapshot(_ snapshot: (inout Snapshot) -> Void) async {
