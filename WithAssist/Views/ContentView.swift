@@ -7,20 +7,53 @@
 
 import SwiftUI
 import OpenAI
+import Combine
 
 extension OpenAI.Chat: Identifiable {
     public var id: Int { hashValue }
 }
 
+struct SnapshotListView: View {
+    @EnvironmentObject var store: CodableFileStorage<SnapshotStore>
+    @Binding var currentSnapshot: Snapshot
+    
+    var body: some View {
+        if let store = store.state.maybeValue {
+            List(store.snapshots) { snapshot in
+                Button(
+                    action: {
+                        currentSnapshot = snapshot
+                    },
+                    label: {
+                        Text(snapshot.name)
+                    }
+                )
+                .buttonStyle(.plain)
+                .listRowBackground(
+                    snapshot.id == currentSnapshot.id
+                        ? Color.gray.opacity(0.33)
+                        : Color.clear
+                )
+            }
+        } else {
+            EmptyView()
+        }
+    }
+}
+
 struct ChatConversationView: View {
     @ObservedObject var client: AsyncClient.Chat
     @State var isLoading: Bool = false
+    
     let saveRequested: () -> Void
+    let newRequested: () -> Void
     
     var body: some View {
         NavigationSplitView(
             sidebar: {
-                
+                SnapshotListView(
+                    currentSnapshot: $client.currentSnapshot
+                )
             },
             content: {
                 mainInteractionsView(client.currentSnapshot)
@@ -28,6 +61,18 @@ struct ChatConversationView: View {
             },
             detail: {
                 conversationView(client.currentSnapshot)
+                    .toolbar {
+                        ToolbarItem(placement: .principal) {
+                            Button(
+                                action: {
+                                    newRequested()
+                                },
+                                label: {
+                                    Image(systemName: "plus.circle")
+                                }
+                            )
+                        }
+                    }
             }
         )
         .navigationSplitViewStyle(.balanced)
@@ -41,6 +86,7 @@ struct ChatConversationView: View {
     @ViewBuilder
     func mainInteractionsView(_ snapshot: Snapshot) -> some View {
         VStack {
+            nameView()
             promptInjectorView(snapshot)
             inputView()
             SettingsView(chat: client)
@@ -62,34 +108,57 @@ struct ChatConversationView: View {
         }
     }
     
-    @ViewBuilder
-    func messageCell(_ message: OpenAI.Chat) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text(message.role)
-                .italic()
-                .fontWeight(.light)
-                .font(.caption)
+    struct ConversationView: View {
+        let snapshot: Snapshot
+        
+        var body: some View {
+            ScrollViewReader { proxy in
+                List(snapshot.chatMessages.dropFirst()) { message in
+                    messageCell(message)
+                        .tag(message.id)
+                }
+                .listStyle(.inset)
+                .onChange(of: snapshot.chatMessages) { new in
+                    if let last = new.last {
+                        print("Scroll to: \(last.id)")
+                        proxy.scrollTo(last.id, anchor: .bottom)
+                    }
+                }
+            }
+        }
+        
+        @ViewBuilder
+        func messageCell(_ message: OpenAI.Chat) -> some View {
+            VStack(alignment: .leading, spacing: 0) {
+                Text(message.role)
+                    .italic()
+                    .fontWeight(.light)
+                    .font(.caption)
+                
+                Text(message.content)
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(8)
+            .border(Color.gray.opacity(0.33), width: 1)
             
-            Text(message.content)
-                .textSelection(.enabled)
         }
     }
     
     @ViewBuilder
     func conversationView(_ snapshot: Snapshot) -> some View {
-        ScrollViewReader { proxy in
-            List(snapshot.chatMessages.dropFirst()) { message in
-                messageCell(message)
-                    .tag(message.id)
-            }
-            .listStyle(.inset)
-            .onChange(of: snapshot.chatMessages) { new in
-                if let last = new.last {
-                    print("Scroll to: \(last.id)")
-                    proxy.scrollTo(last.id, anchor: .bottom)
-                }
-            }
-        }
+        ConversationView(snapshot: snapshot)
+    }
+    
+    @ViewBuilder
+    func nameView() -> some View {
+        TextField(
+            client.currentSnapshot.name,
+            text: Binding<String>(
+                get: { client.currentSnapshot.name },
+                set: { client.currentSnapshot.name = $0 }
+            )
+        )
     }
     
     @ViewBuilder
@@ -125,7 +194,7 @@ struct ChatConversationView: View {
     }
     
     func doAsync(_ action: @escaping () async -> Void) {
-        Task.detached(priority: .userInitiated) {
+        Task.detached(priority: .userInitiated) { [saveRequested] in
             await MainActor.run {
                 isLoading = true
             }
@@ -207,6 +276,12 @@ struct PromptInjectorView: View {
 }
 
 struct ContentView_Previews: PreviewProvider {
+    static let userSettingsStorage =
+        CodableFileStorage<SnapshotStore>(
+            storageObject: .empty,
+            appFile: .defaultSnapshot
+        )
+    
     static let openAI = AsyncClient.makeAPIClient()
     
     static let snapshot = Snapshot(
@@ -234,9 +309,11 @@ struct ContentView_Previews: PreviewProvider {
     
     static var previews: some View {
         ChatConversationView(
-            client: client.chat
-        ) {
-            
-        }
+            client: client.chat,
+            saveRequested: { },
+            newRequested: { }
+        )
+        .environmentObject(userSettingsStorage)
+
     }
 }

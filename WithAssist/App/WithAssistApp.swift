@@ -25,10 +25,15 @@ struct WithAssistApp: App {
     var body: some Scene {
         WindowGroup {
             ChatConversationView(
-                client: client.chat
-            ) {
-                doSave()
-            }
+                client: client.chat,
+                saveRequested: {
+                    doSave()
+                },
+                newRequested: {
+                    doAdd()
+                }
+            )
+            .environmentObject(userSettingsStorage)
             .overlay(
                 overlayView(userSettingsStorage.state)
             )
@@ -44,6 +49,7 @@ struct WithAssistApp: App {
     func doLoad() async {
         await userSettingsStorage.load()
         if let snapshot = userSettingsStorage.state.maybeValue?.snapshots.last {
+            print("loaded \(snapshot.id)")
             client.chat.currentSnapshot = snapshot
         }
     }
@@ -52,6 +58,14 @@ struct WithAssistApp: App {
         Task {
             await userSettingsStorage.updateValue {
                 $0?.update(client.chat.currentSnapshot)
+            }
+        }
+    }
+    
+    func doAdd() {
+        Task {
+            await userSettingsStorage.updateValue {
+                $0?.snapshots.append(Snapshot())
             }
         }
     }
@@ -113,7 +127,8 @@ struct WithAssistApp: App {
         let client = AsyncClient(
             client: api,
             chat: AsyncClient.Chat(
-                openAI: api
+                openAI: api,
+                chatModel: .gpt4
             )
         )
         

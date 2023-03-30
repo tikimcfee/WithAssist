@@ -29,7 +29,7 @@ struct SettingsView: View {
                 get: { Double(chat.maxTokens) },
                 set: { chat.maxTokens = Int($0) }
             ),
-            range: 0.0...4095
+            range: 0.0...8000
         )
         
         ToggleSlider(

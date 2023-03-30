@@ -30,12 +30,16 @@ class CodableFileStorage<T: Codable>: ObservableObject {
                 throw FileStorageError.invalidState
             }
         } catch {
+            print(error)
             state = .error(error)
         }
     }
     
     func save() async {
-        guard case .loaded(let value) = state else { return }
+        guard let value = state.maybeValue else {
+            print("Can't save with state: \(state)")
+            return
+        }
         state = .saving
         do {
             try await fileStorage.save(value, to: appFile)
