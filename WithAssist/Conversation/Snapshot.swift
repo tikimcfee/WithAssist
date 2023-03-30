@@ -15,7 +15,11 @@ struct Snapshot: Identifiable, Codable, Equatable, Hashable {
     var results: [OpenAI.ChatResult] = []
     var name: String = "Some conversation: \(Date.now)"
     
-    static let empty: Snapshot = Snapshot()
+    static let empty: Snapshot = {
+        let empty = Snapshot()
+        print("----- Snapshot.empty set as \(empty.id) -----")
+        return empty
+    }()
 }
 
 struct SnapshotStore: Codable, Equatable, Hashable {
@@ -23,6 +27,12 @@ struct SnapshotStore: Codable, Equatable, Hashable {
     var snapshots: [Snapshot] = []
     
     static let empty: SnapshotStore = SnapshotStore()
+    
+    mutating func setNewSnapshotAsCurrent(in chat: Chat) {
+        let snapshot = Snapshot()
+        chat.currentSnapshot = snapshot
+        snapshots.append(snapshot)
+    }
     
     mutating func update(_ snapshot: Snapshot) {
         if let updateIndex = snapshots.firstIndex(where: { $0.id == snapshot.id }) {

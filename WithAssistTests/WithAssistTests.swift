@@ -19,7 +19,7 @@ final class WithAssistTests: XCTestCase {
     }
     
     func testChat() throws {
-        let client = AsyncClient()
+        let client = ClientStore()
         
         let expect = expectation(description: "Got a result")
         
@@ -35,7 +35,7 @@ final class WithAssistTests: XCTestCase {
     }
     
     func testComplexChat() throws {
-        let client = AsyncClient()
+        let client = ClientStore()
         
         let __PROMPT__ = """
 I wish us both luck, GPT-4, LLM, - Assistant. Let's have some fun.

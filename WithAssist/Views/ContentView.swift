@@ -9,44 +9,12 @@ import SwiftUI
 import OpenAI
 import Combine
 
-extension OpenAI.Chat: Identifiable {
-    public var id: Int { hashValue }
-}
-
-struct SnapshotListView: View {
-    @EnvironmentObject var store: CodableFileStorage<SnapshotStore>
-    @Binding var currentSnapshot: Snapshot
-    
-    var body: some View {
-        if let store = store.state.maybeValue {
-            List(store.snapshots) { snapshot in
-                Button(
-                    action: {
-                        currentSnapshot = snapshot
-                    },
-                    label: {
-                        Text(snapshot.name)
-                    }
-                )
-                .buttonStyle(.plain)
-                .listRowBackground(
-                    snapshot.id == currentSnapshot.id
-                        ? Color.gray.opacity(0.33)
-                        : Color.clear
-                )
-            }
-        } else {
-            EmptyView()
-        }
-    }
-}
-
 struct ChatConversationView: View {
     @ObservedObject var client: Chat
     @State var isLoading: Bool = false
     
-    let saveRequested: () -> Void
-    let newRequested: () -> Void
+    let requestCurrentStateSave: () -> Void
+    let requestNewConversation: () -> Void
     
     var body: some View {
         NavigationSplitView(
@@ -54,6 +22,7 @@ struct ChatConversationView: View {
                 SnapshotListView(
                     currentSnapshot: $client.currentSnapshot
                 )
+                
             },
             content: {
                 mainInteractionsView(client.currentSnapshot)
@@ -62,20 +31,25 @@ struct ChatConversationView: View {
             detail: {
                 conversationView(client.currentSnapshot)
                     .toolbar {
-                        ToolbarItem(placement: .principal) {
-                            Button(
-                                action: {
-                                    newRequested()
-                                },
-                                label: {
-                                    Image(systemName: "plus.circle")
-                                }
-                            )
+                        ToolbarItem(placement:  .primaryAction) {
+                            newConversationView
                         }
                     }
             }
         )
         .navigationSplitViewStyle(.balanced)
+    }
+    
+    var newConversationView: some View {
+        Button(
+            action: {
+                requestNewConversation()
+            },
+            label: {
+                Label("New Conversation", systemImage: "plus.circle")
+                    .labelStyle(.titleAndIcon)
+            }
+        )
     }
     
     @ViewBuilder
@@ -194,13 +168,13 @@ struct ChatConversationView: View {
     }
     
     func doAsync(_ action: @escaping () async -> Void) {
-        Task.detached(priority: .userInitiated) { [saveRequested] in
+        Task.detached(priority: .userInitiated) {
             await MainActor.run {
                 isLoading = true
             }
             
             await action()
-            saveRequested()
+            requestNewConversation()
             
             await MainActor.run {
                 isLoading = false
@@ -248,7 +222,7 @@ struct PromptInjectorView: View {
                 changePrompt = true
             }
             .alert(
-                "Save new prompt?",
+                "Reset this conversation and save new prompt?",
                 isPresented: $changePrompt,
                 actions: {
                     Button("Yes", role: .destructive) {
@@ -265,10 +239,10 @@ struct PromptInjectorView: View {
                 message: {
                     Text("""
                     From:
-                    \(originalDraft)
+                    \(originalDraft.count) characters
                     
                     To:
-                    \(draft)
+                    \(draft.count) characters
                     """)
                 }
             )
@@ -282,7 +256,7 @@ struct ContentView_Previews: PreviewProvider {
             appFile: .defaultSnapshot
         )
     
-    static let openAI = AsyncClient.makeAPIClient()
+    static let openAI = ClientStore.makeAPIClient()
     
     static let snapshot = Snapshot(
         chatMessages: [
@@ -299,8 +273,8 @@ struct ContentView_Previews: PreviewProvider {
         )
     }()
     
-    static let client: AsyncClient = {
-        let client = AsyncClient(
+    static let client: ClientStore = {
+        let client = ClientStore(
             chat: chat
         )
         
@@ -310,8 +284,8 @@ struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ChatConversationView(
             client: client.chat,
-            saveRequested: { },
-            newRequested: { }
+            requestCurrentStateSave: { },
+            requestNewConversation: { }
         )
         .environmentObject(userSettingsStorage)
 

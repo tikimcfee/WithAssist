@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		B72A79FE29D5399E00BE4163 /* Snapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A79FD29D5399E00BE4163 /* Snapshot.swift */; };
 		B72A7A0029D539FA00BE4163 /* ChatClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A79FF29D539FA00BE4163 /* ChatClient.swift */; };
+		B72A7A0229D53E7D00BE4163 /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A7A0129D53E7D00BE4163 /* AppError.swift */; };
+		B72A7A0429D5407300BE4163 /* SnapshotListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A7A0329D5407300BE4163 /* SnapshotListView.swift */; };
 		B730F94029D28867005808D6 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B730F93F29D28867005808D6 /* SettingsView.swift */; };
 		B73CB07629C662600047831E /* WithAssistApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B73CB07529C662600047831E /* WithAssistApp.swift */; };
 		B73CB07829C662600047831E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B73CB07729C662600047831E /* ContentView.swift */; };
@@ -43,6 +45,8 @@
 /* Begin PBXFileReference section */
 		B72A79FD29D5399E00BE4163 /* Snapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Snapshot.swift; sourceTree = "<group>"; };
 		B72A79FF29D539FA00BE4163 /* ChatClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatClient.swift; sourceTree = "<group>"; };
+		B72A7A0129D53E7D00BE4163 /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
+		B72A7A0329D5407300BE4163 /* SnapshotListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotListView.swift; sourceTree = "<group>"; };
 		B730F93F29D28867005808D6 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		B73CB07229C662600047831E /* WithAssist.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WithAssist.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B73CB07529C662600047831E /* WithAssistApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithAssistApp.swift; sourceTree = "<group>"; };
@@ -112,7 +116,7 @@
 		B73CB07429C662600047831E /* WithAssist */ = {
 			isa = PBXGroup;
 			children = (
-				B73CB0A229C662890047831E /* Writeups */,
+				B73CB0A229C662890047831E /* Conversation */,
 				B73CB0A129C6627E0047831E /* App */,
 				B73CB0A029C662710047831E /* Views */,
 				B73CB07929C662610047831E /* Assets.xcassets */,
@@ -152,6 +156,7 @@
 			children = (
 				B73CB07729C662600047831E /* ContentView.swift */,
 				B730F93F29D28867005808D6 /* SettingsView.swift */,
+				B72A7A0329D5407300BE4163 /* SnapshotListView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -164,16 +169,17 @@
 			path = App;
 			sourceTree = "<group>";
 		};
-		B73CB0A229C662890047831E /* Writeups */ = {
+		B73CB0A229C662890047831E /* Conversation */ = {
 			isa = PBXGroup;
 			children = (
 				B73CB0A329C662980047831E /* CoreConversation.swift */,
+				B72A7A0129D53E7D00BE4163 /* AppError.swift */,
 				B72A79FF29D539FA00BE4163 /* ChatClient.swift */,
 				B7DBD15A29D13B9900776412 /* FileStorage.swift */,
 				B7DBD15C29D1404000776412 /* CodableAppStorage.swift */,
 				B72A79FD29D5399E00BE4163 /* Snapshot.swift */,
 			);
-			path = Writeups;
+			path = Conversation;
 			sourceTree = "<group>";
 		};
 		B7DBD15329D0D2BB00776412 /* Packages */ = {
@@ -329,9 +335,11 @@
 			files = (
 				B73CB07829C662600047831E /* ContentView.swift in Sources */,
 				B7DBD15D29D1404000776412 /* CodableAppStorage.swift in Sources */,
+				B72A7A0229D53E7D00BE4163 /* AppError.swift in Sources */,
 				B72A7A0029D539FA00BE4163 /* ChatClient.swift in Sources */,
 				B7DBD15B29D13B9900776412 /* FileStorage.swift in Sources */,
 				B730F94029D28867005808D6 /* SettingsView.swift in Sources */,
+				B72A7A0429D5407300BE4163 /* SnapshotListView.swift in Sources */,
 				B73CB07629C662600047831E /* WithAssistApp.swift in Sources */,
 				B73CB0A429C662980047831E /* CoreConversation.swift in Sources */,
 				B72A79FE29D5399E00BE4163 /* Snapshot.swift in Sources */,

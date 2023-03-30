@@ -26,10 +26,10 @@ struct WithAssistApp: App {
         WindowGroup {
             ChatConversationView(
                 client: client.chat,
-                saveRequested: {
+                requestCurrentStateSave: {
                     doSave()
                 },
-                newRequested: {
+                requestNewConversation: {
                     doAdd()
                 }
             )
@@ -65,7 +65,7 @@ struct WithAssistApp: App {
     func doAdd() {
         Task {
             await userSettingsStorage.updateValue {
-                $0?.snapshots.append(Snapshot())
+                $0?.setNewSnapshotAsCurrent(in: client.chat)
             }
         }
     }
@@ -121,10 +121,10 @@ struct WithAssistApp: App {
         }
     }
     
-    static func makeClient() -> AsyncClient {
-        let api = AsyncClient.makeAPIClient()
+    static func makeClient() -> ClientStore {
+        let api = ClientStore.makeAPIClient()
         
-        let client = AsyncClient(
+        let client = ClientStore(
             client: api,
             chat: Chat(
                 openAI: api,

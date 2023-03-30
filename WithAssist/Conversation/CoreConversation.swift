@@ -15,13 +15,12 @@ import OpenAI
 
 private let OPENAI_API_KEY = "your-key-here"
 
-class AsyncClient {
-    private static let defaultClient = makeAPIClient()
-    private static let defaultChat = Chat(
-        openAI: defaultClient
-    )
-    
-    var client: OpenAI = makeAPIClient()
+extension OpenAI.Chat: Identifiable {
+    public var id: Int { hashValue }
+}
+
+class ClientStore {
+    var client: OpenAI
     var chat: Chat
     
     init(
@@ -31,6 +30,14 @@ class AsyncClient {
         self.client = client
         self.chat = chat
     }
+}
+
+extension ClientStore {
+    private static let defaultClient = makeAPIClient()
+    
+    private static let defaultChat = Chat(
+        openAI: defaultClient
+    )
     
     static func makeAPIClient() -> OpenAI {
         let client = OpenAI(apiToken: OPENAI_API_KEY)
@@ -38,26 +45,6 @@ class AsyncClient {
         return client
     }
 }
-
-enum AppError: Identifiable, Codable, Equatable, Hashable {
-    case wrapped(String, UUID)
-    
-    var id: UUID {
-        switch self {
-        case .wrapped(_, let id):
-            return id
-        }
-    }
-    
-    var message: String {
-        switch self {
-        case .wrapped(let message, _):
-            return message
-        }
-    }
-}
-
-
 
 struct Draft: Equatable, Hashable {
     var content: String = ""
