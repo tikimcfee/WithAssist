@@ -25,7 +25,6 @@ extension ChatController {
         private(set) var bag = Set<AnyCancellable>()
         
         init() {
-            allSnapshots.isSaved = true
             setupAutosave()
         }
         
@@ -119,6 +118,11 @@ extension ChatController {
             }
             
             receiver(&updatedSnapshot)
+            guard updatedSnapshot != currentSnapshot else {
+                print("[state update] Nothing changed for \(updatedSnapshot.id)")
+                return
+            }
+            
             allSnapshots.storeChanges(to: updatedSnapshot)
         }
 
