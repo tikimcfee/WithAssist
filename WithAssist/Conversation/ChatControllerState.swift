@@ -13,8 +13,13 @@ import SwiftUI
 
 extension ChatController {
     class SnapshotState: ObservableObject, GlobalStoreReader {
-        @Published var allSnapshots: AllSnapshots = AllSnapshots()
-        @Published var currentIndex: Int? = nil
+        @Published var currentIndex: Int = 0
+        @Published var allSnapshots: AllSnapshots = AllSnapshots() {
+            willSet {
+                print("WHO!?")
+            }
+        }
+        
         private var manualSaves = PassthroughSubject<AllSnapshots, Never>()
         
         private(set) var bag = Set<AnyCancellable>()
@@ -29,29 +34,36 @@ extension ChatController {
         )
         
         func setList(_ list: [Snapshot], isPreload: Bool) {
-            allSnapshots.list = list
             allSnapshots.isSaved = isPreload
+            allSnapshots.list = list
         }
         
         func setupAutosave() {
             $allSnapshots
                 .merge(with: manualSaves)
                 .handleEvents(receiveOutput: { _ in
-                    print("[chat state] Save debouncing...")
+                    print("[chat state] Testing should save...")
+                })
+                .filter { !$0.isSaved && !$0.list.isEmpty }
+                .handleEvents(receiveOutput: { _ in
+                    print("[chat state] Save debouncing")
                 })
                 .debounce(for: 1, scheduler: Self.saveQueue)
                 .handleEvents(receiveOutput: { _ in
                     print("[chat state] Testing duplicate...")
                 })
                 .removeDuplicates()
-                .filter { $0.shouldSave }
-                .handleEvents(receiveOutput: {
+                .map { snapshot -> AllSnapshots in
                     print("[chat state] Starting save")
-                    self.onSaveSnapshots($0)
-                })
-                .sink { _ in
-                    print("[chat state] Setting is saved")
-                    self.allSnapshots.setSaved()
+                    var snapshotToSave = snapshot
+                    snapshotToSave.isSaved = true
+                    self.onSaveSnapshots(snapshotToSave)
+                    return snapshotToSave
+                }
+                .receive(on: DispatchQueue.main)
+                .sink {
+                    print("[chat state] Setting modified state")
+                    self.allSnapshots = $0
                 }.store(in: &bag)
         }
         
@@ -107,7 +119,7 @@ extension ChatController {
             }
             
             receiver(&updatedSnapshot)
-            saveSnapshotToList(updatedSnapshot)
+            allSnapshots.storeChanges(to: updatedSnapshot)
         }
 
         public func updateCurrent(_ receiver: (inout Snapshot) async -> Void) async {
@@ -117,36 +129,17 @@ extension ChatController {
             }
 
             await receiver(&updatedSnapshot)
-            saveSnapshotToList(updatedSnapshot)
+            allSnapshots.storeChanges(to: updatedSnapshot)
         }
 
         public var currentSnapshot: Snapshot? {
             get {
-                guard let currentIndex,
-                      allSnapshots.list.indices.contains(currentIndex)
+                guard allSnapshots.list.indices.contains(currentIndex)
                 else {
                     return nil
                 }
                 return allSnapshots.list[currentIndex]
             }
-        }
-        
-        func saveSnapshotToList(_ newValue: Snapshot?) {
-            guard let index = allSnapshots.list.firstIndex(where: {
-                $0.id == newValue?.id
-            }) else {
-                return
-            }
-            
-            switch newValue {
-            case .none:
-                allSnapshots.list.remove(at: index)
-                
-            case .some(let value):
-                allSnapshots.list[index] = value
-            }
-            
-            allSnapshots.isSaved = false
         }
         
         func startNewConversation() {

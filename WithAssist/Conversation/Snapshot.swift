@@ -11,10 +11,12 @@ import OpenAI
 struct AllSnapshots: Codable, Equatable, Hashable, Identifiable {
     var id: UUID = UUID()
     var list: [Snapshot]
-    var isSaved: Bool = false
-    
-    var shouldSave: Bool {
-        !(isSaved || list.isEmpty)
+    var isSaved: Bool = false {
+        willSet {
+            if newValue == false {
+                print("why!?")
+            }
+        }
     }
     
     init(list: [Snapshot] = []) {
@@ -28,16 +30,14 @@ struct AllSnapshots: Codable, Equatable, Hashable, Identifiable {
             return
         }
         list[updateIndex] = updatedInstance
+        isSaved = false
     }
     
     mutating func createNewSnapshot() -> (Snapshot, index: Int) {
         let new = Snapshot()
         list.append(new)
+        isSaved = false
         return (new, index: list.endIndex - 1)
-    }
-    
-    mutating func setSaved() {
-        isSaved = true
     }
 }
 

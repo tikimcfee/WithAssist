@@ -16,11 +16,6 @@ struct MainAppView: View {
         NavigationSplitView(
             sidebar: {
                 SnapshotListView()
-                    .toolbar {
-                        ToolbarItem(placement:  .primaryAction) {
-                            newConversationView
-                        }
-                    }
                     .environmentObject(chatController.snapshotState)
             },
             content: {
@@ -33,6 +28,11 @@ struct MainAppView: View {
                 }
             }
         )
+        .toolbar {
+            ToolbarItem(placement:  .primaryAction) {
+                newConversationView
+            }
+        }
         .navigationSplitViewStyle(.automatic)
     }
     
