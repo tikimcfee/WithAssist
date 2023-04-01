@@ -39,9 +39,7 @@ struct ContentView_Previews: PreviewProvider {
         MainAppView(
             chatController: chat
         ).task {
-            Task {
-                await chat.snapshotState.setList([snapshot])
-            }
+            chat.snapshotState.setList([snapshot], isPreload: true)
         }
     }
 }

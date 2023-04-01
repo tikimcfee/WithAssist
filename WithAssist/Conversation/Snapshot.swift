@@ -10,8 +10,12 @@ import OpenAI
 
 struct AllSnapshots: Codable, Equatable, Hashable, Identifiable {
     var id: UUID = UUID()
-    var list: [Snapshot] { didSet { saved = false } }
-    private(set) var saved: Bool = false
+    var list: [Snapshot]
+    var isSaved: Bool = false
+    
+    var shouldSave: Bool {
+        !(isSaved || list.isEmpty)
+    }
     
     init(list: [Snapshot] = []) {
         self.list = list
@@ -33,7 +37,7 @@ struct AllSnapshots: Codable, Equatable, Hashable, Identifiable {
     }
     
     mutating func setSaved() {
-        saved = true
+        isSaved = true
     }
 }
 

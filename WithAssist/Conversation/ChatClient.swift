@@ -38,17 +38,6 @@ class ChatController: ObservableObject {
     @Published var isLoading: Bool = false
     
     init(
-        openAI: OpenAI,
-        currentSnapshot: Snapshot = .empty
-    ) async {
-        self.openAI = openAI
-        self.snapshotState = await SnapshotState(
-            AllSnapshots(list: [currentSnapshot]), 0
-        )
-        self.paramState = ParamState()
-    }
-
-    init(
         openAI: OpenAI
     ) {
         self.openAI = openAI
@@ -57,22 +46,18 @@ class ChatController: ObservableObject {
     }
     
     func saveManual() {
-        Task {
-            await snapshotState.saveAll()
-        }
+        snapshotState.saveAll()
     }
     
     func controlNewConversation() {
-        Task {
-            await snapshotState.startNewConversation()
-        }
+        snapshotState.startNewConversation()
     }
     
     func addMessage(
         _ message: String,
         _ role: OpenAI.Chat.Role = .user
     ) async {
-        await snapshotState.updateCurrent { current in
+        snapshotState.updateCurrent { current in
             current.chatMessages.append(
                 OpenAI.Chat(
                     role: role,
@@ -80,7 +65,10 @@ class ChatController: ObservableObject {
                 )
             )
             
-            await requestResponseFromGPT(&current)
+            Task { [current] in
+                var target = current
+                await requestResponseFromGPT(&target)
+            }
         }
     }
     
@@ -117,9 +105,7 @@ class ChatController: ObservableObject {
     }
     
     func loadController() {
-        Task {
-            await snapshotState.load()
-        }
+        snapshotState.load()
     }
 }
 

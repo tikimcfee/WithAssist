@@ -11,19 +11,34 @@ import Combine
 
 struct InteractionsView: View {
     let isLoading: Bool
-    let snapshot: Snapshot
-    let controller: ChatController
+    
+    @ObservedObject var controller: ChatController
+    @ObservedObject var state: ChatController.SnapshotState
+    
+    init(isLoading: Bool, controller: ChatController) {
+        self.isLoading = isLoading
+        self.controller = controller
+        self.state = controller.snapshotState
+    }
+    
+    private var snapshot: Snapshot? {
+        controller.snapshotState.currentSnapshot
+    }
     
     var body: some View {
         VStack {
             nameView()
-            promptInjectorView(snapshot)
+            if let snapshot {
+                promptInjectorView(snapshot)
+            }
             inputView()
             
             SettingsView(chat: controller)
             
-            if !snapshot.errors.isEmpty {
-                errorView(snapshot: snapshot)
+            if let snapshot {
+                if !snapshot.errors.isEmpty {
+                    errorView(snapshot: snapshot)
+                }
             }
         }
         .overlay(loadingOverlayView())
@@ -67,7 +82,11 @@ struct InteractionsView: View {
             controller.snapshotState.currentSnapshot?.name ?? "<oopsie>",
             text: Binding<String>(
                 get: { controller.snapshotState.currentSnapshot?.name ?? "" },
-                set: { controller.snapshotState.currentSnapshot?.name = $0 }
+                set: { name in
+                    controller.snapshotState.updateCurrent {
+                        $0.name = name
+                    }
+                }
             )
         )
     }

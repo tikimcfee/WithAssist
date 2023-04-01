@@ -15,30 +15,25 @@ struct MainAppView: View {
     var body: some View {
         NavigationSplitView(
             sidebar: {
-                SnapshotListView(
-                    currentSnapshot: $chatController.snapshotState.currentSnapshot
-                )
-                .environmentObject(chatController.snapshotState)
+                SnapshotListView()
+                    .toolbar {
+                        ToolbarItem(placement:  .primaryAction) {
+                            newConversationView
+                        }
+                    }
+                    .environmentObject(chatController.snapshotState)
             },
             content: {
-                if let current = chatController.snapshotState.currentSnapshot {
-                    mainInteractionsView(current)
-                        .padding()
-                }
-                
+                mainInteractionsView()
+                    .padding()
             },
             detail: {
                 if let current = chatController.snapshotState.currentSnapshot {
                     conversationView(current)
-                        .toolbar {
-                            ToolbarItem(placement:  .primaryAction) {
-                                newConversationView
-                            }
-                        }
                 }
             }
         )
-        .navigationSplitViewStyle(.balanced)
+        .navigationSplitViewStyle(.automatic)
     }
     
     var newConversationView: some View {
@@ -59,10 +54,9 @@ struct MainAppView: View {
     }
     
     @ViewBuilder
-    func mainInteractionsView(_ snapshot: Snapshot) -> some View {
+    func mainInteractionsView() -> some View {
         InteractionsView(
             isLoading: isLoading,
-            snapshot: snapshot,
             controller: chatController
         )
     }

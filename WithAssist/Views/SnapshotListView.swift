@@ -10,13 +10,15 @@ import OpenAI
 
 struct SnapshotListView: View {
     @EnvironmentObject var store: ChatController.SnapshotState
-    @Binding var currentSnapshot: Snapshot?
     
     var body: some View {
-        List(store.allSnapshots.list) { snapshot in
+        List(
+            Array(store.allSnapshots.list.enumerated()),
+            id: \.element.id
+        ) { (index, snapshot) in
             Button(
                 action: {
-                    currentSnapshot = snapshot
+                    store.currentIndex = index
                 },
                 label: {
                     Text(snapshot.name)
@@ -24,10 +26,9 @@ struct SnapshotListView: View {
             )
             .buttonStyle(.plain)
             .listRowBackground(
-                currentSnapshot != nil
-                && snapshot.id == currentSnapshot?.id
-                ? Color.gray.opacity(0.33)
-                : Color.clear
+                index == store.currentIndex
+                    ? Color.gray.opacity(0.33)
+                    : Color.clear
             )
         }
     }
