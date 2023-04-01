@@ -8,6 +8,35 @@
 import Foundation
 import OpenAI
 
+struct AllSnapshots: Codable, Equatable, Hashable, Identifiable {
+    var id: UUID = UUID()
+    var list: [Snapshot] { didSet { saved = false } }
+    private(set) var saved: Bool = false
+    
+    init(list: [Snapshot] = []) {
+        self.list = list
+    }
+    
+    mutating func storeChanges(to updatedInstance: Snapshot) {
+        let updateIndex = list.firstIndex(where: { $0.id == updatedInstance.id })
+        guard let updateIndex else {
+            print("[all-snapshots update] No snapshot found with id: \(updatedInstance.id)")
+            return
+        }
+        list[updateIndex] = updatedInstance
+    }
+    
+    mutating func createNewSnapshot() -> (Snapshot, index: Int) {
+        let new = Snapshot()
+        list.append(new)
+        return (new, index: list.endIndex - 1)
+    }
+    
+    mutating func setSaved() {
+        saved = true
+    }
+}
+
 struct Snapshot: Identifiable, Codable, Equatable, Hashable {
     var id = UUID()
     var chatMessages: [OpenAI.Chat] = []
@@ -27,24 +56,5 @@ struct Snapshot: Identifiable, Codable, Equatable, Hashable {
         ]
         errors = []
         results = []
-    }
-}
-
-struct SnapshotStore: Codable, Equatable, Hashable {
-    var id = UUID()
-    var snapshots: [Snapshot] = []
-    
-    static let empty: SnapshotStore = SnapshotStore()
-    
-    mutating func setNewSnapshotAsCurrent(in chat: ChatController) {
-        let snapshot = Snapshot()
-        chat.snapshot.current = snapshot
-        snapshots.append(snapshot)
-    }
-    
-    mutating func update(_ snapshot: Snapshot) {
-        if let updateIndex = snapshots.firstIndex(where: { $0.id == snapshot.id }) {
-            snapshots[updateIndex] = snapshot
-        }
     }
 }

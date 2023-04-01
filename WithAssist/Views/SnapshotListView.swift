@@ -9,29 +9,26 @@ import SwiftUI
 import OpenAI
 
 struct SnapshotListView: View {
-    @EnvironmentObject var store: CodableFileStorage<SnapshotStore>
-    @Binding var currentSnapshot: Snapshot
+    @EnvironmentObject var store: ChatController.SnapshotState
+    @Binding var currentSnapshot: Snapshot?
     
     var body: some View {
-        if let store = store.state.maybeValue {
-            List(store.snapshots) { snapshot in
-                Button(
-                    action: {
-                        currentSnapshot = snapshot
-                    },
-                    label: {
-                        Text(snapshot.name)
-                    }
-                )
-                .buttonStyle(.plain)
-                .listRowBackground(
-                    snapshot.id == currentSnapshot.id
-                    ? Color.gray.opacity(0.33)
-                    : Color.clear
-                )
-            }
-        } else {
-            EmptyView()
+        List(store.allSnapshots.list) { snapshot in
+            Button(
+                action: {
+                    currentSnapshot = snapshot
+                },
+                label: {
+                    Text(snapshot.name)
+                }
+            )
+            .buttonStyle(.plain)
+            .listRowBackground(
+                currentSnapshot != nil
+                && snapshot.id == currentSnapshot?.id
+                ? Color.gray.opacity(0.33)
+                : Color.clear
+            )
         }
     }
 }

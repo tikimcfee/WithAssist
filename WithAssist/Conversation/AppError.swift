@@ -7,19 +7,24 @@
 
 import Foundation
 
-enum AppError: Identifiable, Codable, Equatable, Hashable {
-    case wrapped(String, UUID)
+enum AppError: Error, Identifiable, Codable, Equatable, Hashable {
+    case wrapped(String, UUID = UUID())
+    case custom(String, UUID = UUID())
     
     var id: UUID {
         switch self {
-        case .wrapped(_, let id):
+        case .wrapped(_, let id),
+            .custom(_, let id):
+            
             return id
         }
     }
     
     var message: String {
         switch self {
-        case .wrapped(let message, _):
+        case .wrapped(let message, _),
+            .custom(let message, _):
+            
             return message
         }
     }

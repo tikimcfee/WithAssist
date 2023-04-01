@@ -7,112 +7,41 @@
 
 import SwiftUI
 
-typealias Store = CodableFileStorage<SnapshotStore>
-typealias StoreItem = CodableFileStorage<SnapshotStore>.StorageState
-
 @main
 struct WithAssistApp: App {
-    @ObservedObject
-    private var userSettingsStorage =
-        CodableFileStorage<SnapshotStore>(
-            storageObject: .empty,
-            appFile: .defaultSnapshot
-        )
-    
     @State
-    var client = Self.makeClient()
+    var clientStore: ClientStore = Self.makeClient()
+    
+    @Environment(\.scenePhase)
+    private var scenePhase
     
     var body: some Scene {
         WindowGroup {
             MainAppView(
-                client: client.chat,
-                requestCurrentStateSave: {
-                    doSave()
-                },
-                requestNewConversation: {
-                    doAdd()
-                }
-            )
-            .environmentObject(userSettingsStorage)
-            .overlay(
-                overlayView(userSettingsStorage.state)
+                chatController: clientStore.chat
             )
             .task {
-                await doLoad()
+                doLoad()
             }
-            .onDisappear {
-                doSave()
+            .onChange(of: scenePhase) { phase in
+                switch phase {
+                case .inactive:
+                    print("[scene phase] now inactive; saving")
+                    doSave()
+                
+                default:
+                    break
+                }
             }
-        }
-    }
-    
-    func doLoad() async {
-        await userSettingsStorage.load()
-        if let snapshot = userSettingsStorage.state.maybeValue?.snapshots.last {
-            print("loaded \(snapshot.id)")
-            client.chat.snapshot.current = snapshot
         }
     }
     
     func doSave() {
-        Task {
-            await userSettingsStorage.updateValue {
-                $0?.update(client.chat.snapshot.current)
-            }
-        }
+        clientStore.chat.saveManual()
     }
     
-    func doAdd() {
-        Task {
-            await userSettingsStorage.updateValue {
-                $0?.setNewSnapshotAsCurrent(in: client.chat)
-            }
-        }
-    }
-    
-    @ViewBuilder
-    private func overlayView(_ state: StoreItem) -> some View {
-        switch state {
-        case .idle(_):
-            EmptyView()
-            
-        case .loading:
-            ProgressView()
-            
-        case .loaded(_):
-            EmptyView()
-            
-        case .saving:
-            ProgressView()
-
-        case .error(let error):
-            ZStack(alignment: .bottom) {
-                Text(String(describing: error))
-                    .padding()
-                    .background(Color.red.opacity(0.67))
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-            }
-            .padding(32)
-        }
-    }
-
-    func updateState(_ state: CodableFileStorage<Snapshot>.StorageState) {
-        switch state {
-        case .idle(value: let value):
-            client.chat.snapshot.current = value()
-            
-        case .loading:
-            break
-            
-        case .loaded(value: let value):
-            client.chat.snapshot.current = value
-            
-        case .saving:
-            break
-            
-        case .error(let error):
-            print(error)
-        }
+    func doLoad() {
+        clientStore.chat.loadController()
     }
     
     static func makeClient() -> ClientStore {

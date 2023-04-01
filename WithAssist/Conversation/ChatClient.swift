@@ -7,155 +7,150 @@
 
 import Foundation
 import OpenAI
+import Combine
 
-struct ChatRequest {
-    var useUser = true
-    var user: String = "lugo-core-conversation-query"
-    
-    var useTemperature = false
-    var temperature: Double = 0.7
-    
-    var useTopProbabilityMass = false
-    var topProbabilityMass: Double = 0.7
-    
-    var completions: Int = 1
-    var maxTokens: Int = 4000
-    
-    var usePresencePenalty = false
-    var presencePenalty: Double = 0.5
-    
-    var useFrequencyPenalty = false
-    var frequencyPenalty: Double = 0.5
-    
-    var useLogitBias = false
-    var logitBias: [String: Int]? = nil
-    
-    var chatModel: Model = .gpt4
+protocol GlobalStoreReader {
+    var snapshotStorage: FileStorageSerial { get }
 }
 
-extension ChatController {
-    class SnapshotState: ObservableObject {
-        @Published var current: Snapshot
-        
-        init(
-            _ currentSnapshot: Snapshot
-        ) {
-            self.current = currentSnapshot
-        }
+extension GlobalStoreReader {
+    var snapshotStorage: FileStorageSerial {
+        GlobalFileStore.shared.snapshotStorage
     }
+}
+
+class GlobalFileStore {
+    public static let shared = GlobalFileStore()
     
-    class ParamState: ObservableObject {
-        @Published var current: ChatRequest
+    let snapshotStorage = FileStorageSerial()
+    
+    private init() {
         
-        init(
-            _ chatParams: ChatRequest = ChatRequest()
-        ) {
-            self.current = chatParams
-        }
     }
 }
 
 class ChatController: ObservableObject {
     let openAI: OpenAI
+    private(set) var bag = Set<AnyCancellable>()
     
-    @Published var snapshot: SnapshotState
-    @Published var chatParams: ParamState
+    @Published var snapshotState: SnapshotState
+    @Published var paramState: ParamState
+    @Published var isLoading: Bool = false
     
     init(
         openAI: OpenAI,
         currentSnapshot: Snapshot = .empty
+    ) async {
+        self.openAI = openAI
+        self.snapshotState = await SnapshotState(
+            AllSnapshots(list: [currentSnapshot]), 0
+        )
+        self.paramState = ParamState()
+    }
+
+    init(
+        openAI: OpenAI
     ) {
         self.openAI = openAI
-        self.snapshot = SnapshotState(currentSnapshot)
-        self.chatParams = ParamState()
+        self.snapshotState = SnapshotState()
+        self.paramState = ParamState()
     }
     
-    func addMessage(_ message: String) async {
-        await addMessage(
-            OpenAI.Chat(
-                role: .user,
-                content: message
-            )
-        )
-    }
-    
-    func addMessage(_ chat: OpenAI.Chat) async {
-        await modifySnapshot {
-            $0.chatMessages.append(chat)
+    func saveManual() {
+        Task {
+            await snapshotState.saveAll()
         }
-        await updateSnapshotWithNewQuery()
+    }
+    
+    func controlNewConversation() {
+        Task {
+            await snapshotState.startNewConversation()
+        }
+    }
+    
+    func addMessage(
+        _ message: String,
+        _ role: OpenAI.Chat.Role = .user
+    ) async {
+        await snapshotState.updateCurrent { current in
+            current.chatMessages.append(
+                OpenAI.Chat(
+                    role: role,
+                    content: message
+                )
+            )
+            
+            await requestResponseFromGPT(&current)
+        }
     }
     
     func resetPrompt(to prompt: String) async {
-        await resetPrompt(prompt)
-        await updateSnapshotWithNewQuery()
-    }
-    
-    private func performChatQuery() async throws -> OpenAI.ChatResult {
-        let name = String(cString: __dispatch_queue_get_label(nil))
-        print("--- Performing query on: \(name)")
-        
-        return try await openAI.chats(
-            query: makeChatQuery(),
-            timeoutInterval: 60.0 * 3
-        )
-    }
-    
-    func updateSnapshotWithNewQuery() async {
-        do {
-            let result = try await performChatQuery()
-            let choice = makeChoice(result)
-            
-            await modifySnapshot {
-                $0.results.append(result)
-                if let choice {
-                    $0.chatMessages.append(choice.message)
-                }
-            }
-        } catch {
-            print("[!!error \(#fileID)]: \(error)")
-            await modifySnapshot {
-                $0.errors.append(
-                    AppError.wrapped(
-                        String(describing: error),
-                        UUID()
-                    )
-                )
-            }
+        await snapshotState.updateCurrent { current in
+            current.resetForNewPrompt(prompt)
+            await requestResponseFromGPT(&current)
         }
     }
     
-    func makeChoice(_ result: OpenAI.ChatResult) -> OpenAI.ChatResult.Choice? {
-        result.choices?.first
+    func sendCurrentResponseToGPT(_ snapshot: Snapshot) async {
+        do {
+            _ = try await performChatQuery(using: snapshot)
+        } catch {
+            print("[!!error \(#fileID)]: \(error)")
+        }
+    }
+
+    func requestResponseFromGPT(_ snapshot: inout Snapshot) async {
+        do {
+            let result = try await performChatQuery(using: snapshot)
+            snapshot.results.append(result)
+            
+            if let choice = result.choices?.first {
+                snapshot.chatMessages.append(choice.message)
+            }
+        } catch {
+            print("[!!error \(#fileID)]: \(error)")
+            snapshot.errors.append(AppError.wrapped(
+                String(describing: error),
+                UUID()
+            ))
+        }
     }
     
-    private func modifySnapshot(_ snapshot: (inout Snapshot) -> Void) async {
-        await MainActor.run {
-            snapshot(&(self.snapshot.current))
+    func loadController() {
+        Task {
+            await snapshotState.load()
         }
     }
 }
 
 extension ChatController {
-    func resetPrompt(_ prompt: String) async {
-        await MainActor.run { [snapshot] in
-            snapshot.current.resetForNewPrompt(prompt)
-        }
+    func performChatQuery(using current: Snapshot) async throws -> OpenAI.ChatResult {
+//        guard let current = snapshotState.currentSnapshot else {
+//            throw AppError.custom("no current snapshot to save")
+//        }
+        
+        let name = String(cString: __dispatch_queue_get_label(nil))
+        print("--- Performing query on: \(name)")
+        
+        return try await openAI.chats(
+            query: makeChatQuery(current),
+            timeoutInterval: 60.0 * 3
+        )
     }
     
-    func makeChatQuery() -> OpenAI.ChatQuery {
+    func makeChatQuery(_ snapshot: Snapshot?) -> OpenAI.ChatQuery {
         OpenAI.ChatQuery(
-            model: chatParams.current.chatModel,
-            messages: snapshot.current.chatMessages,
-            temperature: chatParams.current.temperature,
-            top_p: chatParams.current.topProbabilityMass,
-            n: chatParams.current.completions,
+            model: paramState.current.chatModel,
+            messages: snapshot?.chatMessages ?? [],
+            temperature: paramState.current.temperature,
+            top_p: paramState.current.topProbabilityMass,
+            n: paramState.current.completions,
             stream: false,
-            max_tokens: chatParams.current.maxTokens,
-            presence_penalty: chatParams.current.presencePenalty,
-            frequency_penalty: chatParams.current.frequencyPenalty,
-            logit_bias: chatParams.current.logitBias,
-            user: chatParams.current.user
+            max_tokens: paramState.current.maxTokens,
+            presence_penalty: paramState.current.presencePenalty,
+            frequency_penalty: paramState.current.frequencyPenalty,
+            logit_bias: paramState.current.logitBias,
+            user: paramState.current.user
         )
     }
 }

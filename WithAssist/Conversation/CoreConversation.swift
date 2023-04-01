@@ -35,9 +35,11 @@ class ClientStore {
 extension ClientStore {
     private static let defaultClient = makeAPIClient()
     
-    private static let defaultChat = ChatController(
-        openAI: defaultClient
-    )
+    private static let defaultChat = {
+        ChatController(
+            openAI: defaultClient
+        )
+    }()
     
     static func makeAPIClient() -> OpenAI {
         let client = OpenAI(apiToken: OPENAI_API_KEY)

@@ -139,7 +139,7 @@ class FileStorage {
 }
 
 
-class FileStorageSerial {
+class FileStorageSerial: ObservableObject {
     private let fileManager = FileManager.default
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
@@ -152,6 +152,7 @@ class FileStorageSerial {
     
     func load<T: Codable>(_ type: T.Type, from file: AppFile) throws -> T {
         let url = try getURL(for: file)
+        print("[loader] loading: \(url)")
         let data = try Data(contentsOf: url)
         let decodedObject = try decoder.decode(T.self, from: data)
         return decodedObject
