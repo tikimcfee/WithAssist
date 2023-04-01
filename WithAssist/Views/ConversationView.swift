@@ -9,19 +9,25 @@ import SwiftUI
 import OpenAI
 
 struct ConversationView: View {
-    let snapshot: Snapshot
+    @EnvironmentObject var store: ChatController.SnapshotState
+    
+    var snapshot: Snapshot? {
+        store.currentSnapshot
+    }
     
     var body: some View {
-        ScrollViewReader { proxy in
-            List(snapshot.chatMessages.dropFirst()) { message in
-                messageCell(message)
-                    .tag(message.id)
-            }
-            .listStyle(.inset)
-            .onChange(of: snapshot.results) { _ in
-                if let last = snapshot.chatMessages.last {
-                    print("Scroll to: \(last.id)")
-                    proxy.scrollTo(last.id, anchor: .bottom)
+        if let snapshot {
+            ScrollViewReader { proxy in
+                List(snapshot.chatMessages) { message in
+                    messageCell(message)
+                        .tag(message.id)
+                }
+                .listStyle(.inset)
+                .onChange(of: snapshot.results) { _ in
+                    if let last = snapshot.chatMessages.last {
+                        print("Scroll to: \(last.id)")
+                        proxy.scrollTo(last.id, anchor: .bottom)
+                    }
                 }
             }
         }

@@ -15,17 +15,15 @@ struct MainAppView: View {
     var body: some View {
         NavigationSplitView(
             sidebar: {
-                SnapshotListView()
-                    .environmentObject(chatController.snapshotState)
+                listView()
             },
             content: {
                 mainInteractionsView()
                     .padding()
             },
             detail: {
-                if let current = chatController.snapshotState.currentSnapshot {
-                    conversationView(current)
-                }
+                conversationView()
+                    
             }
         )
         .toolbar {
@@ -62,7 +60,14 @@ struct MainAppView: View {
     }
     
     @ViewBuilder
-    func conversationView(_ snapshot: Snapshot) -> some View {
-        ConversationView(snapshot: snapshot)
+    func conversationView() -> some View {
+        ConversationView()
+            .environmentObject(chatController.snapshotState)
+    }
+    
+    @ViewBuilder
+    func listView() -> some View {
+        SnapshotListView()
+            .environmentObject(chatController.snapshotState)
     }
 }
