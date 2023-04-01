@@ -90,24 +90,54 @@ struct ToggleSlider: View {
         VStack(alignment: .leading, spacing: 0) {
             Toggle(name, isOn: $use)
             if use {
-                Slider(
-                    value: $value,
-                    in: range,
-                    step: step ?? Double.Stride(),
-                    label: {
-                        Text("\(value, format: .number)")
-                    },
-                    minimumValueLabel: {
-                        Text("\(range.lowerBound, format: .number)")
-                    },
-                    maximumValueLabel: {
-                        Text("\(range.upperBound, format: .number)")
-                    }
-                )
+                DoubleInputView(value: $value, range: range)
             }
         }
-        .padding(
-            [.bottom], 8.0
-        )
+        
+    }
+}
+
+struct DoubleInputView: View {
+    @Binding var value: Double
+    let range: ClosedRange<Double>
+    @State private var textValue: String
+    
+    init(value: Binding<Double>, range: ClosedRange<Double>) {
+        self._value = value
+        self.range = range
+        self._textValue = State(initialValue: String(format: "%.2f", value.wrappedValue))
+    }
+    
+    var body: some View {
+        inputField
+            .padding(.top, 4)
+            .textFieldStyle(.roundedBorder)
+    }
+    
+    var inputField: some View {
+#if os(macOS)
+        TextField("Enter value", text: $textValue)
+            .multilineTextAlignment(.trailing)
+            .onSubmit {
+                updateValue()
+            }
+#else
+        TextField("Enter value", text: $textValue)
+            .keyboardType(.decimalPad)
+            .multilineTextAlignment(.trailing)
+            .onSubmit {
+                updateValue()
+            }
+#endif
+    }
+    
+    private func updateValue() {
+        if let newValue = Double(textValue) {
+            value = min(max(newValue, range.lowerBound), range.upperBound)
+            textValue = String(format: "%.2f", value)
+        } else {
+            textValue = ""
+            textValue = String(format: "%.2f", value)
+        }
     }
 }
