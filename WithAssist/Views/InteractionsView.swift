@@ -70,7 +70,7 @@ struct InteractionsView: View, Serialized {
             draft: snapshot.chatMessages.first?.content ?? "",
             originalDraft: snapshot.chatMessages.first?.content ?? "",
             didRequestSetPrompt: { updatedPromptText in
-                asyncMain {
+                Task {
                     await setIsLoading(isLoading: true)
                     await controller.resetPrompt(to: updatedPromptText)
                     await setIsLoading(isLoading: false)
@@ -83,14 +83,14 @@ struct InteractionsView: View, Serialized {
     func inputView() -> some View {
         ChatInputView(
             didRequestSend: { draft in
-                asyncMain {
+                Task {
                     await setIsLoading(isLoading: true)
                     await controller.addMessage(draft.content)
                     await setIsLoading(isLoading: false)
                 }
             },
             didRequestResend: {
-                asyncMain {
+                Task {
                     await setIsLoading(isLoading: true)
                     await controller.retryFromCurrent()
                     await setIsLoading(isLoading: false)

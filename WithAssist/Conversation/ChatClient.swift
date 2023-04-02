@@ -79,14 +79,12 @@ class ChatController: ObservableObject {
                     content: message
                 )
             )
-            
-            Task { [toUpdate] in
-                var targetCopy = toUpdate
-                await requestResponseFromGPT(&targetCopy)
-                await snapshotState.updateCurrent { current in
-                    current = targetCopy
-                }
-            }
+        }
+        
+        await snapshotState.updateCurrent { toUpdate in
+            var targetCopy = toUpdate
+            await requestResponseFromGPT(&targetCopy)
+            toUpdate = targetCopy
         }
     }
     

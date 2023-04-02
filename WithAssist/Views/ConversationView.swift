@@ -156,7 +156,7 @@ struct EditView: View {
     
     var body: some View {
         VStack(alignment: .trailing) {
-            TextField("Enter new content", text: $currentText)
+            TextField("Enter new content", text: $currentText, axis: .vertical)
             
             if !currentText.isEmpty {
                 Button("Save") {
