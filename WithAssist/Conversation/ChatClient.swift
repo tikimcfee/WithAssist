@@ -68,6 +68,10 @@ class ChatController: ObservableObject {
             Task { [current] in
                 var target = current
                 await requestResponseFromGPT(&target)
+                
+                snapshotState.updateCurrent { [target] current in
+                    current = target
+                }
             }
         }
     }

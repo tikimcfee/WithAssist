@@ -84,5 +84,53 @@
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "9871AD3C-5884-4E91-8B38-82475E50139C"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "WithAssist/Conversation/ChatClient.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "60"
+            endingLineNumber = "60"
+            landmarkName = "addMessage(_:_:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "9871AD3C-5884-4E91-8B38-82475E50139C - 7a45b13fce2730e9"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(1) suspend resume partial function for WithAssist.ChatController.addMessage(Swift.String, OpenAI.OpenAI.Chat.Role) async -&gt; ()"
+                  moduleName = "WithAssist"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/lugos/Desktop/GoingAllInOnAI/code/WithAssist/WithAssist/Conversation/ChatClient.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "60"
+                  endingLineNumber = "60"
+                  offsetFromSymbolStart = "88">
+               </Location>
+               <Location
+                  uuid = "9871AD3C-5884-4E91-8B38-82475E50139C - 5d7543f9d34ed8e4"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (inout WithAssist.Snapshot) -&gt; () in WithAssist.ChatController.addMessage(Swift.String, OpenAI.OpenAI.Chat.Role) async -&gt; ()"
+                  moduleName = "WithAssist"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/lugos/Desktop/GoingAllInOnAI/code/WithAssist/WithAssist/Conversation/ChatClient.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "64"
+                  endingLineNumber = "64"
+                  offsetFromSymbolStart = "308">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
    </Breakpoints>
 </Bucket>

@@ -123,7 +123,9 @@ extension ChatController {
                 return
             }
             
-            allSnapshots.storeChanges(to: updatedSnapshot)
+            DispatchQueue.main.async {
+                self.allSnapshots.storeChanges(to: updatedSnapshot)
+            }
         }
 
         public func updateCurrent(_ receiver: (inout Snapshot) async -> Void) async {
@@ -133,7 +135,9 @@ extension ChatController {
             }
 
             await receiver(&updatedSnapshot)
-            allSnapshots.storeChanges(to: updatedSnapshot)
+            await MainActor.run { [updatedSnapshot] in
+                allSnapshots.storeChanges(to: updatedSnapshot)
+            }
         }
 
         public var currentSnapshot: Snapshot? {
