@@ -59,8 +59,9 @@ struct MainAppView: View {
     
     @ViewBuilder
     func conversationView() -> some View {
-        ConversationView()
-            .environmentObject(chatController.snapshotState)
+        ConversationView(
+            store: chatController
+        )
     }
     
     @ViewBuilder
