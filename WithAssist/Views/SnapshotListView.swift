@@ -13,22 +13,42 @@ struct SnapshotListView: View {
     @State var selection: Int = 0
     
     var body: some View {
+        #if os(iOS)
+        ScrollView {
+            LazyVStack(alignment: .leading) {
+                ForEach(
+                    Array(store.allSnapshots.list.enumerated()),
+                    id: \.element.id
+                ) { (index, snapshot) in
+                    Button(
+                        action: {
+                            selection = index
+                        },
+                        label: {
+                            cell(snapshot)
+                        }
+                    ).buttonStyle(.plain)
+                }
+            }
+        }
+        #else
         List(
             Array(store.allSnapshots.list.enumerated()),
             id: \.element.id,
             selection: $selection
         ) { (index, snapshot) in
-            Text(snapshot.name)
-                .frame(minWidth: 96, alignment: .leading)
-//                .listRowBackground(
-//                    index == store.currentIndex
-//                        ? Color.gray.opacity(0.33)
-//                        : Color.clear
-//                )
-                .tag(index)
+            cell(snapshot)
         }
         .onChange(of: selection) {
             store.currentIndex = $0
         }
+        #endif
+
+    }
+    
+    @ViewBuilder
+    func cell(_ snapshot: Snapshot) -> some View {
+        Text(snapshot.name)
+            .frame(minWidth: 96, alignment: .leading)
     }
 }

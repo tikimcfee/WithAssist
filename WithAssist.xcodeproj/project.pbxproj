@@ -15,7 +15,7 @@
 		B72A7A0829D66B2900BE4163 /* ChatControllerState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A7A0729D66B2900BE4163 /* ChatControllerState.swift */; };
 		B730F94029D28867005808D6 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B730F93F29D28867005808D6 /* SettingsView.swift */; };
 		B73CB07629C662600047831E /* WithAssistApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B73CB07529C662600047831E /* WithAssistApp.swift */; };
-		B73CB07829C662600047831E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B73CB07729C662600047831E /* ContentView.swift */; };
+		B73CB07829C662600047831E /* ChatPreviews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B73CB07729C662600047831E /* ChatPreviews.swift */; };
 		B73CB07A29C662610047831E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B73CB07929C662610047831E /* Assets.xcassets */; };
 		B73CB07E29C662610047831E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B73CB07D29C662610047831E /* Preview Assets.xcassets */; };
 		B73CB08829C662610047831E /* WithAssistTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B73CB08729C662610047831E /* WithAssistTests.swift */; };
@@ -31,6 +31,27 @@
 		B7DBD15929D0D32400776412 /* OpenAI in Frameworks */ = {isa = PBXBuildFile; productRef = B7DBD15829D0D32400776412 /* OpenAI */; };
 		B7DBD15B29D13B9900776412 /* FileStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7DBD15A29D13B9900776412 /* FileStorage.swift */; };
 		B7DBD15D29D1404000776412 /* CodableAppStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7DBD15C29D1404000776412 /* CodableAppStorage.swift */; };
+		B7EB2F9A29DA34880049C4CA /* ChatPreviews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B73CB07729C662600047831E /* ChatPreviews.swift */; };
+		B7EB2F9B29DA34880049C4CA /* Serializer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7C8B3F229D9D88C00B53B01 /* Serializer.swift */; };
+		B7EB2F9C29DA34880049C4CA /* CodableAppStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7DBD15C29D1404000776412 /* CodableAppStorage.swift */; };
+		B7EB2F9D29DA34880049C4CA /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A7A0129D53E7D00BE4163 /* AppError.swift */; };
+		B7EB2F9E29DA34880049C4CA /* InteractionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7C8B3EC29D7AFA100B53B01 /* InteractionsView.swift */; };
+		B7EB2F9F29DA34880049C4CA /* ChatClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A79FF29D539FA00BE4163 /* ChatClient.swift */; };
+		B7EB2FA029DA34880049C4CA /* FileStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7DBD15A29D13B9900776412 /* FileStorage.swift */; };
+		B7EB2FA129DA34880049C4CA /* MainAppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7C8B3E829D7AF2800B53B01 /* MainAppView.swift */; };
+		B7EB2FA229DA34880049C4CA /* ConversationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7C8B3EE29D7AFC900B53B01 /* ConversationView.swift */; };
+		B7EB2FA329DA34880049C4CA /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B730F93F29D28867005808D6 /* SettingsView.swift */; };
+		B7EB2FA429DA34880049C4CA /* ChatRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A7A0529D669A700BE4163 /* ChatRequest.swift */; };
+		B7EB2FA529DA34880049C4CA /* SnapshotListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A7A0329D5407300BE4163 /* SnapshotListView.swift */; };
+		B7EB2FA629DA34880049C4CA /* WithAssistApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B73CB07529C662600047831E /* WithAssistApp.swift */; };
+		B7EB2FA729DA34880049C4CA /* ChatControllerState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A7A0729D66B2900BE4163 /* ChatControllerState.swift */; };
+		B7EB2FA829DA34880049C4CA /* CoreConversation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B73CB0A329C662980047831E /* CoreConversation.swift */; };
+		B7EB2FA929DA34880049C4CA /* PromptInjectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7C8B3F029D7AFF600B53B01 /* PromptInjectorView.swift */; };
+		B7EB2FAA29DA34880049C4CA /* Snapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A79FD29D5399E00BE4163 /* Snapshot.swift */; };
+		B7EB2FAB29DA34880049C4CA /* ChatInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7C8B3EA29D7AF7E00B53B01 /* ChatInputView.swift */; };
+		B7EB2FAD29DA34880049C4CA /* OpenAI in Frameworks */ = {isa = PBXBuildFile; productRef = B7EB2F9829DA34880049C4CA /* OpenAI */; };
+		B7EB2FAF29DA34880049C4CA /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B73CB07D29C662610047831E /* Preview Assets.xcassets */; };
+		B7EB2FB029DA34880049C4CA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B73CB07929C662610047831E /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -60,7 +81,7 @@
 		B730F93F29D28867005808D6 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		B73CB07229C662600047831E /* WithAssist.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WithAssist.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B73CB07529C662600047831E /* WithAssistApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithAssistApp.swift; sourceTree = "<group>"; };
-		B73CB07729C662600047831E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		B73CB07729C662600047831E /* ChatPreviews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatPreviews.swift; sourceTree = "<group>"; };
 		B73CB07929C662610047831E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B73CB07B29C662610047831E /* WithAssist.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WithAssist.entitlements; sourceTree = "<group>"; };
 		B73CB07D29C662610047831E /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -79,6 +100,7 @@
 		B7DBD15429D0D2BB00776412 /* OpenAI */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = OpenAI; path = ../../../../udev/manicmind/mefolks/OpenAI; sourceTree = "<group>"; };
 		B7DBD15A29D13B9900776412 /* FileStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileStorage.swift; sourceTree = "<group>"; };
 		B7DBD15C29D1404000776412 /* CodableAppStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodableAppStorage.swift; sourceTree = "<group>"; };
+		B7EB2FB429DA34880049C4CA /* WithAssist-iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "WithAssist-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,6 +126,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B7EB2FAC29DA34880049C4CA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B7EB2FAD29DA34880049C4CA /* OpenAI in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -125,6 +155,7 @@
 				B73CB07229C662600047831E /* WithAssist.app */,
 				B73CB08329C662610047831E /* WithAssistTests.xctest */,
 				B73CB08D29C662610047831E /* WithAssistUITests.xctest */,
+				B7EB2FB429DA34880049C4CA /* WithAssist-iOS.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -170,7 +201,7 @@
 		B73CB0A029C662710047831E /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				B73CB07729C662600047831E /* ContentView.swift */,
+				B73CB07729C662600047831E /* ChatPreviews.swift */,
 				B7C8B3F029D7AFF600B53B01 /* PromptInjectorView.swift */,
 				B7C8B3EE29D7AFC900B53B01 /* ConversationView.swift */,
 				B7C8B3EC29D7AFA100B53B01 /* InteractionsView.swift */,
@@ -281,6 +312,27 @@
 			productReference = B73CB08D29C662610047831E /* WithAssistUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		B7EB2F9629DA34880049C4CA /* WithAssist-iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B7EB2FB129DA34880049C4CA /* Build configuration list for PBXNativeTarget "WithAssist-iOS" */;
+			buildPhases = (
+				B7EB2F9929DA34880049C4CA /* Sources */,
+				B7EB2FAC29DA34880049C4CA /* Frameworks */,
+				B7EB2FAE29DA34880049C4CA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B7EB2F9729DA34880049C4CA /* PBXTargetDependency */,
+			);
+			name = "WithAssist-iOS";
+			packageProductDependencies = (
+				B7EB2F9829DA34880049C4CA /* OpenAI */,
+			);
+			productName = WithAssist;
+			productReference = B7EB2FB429DA34880049C4CA /* WithAssist-iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -320,6 +372,7 @@
 			projectRoot = "";
 			targets = (
 				B73CB07129C662600047831E /* WithAssist */,
+				B7EB2F9629DA34880049C4CA /* WithAssist-iOS */,
 				B73CB08229C662610047831E /* WithAssistTests */,
 				B73CB08C29C662610047831E /* WithAssistUITests */,
 			);
@@ -350,6 +403,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B7EB2FAE29DA34880049C4CA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B7EB2FAF29DA34880049C4CA /* Preview Assets.xcassets in Resources */,
+				B7EB2FB029DA34880049C4CA /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -357,7 +419,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B73CB07829C662600047831E /* ContentView.swift in Sources */,
+				B73CB07829C662600047831E /* ChatPreviews.swift in Sources */,
 				B7C8B3F329D9D88C00B53B01 /* Serializer.swift in Sources */,
 				B7DBD15D29D1404000776412 /* CodableAppStorage.swift in Sources */,
 				B72A7A0229D53E7D00BE4163 /* AppError.swift in Sources */,
@@ -395,6 +457,31 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B7EB2F9929DA34880049C4CA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B7EB2F9A29DA34880049C4CA /* ChatPreviews.swift in Sources */,
+				B7EB2F9B29DA34880049C4CA /* Serializer.swift in Sources */,
+				B7EB2F9C29DA34880049C4CA /* CodableAppStorage.swift in Sources */,
+				B7EB2F9D29DA34880049C4CA /* AppError.swift in Sources */,
+				B7EB2F9E29DA34880049C4CA /* InteractionsView.swift in Sources */,
+				B7EB2F9F29DA34880049C4CA /* ChatClient.swift in Sources */,
+				B7EB2FA029DA34880049C4CA /* FileStorage.swift in Sources */,
+				B7EB2FA129DA34880049C4CA /* MainAppView.swift in Sources */,
+				B7EB2FA229DA34880049C4CA /* ConversationView.swift in Sources */,
+				B7EB2FA329DA34880049C4CA /* SettingsView.swift in Sources */,
+				B7EB2FA429DA34880049C4CA /* ChatRequest.swift in Sources */,
+				B7EB2FA529DA34880049C4CA /* SnapshotListView.swift in Sources */,
+				B7EB2FA629DA34880049C4CA /* WithAssistApp.swift in Sources */,
+				B7EB2FA729DA34880049C4CA /* ChatControllerState.swift in Sources */,
+				B7EB2FA829DA34880049C4CA /* CoreConversation.swift in Sources */,
+				B7EB2FA929DA34880049C4CA /* PromptInjectorView.swift in Sources */,
+				B7EB2FAA29DA34880049C4CA /* Snapshot.swift in Sources */,
+				B7EB2FAB29DA34880049C4CA /* ChatInputView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -409,6 +496,10 @@
 			targetProxy = B73CB08E29C662610047831E /* PBXContainerItemProxy */;
 		};
 		B7DBD15629D0D31D00776412 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = B7DBD15529D0D31D00776412 /* OpenAI */;
+		};
+		B7EB2F9729DA34880049C4CA /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			productRef = B7DBD15529D0D31D00776412 /* OpenAI */;
 		};
@@ -527,7 +618,7 @@
 		B73CB09829C662610047831E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-macOS";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = WithAssist/WithAssist.entitlements;
 				CODE_SIGN_STYLE = Automatic;
@@ -565,7 +656,7 @@
 		B73CB09929C662610047831E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-macOS";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = WithAssist/WithAssist.entitlements;
 				CODE_SIGN_STYLE = Automatic;
@@ -690,6 +781,82 @@
 			};
 			name = Release;
 		};
+		B7EB2FB229DA34880049C4CA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-iOS";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = WithAssist/WithAssist.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"WithAssist/Preview Content\"";
+				DEVELOPMENT_TEAM = XR2HQNSZ68;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 13.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lugodev.WithAssist;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B7EB2FB329DA34880049C4CA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-iOS";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = WithAssist/WithAssist.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"WithAssist/Preview Content\"";
+				DEVELOPMENT_TEAM = XR2HQNSZ68;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 13.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lugodev.WithAssist;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -729,6 +896,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		B7EB2FB129DA34880049C4CA /* Build configuration list for PBXNativeTarget "WithAssist-iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B7EB2FB229DA34880049C4CA /* Debug */,
+				B7EB2FB329DA34880049C4CA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -737,6 +913,10 @@
 			productName = OpenAI;
 		};
 		B7DBD15829D0D32400776412 /* OpenAI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = OpenAI;
+		};
+		B7EB2F9829DA34880049C4CA /* OpenAI */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = OpenAI;
 		};

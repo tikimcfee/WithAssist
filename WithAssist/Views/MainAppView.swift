@@ -15,6 +15,11 @@ struct MainAppView: View {
         NavigationSplitView(
             sidebar: {
                 listView()
+                    .toolbar {
+                        ToolbarItem(placement:  .primaryAction) {
+                            newConversationView
+                        }
+                    }
             },
             content: {
                 mainInteractionsView()
@@ -25,11 +30,6 @@ struct MainAppView: View {
                     
             }
         )
-        .toolbar {
-            ToolbarItem(placement:  .primaryAction) {
-                newConversationView
-            }
-        }
         .navigationSplitViewStyle(.automatic)
     }
     
