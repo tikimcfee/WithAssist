@@ -110,23 +110,6 @@ extension ChatController {
             
             await receiver(usingCurrent)
         }
-        
-        public func updateCurrent(_ receiver: (inout Snapshot) -> Void) {
-            guard var updatedSnapshot = currentSnapshot else {
-                print("[state update] no current snapshot to update")
-                return
-            }
-            
-            receiver(&updatedSnapshot)
-            guard updatedSnapshot != currentSnapshot else {
-                print("[state update] Nothing changed for \(updatedSnapshot.id)")
-                return
-            }
-            
-            DispatchQueue.main.async {
-                self.allSnapshots.storeChanges(to: updatedSnapshot)
-            }
-        }
 
         public func updateCurrent(_ receiver: (inout Snapshot) async -> Void) async {
             guard var updatedSnapshot = currentSnapshot else {

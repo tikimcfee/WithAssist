@@ -27,6 +27,7 @@
 		B7C8B3ED29D7AFA100B53B01 /* InteractionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7C8B3EC29D7AFA100B53B01 /* InteractionsView.swift */; };
 		B7C8B3EF29D7AFC900B53B01 /* ConversationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7C8B3EE29D7AFC900B53B01 /* ConversationView.swift */; };
 		B7C8B3F129D7AFF600B53B01 /* PromptInjectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7C8B3F029D7AFF600B53B01 /* PromptInjectorView.swift */; };
+		B7C8B3F329D9D88C00B53B01 /* Serializer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7C8B3F229D9D88C00B53B01 /* Serializer.swift */; };
 		B7DBD15929D0D32400776412 /* OpenAI in Frameworks */ = {isa = PBXBuildFile; productRef = B7DBD15829D0D32400776412 /* OpenAI */; };
 		B7DBD15B29D13B9900776412 /* FileStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7DBD15A29D13B9900776412 /* FileStorage.swift */; };
 		B7DBD15D29D1404000776412 /* CodableAppStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7DBD15C29D1404000776412 /* CodableAppStorage.swift */; };
@@ -74,6 +75,7 @@
 		B7C8B3EC29D7AFA100B53B01 /* InteractionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractionsView.swift; sourceTree = "<group>"; };
 		B7C8B3EE29D7AFC900B53B01 /* ConversationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationView.swift; sourceTree = "<group>"; };
 		B7C8B3F029D7AFF600B53B01 /* PromptInjectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptInjectorView.swift; sourceTree = "<group>"; };
+		B7C8B3F229D9D88C00B53B01 /* Serializer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Serializer.swift; sourceTree = "<group>"; };
 		B7DBD15429D0D2BB00776412 /* OpenAI */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = OpenAI; path = ../../../../udev/manicmind/mefolks/OpenAI; sourceTree = "<group>"; };
 		B7DBD15A29D13B9900776412 /* FileStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileStorage.swift; sourceTree = "<group>"; };
 		B7DBD15C29D1404000776412 /* CodableAppStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodableAppStorage.swift; sourceTree = "<group>"; };
@@ -194,6 +196,7 @@
 				B73CB0A329C662980047831E /* CoreConversation.swift */,
 				B72A7A0129D53E7D00BE4163 /* AppError.swift */,
 				B72A79FF29D539FA00BE4163 /* ChatClient.swift */,
+				B7C8B3F229D9D88C00B53B01 /* Serializer.swift */,
 				B72A7A0729D66B2900BE4163 /* ChatControllerState.swift */,
 				B72A7A0529D669A700BE4163 /* ChatRequest.swift */,
 				B7DBD15A29D13B9900776412 /* FileStorage.swift */,
@@ -355,6 +358,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B73CB07829C662600047831E /* ContentView.swift in Sources */,
+				B7C8B3F329D9D88C00B53B01 /* Serializer.swift in Sources */,
 				B7DBD15D29D1404000776412 /* CodableAppStorage.swift in Sources */,
 				B72A7A0229D53E7D00BE4163 /* AppError.swift in Sources */,
 				B7C8B3ED29D7AFA100B53B01 /* InteractionsView.swift in Sources */,

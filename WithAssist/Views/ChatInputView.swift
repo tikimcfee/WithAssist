@@ -12,7 +12,7 @@ import Combine
 struct ChatInputView: View {
     @State var draft = Draft()
     let didRequestSend: (Draft) -> Void
-    let didRequestResend: (Draft) -> Void
+    let didRequestResend: () -> Void
     
     var body: some View {
         VStack(alignment: .trailing) {
@@ -24,9 +24,11 @@ struct ChatInputView: View {
                     draft = Draft()
                 }
             
+            Divider()
+            
             if draft.isReadyForSubmit {
                 Button("Resend") {
-                    didRequestResend(draft)
+                    didRequestResend()
                 }
             }
         }

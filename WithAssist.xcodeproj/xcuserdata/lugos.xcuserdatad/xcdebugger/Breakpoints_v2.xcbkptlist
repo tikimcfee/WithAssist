@@ -7,129 +7,33 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "0397D98F-CAE3-4316-ABE8-77E5E42C1E99"
+            uuid = "61F0F114-7C0E-4A52-A3CC-D3B6F196F1F6"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "WithAssist/Conversation/ChatControllerState.swift"
+            filePath = "../../../../udev/manicmind/mefolks/OpenAI/Sources/OpenAI/Public/Extensions/OpenAI+Extensions.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "19"
-            endingLineNumber = "19"
-            landmarkName = "allSnapshots"
-            landmarkType = "24">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "C2546D2B-1FF4-4DD8-B01E-7EF919ADBB39"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "WithAssist/Conversation/Snapshot.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "17"
-            endingLineNumber = "17"
-            landmarkName = "AllSnapshots"
-            landmarkType = "14">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "E0E611CF-6C70-4DEE-806D-9C650A5FE7BE"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "WithAssist/Conversation/Snapshot.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "33"
-            endingLineNumber = "33"
-            landmarkName = "storeChanges(to:)"
+            startingLineNumber = "71"
+            endingLineNumber = "71"
+            landmarkName = "chats(query:timeoutInterval:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "0166E0D8-797B-431C-ACF5-9D1C1AE52385"
+            uuid = "1D311ADE-D839-45F6-B8ED-61AF2A954F7B"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "WithAssist/Conversation/Snapshot.swift"
+            filePath = "../../../../udev/manicmind/mefolks/OpenAI/Sources/OpenAI/Public/Extensions/OpenAI+Extensions.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "39"
-            endingLineNumber = "39"
-            landmarkName = "createNewSnapshot()"
+            startingLineNumber = "73"
+            endingLineNumber = "73"
+            landmarkName = "chats(query:timeoutInterval:)"
             landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "8D58D23A-924D-43DD-8107-1DA8BAAFAD3C"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "WithAssist/Views/SettingsView.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "136"
-            endingLineNumber = "136"
-            landmarkName = "updateValue()"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "9871AD3C-5884-4E91-8B38-82475E50139C"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "WithAssist/Conversation/ChatClient.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "60"
-            endingLineNumber = "60"
-            landmarkName = "addMessage(_:_:)"
-            landmarkType = "7">
-            <Locations>
-               <Location
-                  uuid = "9871AD3C-5884-4E91-8B38-82475E50139C - 7a45b13fce2730e9"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(1) suspend resume partial function for WithAssist.ChatController.addMessage(Swift.String, OpenAI.OpenAI.Chat.Role) async -&gt; ()"
-                  moduleName = "WithAssist"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/lugos/Desktop/GoingAllInOnAI/code/WithAssist/WithAssist/Conversation/ChatClient.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "60"
-                  endingLineNumber = "60"
-                  offsetFromSymbolStart = "88">
-               </Location>
-               <Location
-                  uuid = "9871AD3C-5884-4E91-8B38-82475E50139C - 5d7543f9d34ed8e4"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "closure #1 (inout WithAssist.Snapshot) -&gt; () in WithAssist.ChatController.addMessage(Swift.String, OpenAI.OpenAI.Chat.Role) async -&gt; ()"
-                  moduleName = "WithAssist"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/lugos/Desktop/GoingAllInOnAI/code/WithAssist/WithAssist/Conversation/ChatClient.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "64"
-                  endingLineNumber = "64"
-                  offsetFromSymbolStart = "308">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

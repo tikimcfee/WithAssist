@@ -57,22 +57,27 @@ class ChatController: ObservableObject {
         _ message: String,
         _ role: OpenAI.Chat.Role = .user
     ) async {
-        snapshotState.updateCurrent { current in
-            current.chatMessages.append(
+        await snapshotState.updateCurrent { toUpdate in
+            toUpdate.chatMessages.append(
                 OpenAI.Chat(
                     role: role,
                     content: message
                 )
             )
             
-            Task { [current] in
-                var target = current
-                await requestResponseFromGPT(&target)
-                
-                snapshotState.updateCurrent { [target] current in
-                    current = target
+            Task { [toUpdate] in
+                var targetCopy = toUpdate
+                await requestResponseFromGPT(&targetCopy)
+                await snapshotState.updateCurrent { current in
+                    current = targetCopy
                 }
             }
+        }
+    }
+    
+    func retryFromCurrent() async {
+        await snapshotState.updateCurrent { current in
+            await requestResponseFromGPT(&current)
         }
     }
     
@@ -80,14 +85,6 @@ class ChatController: ObservableObject {
         await snapshotState.updateCurrent { current in
             current.resetForNewPrompt(prompt)
             await requestResponseFromGPT(&current)
-        }
-    }
-    
-    func sendCurrentResponseToGPT(_ snapshot: Snapshot) async {
-        do {
-            _ = try await performChatQuery(using: snapshot)
-        } catch {
-            print("[!!error \(#fileID)]: \(error)")
         }
     }
 
@@ -122,10 +119,26 @@ extension ChatController {
         let name = String(cString: __dispatch_queue_get_label(nil))
         print("--- Performing query on: \(name)")
         
-        return try await openAI.chats(
+        let result = try await openAI.chats(
             query: makeChatQuery(current),
-            timeoutInterval: 60.0 * 3
+            timeoutInterval: 60.0 * 10
         )
+        
+        let firstMessage =
+            result.choices?.first?.message.content
+            ?? "<no response message>"
+        
+        print(
+"""
+
+Received response:
+----------------------------------------------------------------
+\(firstMessage)
+----------------------------------------------------------------
+
+""")
+        
+        return result
     }
     
     func makeChatQuery(_ snapshot: Snapshot?) -> OpenAI.ChatQuery {

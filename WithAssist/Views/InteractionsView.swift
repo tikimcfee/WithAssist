@@ -9,11 +9,12 @@ import SwiftUI
 import OpenAI
 import Combine
 
-struct InteractionsView: View {
+struct InteractionsView: View, Serialized {
     let isLoading: Bool
     
     @ObservedObject var controller: ChatController
     @ObservedObject var state: ChatController.SnapshotState
+    @StateObject var serializer = Serializer()
     
     init(isLoading: Bool, controller: ChatController) {
         self.isLoading = isLoading
@@ -51,7 +52,7 @@ struct InteractionsView: View {
             draft: snapshot.chatMessages.first?.content ?? "",
             originalDraft: snapshot.chatMessages.first?.content ?? "",
             didRequestSetPrompt: { updatedPromptText in
-                Task {
+                asyncMain {
                     await controller.resetPrompt(to: updatedPromptText)
                 }
             }
@@ -62,15 +63,13 @@ struct InteractionsView: View {
     func inputView() -> some View {
         ChatInputView(
             didRequestSend: { draft in
-                Task {
+                asyncMain {
                     await controller.addMessage(draft.content)
                 }
             },
-            didRequestResend: { draft in
-                Task {
-                    await controller.snapshotState.usingCurrent {
-                        await controller.sendCurrentResponseToGPT($0)
-                    }
+            didRequestResend: {
+                asyncMain {
+                    await controller.retryFromCurrent()
                 }
             }
         )
@@ -83,8 +82,10 @@ struct InteractionsView: View {
             text: Binding<String>(
                 get: { controller.snapshotState.currentSnapshot?.name ?? "" },
                 set: { name in
-                    controller.snapshotState.updateCurrent {
-                        $0.name = name
+                    asyncMain {
+                        await controller.snapshotState.updateCurrent {
+                            $0.name = name
+                        }
                     }
                 }
             )
