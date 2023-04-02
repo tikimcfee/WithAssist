@@ -9,7 +9,7 @@ import Foundation
 
 actor Serializer: ObservableObject {
     nonisolated func asyncNonIsolated(_ asyncFunction: @escaping () async -> Void) {
-        Task.detached(priority: .medium) {
+        Task {
             await self.performAsync(asyncFunction)
         }
     }
