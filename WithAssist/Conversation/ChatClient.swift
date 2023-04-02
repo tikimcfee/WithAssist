@@ -36,6 +36,17 @@ class ChatController: ObservableObject {
     @Published var snapshotState: SnapshotState
     @Published var paramState: ParamState
     @Published var isLoading: Bool = false
+    @Published private(set) var needsToken: Bool = true
+    
+    var apiToken: String {
+        get {
+            openAI.apiToken
+        }
+        set {
+            openAI.apiToken = newValue
+            needsToken = false
+        }
+    }
     
     init(
         openAI: OpenAI
@@ -51,6 +62,10 @@ class ChatController: ObservableObject {
     
     func controlNewConversation() {
         snapshotState.startNewConversation()
+    }
+    
+    func setNeedsNewToken() {
+        needsToken = true
     }
     
     func addMessage(

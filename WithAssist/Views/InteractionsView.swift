@@ -27,6 +27,9 @@ struct InteractionsView: View, Serialized {
     
     var body: some View {
         VStack {
+            Button("Update token") {
+                controller.setNeedsNewToken()
+            }
             nameView()
             if let snapshot {
                 promptInjectorView(snapshot)
@@ -41,8 +44,24 @@ struct InteractionsView: View, Serialized {
                 }
             }
         }
+        .disabled(isLoading || controller.needsToken)
         .overlay(loadingOverlayView())
-        .disabled(isLoading)
+        .overlay(updateTokenView())
+    }
+    
+    @ViewBuilder
+    func updateTokenView() -> some View {
+        if controller.needsToken {
+            VStack {
+                Text("API token not set")
+                TextField("Token", text: Binding(
+                    get: { controller.apiToken },
+                    set: { controller.apiToken = $0 })
+                )
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.black)
+        }
     }
     
     @ViewBuilder
@@ -52,7 +71,9 @@ struct InteractionsView: View, Serialized {
             originalDraft: snapshot.chatMessages.first?.content ?? "",
             didRequestSetPrompt: { updatedPromptText in
                 asyncMain {
+                    await setIsLoading(isLoading: true)
                     await controller.resetPrompt(to: updatedPromptText)
+                    await setIsLoading(isLoading: false)
                 }
             }
         ).id(snapshot.hashValue)
@@ -63,12 +84,16 @@ struct InteractionsView: View, Serialized {
         ChatInputView(
             didRequestSend: { draft in
                 asyncMain {
+                    await setIsLoading(isLoading: true)
                     await controller.addMessage(draft.content)
+                    await setIsLoading(isLoading: false)
                 }
             },
             didRequestResend: {
                 asyncMain {
+                    await setIsLoading(isLoading: true)
                     await controller.retryFromCurrent()
+                    await setIsLoading(isLoading: false)
                 }
             }
         )
@@ -105,8 +130,6 @@ struct InteractionsView: View, Serialized {
     func loadingOverlayView() -> some View {
         if isLoading {
             ProgressView()
-        } else {
-            EmptyView()
         }
     }
     
