@@ -18,7 +18,7 @@ struct ConversationView: View {
     var body: some View {
         if let snapshot {
             ScrollViewReader { proxy in
-                List(snapshot.chatMessages) { message in
+                List(snapshot.chatMessages.reversed()) { message in
                     messageCell(message)
                         .tag(message.id)
                 }

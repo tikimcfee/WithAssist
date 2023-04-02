@@ -10,7 +10,6 @@ import OpenAI
 
 struct MainAppView: View {
     @ObservedObject var chatController: ChatController
-    @State var isLoading: Bool = false
     
     var body: some View {
         NavigationSplitView(
@@ -54,7 +53,6 @@ struct MainAppView: View {
     @ViewBuilder
     func mainInteractionsView() -> some View {
         InteractionsView(
-            isLoading: isLoading,
             controller: chatController
         )
     }

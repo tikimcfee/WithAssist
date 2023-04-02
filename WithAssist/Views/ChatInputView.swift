@@ -26,11 +26,11 @@ struct ChatInputView: View {
             
             Divider()
             
-            if draft.isReadyForSubmit {
-                Button("Resend") {
-                    didRequestResend()
-                }
+            Button("Resend") {
+                didRequestResend()
             }
+            
+            Divider()
         }
     }
 }

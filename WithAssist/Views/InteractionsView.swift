@@ -10,14 +10,13 @@ import OpenAI
 import Combine
 
 struct InteractionsView: View, Serialized {
-    let isLoading: Bool
     
     @ObservedObject var controller: ChatController
     @ObservedObject var state: ChatController.SnapshotState
     @StateObject var serializer = Serializer()
+    @State var isLoading: Bool = false
     
-    init(isLoading: Bool, controller: ChatController) {
-        self.isLoading = isLoading
+    init(controller: ChatController) {
         self.controller = controller
         self.state = controller.snapshotState
     }
@@ -108,6 +107,12 @@ struct InteractionsView: View, Serialized {
             ProgressView()
         } else {
             EmptyView()
+        }
+    }
+    
+    func setIsLoading(isLoading target: Bool) async {
+        await MainActor.run {
+            isLoading = target
         }
     }
 }
