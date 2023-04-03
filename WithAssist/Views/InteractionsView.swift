@@ -30,6 +30,7 @@ struct InteractionsView: View, Serialized {
             Button("Update token") {
                 controller.setNeedsNewToken()
             }
+            
             nameView()
             if let snapshot {
                 promptInjectorView(snapshot)
@@ -68,32 +69,25 @@ struct InteractionsView: View, Serialized {
     func promptInjectorView(_ snapshot: Snapshot) -> some View {
         PromptInjectorView(
             draft: snapshot.chatMessages.first?.content ?? "",
-            originalDraft: snapshot.chatMessages.first?.content ?? "",
             didRequestSetPrompt: { updatedPromptText in
-                asyncMain {
-                    await setIsLoading(isLoading: true)
+                loadOnMain {
                     await controller.resetPrompt(to: updatedPromptText)
-                    await setIsLoading(isLoading: false)
                 }
             }
-        ).id(snapshot.hashValue)
+        ).id(snapshot.id)
     }
     
     @ViewBuilder
     func inputView() -> some View {
         ChatInputView(
             didRequestSend: { draft in
-                asyncMain {
-                    await setIsLoading(isLoading: true)
+                loadOnMain {
                     await controller.addMessage(draft.content)
-                    await setIsLoading(isLoading: false)
                 }
             },
             didRequestResend: {
-                asyncMain {
-                    await setIsLoading(isLoading: true)
+                loadOnMain {
                     await controller.retryFromCurrent()
-                    await setIsLoading(isLoading: false)
                 }
             }
         )
@@ -130,6 +124,14 @@ struct InteractionsView: View, Serialized {
     func loadingOverlayView() -> some View {
         if isLoading {
             ProgressView()
+        }
+    }
+    
+    func loadOnMain(_ action: @escaping () async -> Void) {
+        asyncMain {
+            await setIsLoading(isLoading: true)
+            await action()
+            await setIsLoading(isLoading: false)
         }
     }
     

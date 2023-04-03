@@ -52,6 +52,7 @@
 		B7EB2FAD29DA34880049C4CA /* OpenAI in Frameworks */ = {isa = PBXBuildFile; productRef = B7EB2F9829DA34880049C4CA /* OpenAI */; };
 		B7EB2FAF29DA34880049C4CA /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B73CB07D29C662610047831E /* Preview Assets.xcassets */; };
 		B7EB2FB029DA34880049C4CA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B73CB07929C662610047831E /* Assets.xcassets */; };
+		B7EB2FBD29DA66E90049C4CA /* RichTextKit in Frameworks */ = {isa = PBXBuildFile; productRef = B7EB2FBC29DA66E90049C4CA /* RichTextKit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -108,6 +109,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B7EB2FBD29DA66E90049C4CA /* RichTextKit in Frameworks */,
 				B7DBD15929D0D32400776412 /* OpenAI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -271,6 +273,7 @@
 			name = WithAssist;
 			packageProductDependencies = (
 				B7DBD15829D0D32400776412 /* OpenAI */,
+				B7EB2FBC29DA66E90049C4CA /* RichTextKit */,
 			);
 			productName = WithAssist;
 			productReference = B73CB07229C662600047831E /* WithAssist.app */;
@@ -366,6 +369,7 @@
 			);
 			mainGroup = B73CB06929C662600047831E;
 			packageReferences = (
+				B7EB2FBB29DA66E90049C4CA /* XCRemoteSwiftPackageReference "RichTextKit" */,
 			);
 			productRefGroup = B73CB07329C662600047831E /* Products */;
 			projectDirPath = "";
@@ -907,6 +911,17 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		B7EB2FBB29DA66E90049C4CA /* XCRemoteSwiftPackageReference "RichTextKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/danielsaidi/RichTextKit.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		B7DBD15529D0D31D00776412 /* OpenAI */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -919,6 +934,11 @@
 		B7EB2F9829DA34880049C4CA /* OpenAI */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = OpenAI;
+		};
+		B7EB2FBC29DA66E90049C4CA /* RichTextKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B7EB2FBB29DA66E90049C4CA /* XCRemoteSwiftPackageReference "RichTextKit" */;
+			productName = RichTextKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -27,7 +27,7 @@ struct SnapshotListView: View {
                         label: {
                             cell(snapshot)
                         }
-                    ).buttonStyle(.plain)
+                    ).buttonStyle(.bordered)
                 }
             }
         }
@@ -37,7 +37,14 @@ struct SnapshotListView: View {
             id: \.element.id,
             selection: $selection
         ) { (index, snapshot) in
-            cell(snapshot)
+            Button(
+                action: {
+                    selection = index
+                },
+                label: {
+                    cell(snapshot)
+                }
+            ).buttonStyle(.plain)
         }
         .onChange(of: selection) {
             store.currentIndex = $0
@@ -49,6 +56,5 @@ struct SnapshotListView: View {
     @ViewBuilder
     func cell(_ snapshot: Snapshot) -> some View {
         Text(snapshot.name)
-            .frame(minWidth: 96, alignment: .leading)
     }
 }

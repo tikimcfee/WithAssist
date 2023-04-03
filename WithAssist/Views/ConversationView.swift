@@ -30,20 +30,23 @@ struct ConversationView: View, Serialized {
     
     var body: some View {
         if let snapshot {
-            ScrollViewReader { proxy in
-                List(snapshot.chatMessages.reversed()) { message in
+//            ScrollViewReader { proxy in
+            List(
+                Array(snapshot.chatMessages.reversed().enumerated()),
+                id: \.offset
+            ) { (index, message) in
                     messageCellOptionsWrapper(message)
                         .border(Color.gray.opacity(0.33), width: 1)
-                        .tag(message.id)
+                        .tag(index)
                 }
                 .listStyle(.inset)
-                .onChange(of: snapshot.results) { _ in
-                    if let last = snapshot.chatMessages.last {
-                        print("Scroll to: \(last.id)")
-                        proxy.scrollTo(last.id, anchor: .bottom)
-                    }
-                }
-            }
+//                .onChange(of: snapshot.results) { _ in
+//                    if let last = snapshot.chatMessages.last {
+//                        print("Scroll to: \(last.id)")
+//                        proxy.scrollTo(last.id, anchor: .bottom)
+//                    }
+//                }
+//            }
         }
     }
     
@@ -53,7 +56,6 @@ struct ConversationView: View, Serialized {
             if let messageToEdit = editMessage, messageToEdit.id == message.id {
                 EditView(
                     toEdit: messageToEdit,
-                    currentText: messageToEdit.content,
                     onComplete: { updated in
                         asyncMain {
                             await store.update(
@@ -148,20 +150,60 @@ struct ConversationView: View, Serialized {
     }
 }
 
+import RichTextKit
 struct EditView: View {
     let toEdit: OpenAI.Chat
-    @State var currentText: String
     let onComplete: (OpenAI.Chat) -> Void
     let onDismiss: () -> Void
     
+    @State var draft: NSAttributedString
+    
+    @StateObject private var context = {
+        let context = RichTextContext()
+        return context
+    }()
+    
+    @Environment(\.colorScheme) var style: ColorScheme
+    var foreground: NSColor {
+        switch style {
+        case .light: return .black
+        case .dark: return .white
+        @unknown default:
+            return .black
+        }
+    }
+    
+    var background: NSColor {
+        .clear
+    }
+    
+    init(
+        toEdit: OpenAI.Chat,
+        onComplete: @escaping (OpenAI.Chat) -> Void,
+        onDismiss: @escaping () -> Void) {
+        self.toEdit = toEdit
+        self.onComplete = onComplete
+        self.onDismiss = onDismiss
+        self._draft = State(wrappedValue: NSAttributedString(string: toEdit.content))
+    }
+    
     var body: some View {
         VStack(alignment: .trailing) {
-            TextField("Enter new content", text: $currentText, axis: .vertical)
+            RichTextEditor(
+                text: $draft,
+                context: context,
+                format: .plainText,
+                viewConfiguration: { component in
+                    component.setForegroundColor(to: foreground, at: draft.richTextRange)
+                    component.setBackgroundColor(to: background, at: draft.richTextRange)
+                }
+            )
+            .frame(minHeight: 96, maxHeight: 480)
             
-            if !currentText.isEmpty {
+            if !draft.string.isEmpty {
                 Button("Save") {
                     onComplete(
-                        toEdit.updatedContent(of: currentText)
+                        toEdit.updatedContent(of: draft.string)
                     )
                 }
             }
