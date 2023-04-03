@@ -96,6 +96,7 @@ class ChatController: ObservableObject {
                 print("[!! error: \(#function)] - cannot find message to remove")
                 return
             }
+            state.allSnapshots.isSaved = false
             state.allSnapshots.list.remove(at: removeIndex)
         }
     }

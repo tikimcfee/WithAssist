@@ -15,6 +15,7 @@ struct SnapshotListView: View, Serialized {
     
     @StateObject var serializer = Serializer()
     
+    @State var deleting = false
     @State var deleteTarget: Snapshot?
     
     var body: some View {
@@ -49,10 +50,7 @@ struct SnapshotListView: View, Serialized {
         }
         .confirmationDialog(
             "Remove conversation?",
-            isPresented: Binding(
-                get: { deleteTarget != nil },
-                set: { if !$0 { deleteTarget = nil } }
-            ),
+            isPresented: $deleting,
             presenting: deleteTarget,
             actions: { target in
                 Button(
@@ -82,6 +80,7 @@ struct SnapshotListView: View, Serialized {
         HStack(alignment: .center) {
             Button(
                 action: {
+                    deleting = true
                     deleteTarget = snapshot
                 },
                 label: {
@@ -100,8 +99,6 @@ struct SnapshotListView: View, Serialized {
                 }
             )
             .buttonStyle(.plain)
-            .clipped()
-            .clipShape(RoundedRectangle(cornerRadius: 4.0))
         }
         .padding()
         .border(Color.gray, width: 0.5)
