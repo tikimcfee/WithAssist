@@ -1,6 +1,15 @@
 {
   "pins" : [
     {
+      "identity" : "openai",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tikimcfee/OpenAI.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "f9586c5dcb020138b6ece865c8109c6d4ecb46fd"
+      }
+    },
+    {
       "identity" : "richtextkit",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/danielsaidi/RichTextKit.git",
