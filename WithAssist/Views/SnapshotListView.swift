@@ -8,9 +8,14 @@
 import SwiftUI
 import OpenAI
 
-struct SnapshotListView: View {
+struct SnapshotListView: View, Serialized {
+    @EnvironmentObject var controller: ChatController
     @EnvironmentObject var store: ChatController.SnapshotState
     @State var selection: Int = 0
+    
+    @StateObject var serializer = Serializer()
+    
+    @State var deleteTarget: Snapshot?
     
     var body: some View {
         #if os(iOS)
@@ -37,6 +42,55 @@ struct SnapshotListView: View {
             id: \.element.id,
             selection: $selection
         ) { (index, snapshot) in
+            listItem(index, snapshot)
+        }
+        .onChange(of: selection) {
+            store.currentIndex = $0
+        }
+        .confirmationDialog(
+            "Remove conversation?",
+            isPresented: Binding(
+                get: { deleteTarget != nil },
+                set: { if !$0 { deleteTarget = nil } }
+            ),
+            presenting: deleteTarget,
+            actions: { target in
+                Button(
+                    role: .destructive,
+                    action: {
+                        asyncIsolated {
+                            await controller.removeSnapshot(target)
+                        }
+                    },
+                    label: {
+                        Text("Delete '\(target.name)'")
+                    }
+                )
+            },
+            message: { target in
+                let prefix: String = String(target.chatMessages.first?.content.prefix(128) ?? "")
+                Text("First message:\n \(prefix)...")
+                    .italic()
+            }
+        )
+        #endif
+
+    }
+    
+    @ViewBuilder
+    func listItem(_ index: Int, _ snapshot: Snapshot) -> some View {
+        HStack(alignment: .center) {
+            Button(
+                action: {
+                    deleteTarget = snapshot
+                },
+                label: {
+                    Image(systemName: "x.square.fill")
+                        .foregroundColor(.red)
+                }
+            )
+            .buttonStyle(.plain)
+            
             Button(
                 action: {
                     selection = index
@@ -46,19 +100,16 @@ struct SnapshotListView: View {
                 }
             )
             .buttonStyle(.plain)
-            .background(
-                snapshot.id == store.currentSnapshot?.id
-                ? .blue
-                : .clear
-            )
             .clipped()
             .clipShape(RoundedRectangle(cornerRadius: 4.0))
         }
-        .onChange(of: selection) {
-            store.currentIndex = $0
-        }
-        #endif
-
+        .padding()
+        .border(Color.gray, width: 0.5)
+        .background(
+            snapshot.id == store.currentSnapshot?.id
+                ? .blue.opacity(0.1415)
+                : .clear
+        )
     }
     
     @ViewBuilder

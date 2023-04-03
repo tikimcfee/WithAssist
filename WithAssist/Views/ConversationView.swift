@@ -57,7 +57,7 @@ struct ConversationView: View, Serialized {
                 EditView(
                     toEdit: messageToEdit,
                     onComplete: { updated in
-                        asyncMain {
+                        asyncIsolated {
                             await store.update(
                                 message: message,
                                 to: updated
@@ -108,7 +108,7 @@ struct ConversationView: View, Serialized {
         VStack(alignment: .trailing) {
             Button(
                 action: {
-                    asyncMain {
+                    asyncIsolated {
                         print("Deleting: \(message.content.prefix(32))...")
                         await store.removeMessage(message)
                     }

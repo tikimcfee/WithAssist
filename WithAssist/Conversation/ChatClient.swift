@@ -88,6 +88,18 @@ class ChatController: ObservableObject {
         }
     }
     
+    func removeSnapshot(_ toRemove: Snapshot) async {
+        await snapshotState.update { state in
+            guard let removeIndex = state.allSnapshots.list.firstIndex(where: {
+                $0.id == toRemove.id
+            }) else {
+                print("[!! error: \(#function)] - cannot find message to remove")
+                return
+            }
+            state.allSnapshots.list.remove(at: removeIndex)
+        }
+    }
+    
     func removeMessage(_ toRemove: OpenAI.Chat) async {
         await snapshotState.updateCurrent { snapshot in
             guard let removeIndex = snapshot.chatMessages.firstIndex(where: {

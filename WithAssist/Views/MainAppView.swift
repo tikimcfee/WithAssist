@@ -67,6 +67,7 @@ struct MainAppView: View {
     @ViewBuilder
     func listView() -> some View {
         SnapshotListView()
+            .environmentObject(chatController)
             .environmentObject(chatController.snapshotState)
     }
 }

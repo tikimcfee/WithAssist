@@ -122,6 +122,12 @@ extension ChatController {
                 allSnapshots.storeChanges(to: updatedSnapshot)
             }
         }
+        
+        public func update(_ receiver: (ChatController.SnapshotState)-> Void) async {
+            await MainActor.run {
+                receiver(self)
+            }
+        }
 
         public var currentSnapshot: Snapshot? {
             get {

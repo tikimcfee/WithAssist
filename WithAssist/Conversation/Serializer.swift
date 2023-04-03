@@ -24,7 +24,7 @@ protocol Serialized {
 }
 
 extension Serialized {
-    func asyncMain(_ asyncFunction: @escaping () async -> Void) {
+    func asyncIsolated(_ asyncFunction: @escaping () async -> Void) {
         serializer.asyncNonIsolated(asyncFunction)
     }
 }

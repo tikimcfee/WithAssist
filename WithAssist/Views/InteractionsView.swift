@@ -100,7 +100,7 @@ struct InteractionsView: View, Serialized {
             text: Binding<String>(
                 get: { controller.snapshotState.currentSnapshot?.name ?? "" },
                 set: { name in
-                    asyncMain {
+                    asyncIsolated {
                         await controller.snapshotState.updateCurrent {
                             $0.name = name
                         }
@@ -128,7 +128,7 @@ struct InteractionsView: View, Serialized {
     }
     
     func loadOnMain(_ action: @escaping () async -> Void) {
-        asyncMain {
+        asyncIsolated {
             await setIsLoading(isLoading: true)
             await action()
             await setIsLoading(isLoading: false)
