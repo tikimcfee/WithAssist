@@ -44,7 +44,15 @@ struct SnapshotListView: View {
                 label: {
                     cell(snapshot)
                 }
-            ).buttonStyle(.plain)
+            )
+            .buttonStyle(.plain)
+            .background(
+                snapshot.id == store.currentSnapshot?.id
+                ? .blue
+                : .clear
+            )
+            .clipped()
+            .clipShape(RoundedRectangle(cornerRadius: 4.0))
         }
         .onChange(of: selection) {
             store.currentIndex = $0
@@ -56,5 +64,7 @@ struct SnapshotListView: View {
     @ViewBuilder
     func cell(_ snapshot: Snapshot) -> some View {
         Text(snapshot.name)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
     }
 }
