@@ -65,10 +65,6 @@ struct InteractionsView: View, Serialized {
             tokenCountView
             inputView()
         }
-        .popover(isPresented: $showErrors) {
-            errorView()
-                .frame(width: 600, height: 450)
-        }
         .toolbar {
             ToolbarItem {
                 Button (action: {
@@ -101,6 +97,10 @@ struct InteractionsView: View, Serialized {
                     }, label: {
                         Image(systemName: "exclamationmark.triangle.fill")
                     })
+                    .popover(isPresented: $showErrors) {
+                        errorView()
+                            .frame(width: 600, height: 450)
+                    }
                 }
             }
         }
