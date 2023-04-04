@@ -10,6 +10,10 @@ import OpenAI
 import Combine
 import RichTextKit
 
+#if os(iOS)
+typealias NSColor = UIColor
+#endif
+
 struct ChatInputView: View {
     let didRequestSend: (Draft) throws -> Void
     let didRequestResend: () -> Void
