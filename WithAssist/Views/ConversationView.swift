@@ -27,8 +27,8 @@ struct ConversationView: View, Serialized {
     @ObservedObject var state: ChatController.SnapshotState
     @StateObject var serializer = Serializer()
     
-    @State var showOptionsMessage: OpenAI.Chat?
-    @State var editMessage: OpenAI.Chat?
+    @State var showOptionsMessage: Chat?
+    @State var editMessage: Chat?
     @State var isEditing: Bool = false
     
     init(
@@ -85,7 +85,7 @@ struct ConversationView: View, Serialized {
     }
     
     @ViewBuilder
-    func messageCellOptionsWrapper(_ message: OpenAI.Chat) -> some View {
+    func messageCellOptionsWrapper(_ message: Chat) -> some View {
         ZStack(alignment: .topTrailing) {
             if let messageToEdit = editMessage, messageToEdit.id == message.id {
                 editView(message)
@@ -108,7 +108,7 @@ struct ConversationView: View, Serialized {
     }
     
     @ViewBuilder
-    func editView(_ message: OpenAI.Chat) -> some View {
+    func editView(_ message: Chat) -> some View {
         if let messageToEdit = editMessage,
             messageToEdit.id == message.id
         {
@@ -132,7 +132,7 @@ struct ConversationView: View, Serialized {
     }
     
     @ViewBuilder
-    func hoverOptions(for message: OpenAI.Chat) -> some View {
+    func hoverOptions(for message: Chat) -> some View {
         VStack(alignment: .trailing) {
             deleteButton(message)
             editButton(message)
@@ -143,7 +143,7 @@ struct ConversationView: View, Serialized {
     
     
     @ViewBuilder
-    func deleteButton(_ message: OpenAI.Chat) -> some View {
+    func deleteButton(_ message: Chat) -> some View {
         Button(
             action: {
                 asyncIsolated {
@@ -159,7 +159,7 @@ struct ConversationView: View, Serialized {
     }
     
     @ViewBuilder
-    func editButton(_ message: OpenAI.Chat) -> some View {
+    func editButton(_ message: Chat) -> some View {
         Button(
             action: {
                 print("Editing: \(message.content.prefix(32))...")
@@ -173,7 +173,7 @@ struct ConversationView: View, Serialized {
     }
     
     @ViewBuilder
-    func messageCell(_ message: OpenAI.Chat) -> some View {
+    func messageCell(_ message: Chat) -> some View {
         VStack(alignment: .leading) {
             Text(message.role)
                 .italic()
@@ -193,8 +193,8 @@ struct ConversationView: View, Serialized {
 
 import RichTextKit
 struct EditView: View {
-    let toEdit: OpenAI.Chat
-    let onComplete: (OpenAI.Chat) -> Void
+    let toEdit: Chat
+    let onComplete: (Chat) -> Void
     let onDismiss: () -> Void
     
     @State var draft: NSAttributedString
@@ -219,8 +219,8 @@ struct EditView: View {
     }
     
     init(
-        toEdit: OpenAI.Chat,
-        onComplete: @escaping (OpenAI.Chat) -> Void,
+        toEdit: Chat,
+        onComplete: @escaping (Chat) -> Void,
         onDismiss: @escaping () -> Void) {
             self.toEdit = toEdit
             self.onComplete = onComplete
@@ -258,9 +258,9 @@ struct EditView: View {
     }
 }
 
-extension OpenAI.Chat {
-    func updatedContent(of newContent: String) -> OpenAI.Chat {
-        OpenAI.Chat(
+extension Chat {
+    func updatedContent(of newContent: String) -> Chat {
+        Chat(
             role: role,
             content: newContent
         )

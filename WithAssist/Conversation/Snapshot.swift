@@ -43,9 +43,9 @@ struct AllSnapshots: Codable, Equatable, Hashable, Identifiable {
 
 struct Snapshot: Identifiable, Codable, Equatable, Hashable {
     var id = UUID()
-    var chatMessages: [OpenAI.Chat] = []
+    var chatMessages: [Chat] = []
     var errors: [AppError] = []
-    var results: [OpenAI.ChatResult] = []
+    var results: [ChatResult] = []
     var name: String = "Some conversation: \(Date.now)"
     
     static let empty: Snapshot = {
@@ -56,7 +56,7 @@ struct Snapshot: Identifiable, Codable, Equatable, Hashable {
     
     mutating func resetForNewPrompt(_ prompt: String) {
         chatMessages = [
-            OpenAI.Chat(role: .system, content: prompt)
+            Chat(role: .system, content: prompt)
         ]
         errors = []
         results = []

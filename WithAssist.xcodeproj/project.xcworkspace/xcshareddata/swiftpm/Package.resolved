@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/tikimcfee/OpenAI.git",
       "state" : {
-        "branch" : "main",
-        "revision" : "f9586c5dcb020138b6ece865c8109c6d4ecb46fd"
+        "branch" : "saving_optionals",
+        "revision" : "b256d26de5ac764cfc03232bce073022c5c3c121"
       }
     },
     {

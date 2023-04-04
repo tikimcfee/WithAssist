@@ -8,6 +8,27 @@
 import SwiftUI
 import OpenAI
 
+extension Model: CaseIterable {
+    public static var allCases: [String] = [
+        "text-davinci-003",
+        "text-davinci-002",
+        "text-davinci-001",
+        "text-curie-001",
+        "text-babbage-001",
+        "text-search-babbage-doc-001",
+        "text-search-babbage-query-001",
+        "text-ada-001",
+        "text-embedding-ada-002",
+        "gpt-3.5-turbo",
+        "gpt-3.5-turbo-0301",
+        "gpt-4",
+        "gpt-4-0314",
+        "gpt-4-32k",
+        "gpt-4-32k-0314",
+        "whisper-1"
+    ]
+}
+
 struct SettingsView: View {
     @ObservedObject var controller: ChatController
     
@@ -32,8 +53,8 @@ struct SettingsView: View {
     @ViewBuilder
     func modelPickerView() -> some View {
         Picker("GPT Model", selection: $controller.paramState.current.chatModel) {
-            ForEach(Model.allCases) { model in
-                Text(model.rawValue)
+            ForEach(Model.allCases, id: \.hashValue) { model in
+                Text(model)
                     .tag(model)
             }
         }

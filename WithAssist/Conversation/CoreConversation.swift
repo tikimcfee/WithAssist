@@ -13,7 +13,7 @@ import Metal
 import MetalKit
 import OpenAI
 
-extension OpenAI.Chat: Identifiable {
+extension Chat: Identifiable {
     public var id: Int { hashValue }
 }
 

@@ -42,10 +42,10 @@ class ChatController: ObservableObject {
     
     var apiToken: String {
         get {
-            openAI.apiToken
+            openAI.configuration.token
         }
         set {
-            openAI.apiToken = newValue
+            openAI.configuration.token = newValue
             needsToken = false
         }
     }
@@ -76,11 +76,11 @@ class ChatController: ObservableObject {
     
     func addMessage(
         _ message: String,
-        _ role: OpenAI.Chat.Role = .user
+        _ role: Chat.Role = .user
     ) async {
         await snapshotState.updateCurrent { toUpdate in
             toUpdate.chatMessages.append(
-                OpenAI.Chat(
+                Chat(
                     role: role,
                     content: message
                 )
@@ -114,7 +114,7 @@ class ChatController: ObservableObject {
         }
     }
     
-    func removeMessage(_ toRemove: OpenAI.Chat) async {
+    func removeMessage(_ toRemove: Chat) async {
         await snapshotState.updateCurrent { snapshot in
             guard let removeIndex = snapshot.chatMessages.firstIndex(where: {
                 $0.id == toRemove.id
@@ -126,7 +126,7 @@ class ChatController: ObservableObject {
         }
     }
     
-    func update(message: OpenAI.Chat, to newMessage: OpenAI.Chat) async {
+    func update(message: Chat, to newMessage: Chat) async {
         await snapshotState.updateCurrent { snapshot in
             guard let updateIndex = snapshot.chatMessages.firstIndex(where: {
                 $0.id == message.id
@@ -157,7 +157,7 @@ class ChatController: ObservableObject {
             let result = try await performChatQuery(using: snapshot)
             snapshot.results.append(result)
             
-            if let choice = result.choices?.first {
+            if let choice = result.choices.first {
                 snapshot.chatMessages.append(choice.message)
             }
         } catch {
@@ -175,21 +175,16 @@ class ChatController: ObservableObject {
 }
 
 extension ChatController {
-    func performChatQuery(using current: Snapshot) async throws -> OpenAI.ChatResult {
-//        guard let current = snapshotState.currentSnapshot else {
-//            throw AppError.custom("no current snapshot to save")
-//        }
-        
+    func performChatQuery(using current: Snapshot) async throws -> ChatResult {
         let name = String(cString: __dispatch_queue_get_label(nil))
         print("--- Performing query on: \(name)")
         
         let result = try await openAI.chats(
-            query: makeChatQuery(current),
-            timeoutInterval: 60.0 * 10
+            query: makeChatQuery(current)
         )
         
         let firstMessage =
-            result.choices?.first?.message.content
+            result.choices.first?.message.content
             ?? "<no response message>"
         
         print(
@@ -205,18 +200,18 @@ Received response:
         return result
     }
     
-    func makeChatQuery(_ snapshot: Snapshot?) -> OpenAI.ChatQuery {
-        OpenAI.ChatQuery(
+    func makeChatQuery(_ snapshot: Snapshot?) -> ChatQuery {
+        ChatQuery(
             model: paramState.current.chatModel,
             messages: snapshot?.chatMessages ?? [],
             temperature: paramState.current.temperature,
-            top_p: paramState.current.topProbabilityMass,
+            topP: paramState.current.topProbabilityMass,
             n: paramState.current.completions,
             stream: false,
-            max_tokens: paramState.current.maxTokens,
-            presence_penalty: paramState.current.presencePenalty,
-            frequency_penalty: paramState.current.frequencyPenalty,
-            logit_bias: paramState.current.logitBias,
+            maxTokens: paramState.current.maxTokens,
+            presencePenalty: paramState.current.presencePenalty,
+            frequencyPenalty: paramState.current.frequencyPenalty,
+            logitBias: paramState.current.logitBias,
             user: paramState.current.user
         )
     }

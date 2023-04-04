@@ -9,10 +9,6 @@ import SwiftUI
 import OpenAI
 import Combine
 
-struct SettingsPush: Hashable, Equatable {
-    
-}
-
 struct InteractionsView: View, Serialized {
     
     @ObservedObject var controller: ChatController

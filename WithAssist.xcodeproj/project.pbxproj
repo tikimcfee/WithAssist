@@ -918,7 +918,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/tikimcfee/OpenAI.git";
 			requirement = {
-				branch = main;
+				branch = saving_optionals;
 				kind = branch;
 			};
 		};
