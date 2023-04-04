@@ -11,8 +11,9 @@ import Combine
 import RichTextKit
 
 struct ChatInputView: View {
-    let didRequestSend: (Draft) -> Void
+    let didRequestSend: (Draft) throws -> Void
     let didRequestResend: () -> Void
+    @Binding var inputTokens: Int
     
     @State var draft = NSAttributedString()
     
@@ -21,24 +22,25 @@ struct ChatInputView: View {
         return context
     }()
     
-    @Environment(\.colorScheme) var style: ColorScheme
-    var foreground: NSColor {
-        switch style {
-        case .light: return .black
-        case .dark: return .white
-        @unknown default:
-            return .black
-        }
-    }
-    
-    var background: NSColor {
-        .clear
-    }
-    
     var body: some View {
+        editorBody
+            .border(Color.gray, width: 1)
+            .onChange(of: draft.string) { new in
+                inputTokens = draft.string.count / 4
+            }
+    }
+    
+    @ViewBuilder
+    var editorBody: some View {
         VStack(alignment: .trailing) {
             RichTextEditor(
-                text: $draft,
+                text: Binding(
+                    get: { draft },
+                    set: {
+                        draft = $0
+                        inputTokens = draft.string.count
+                    }
+                ),
                 context: context,
                 format: .plainText,
                 viewConfiguration: { component in
@@ -59,9 +61,12 @@ struct ChatInputView: View {
                 Spacer()
                 
                 Button("Send message") {
-                    didRequestSend(
-                        Draft(content: draft.string)
-                    )
+                    do {
+                        try didRequestSend(Draft(content: draft.string))
+                        draft = NSAttributedString()
+                    } catch {
+                        print("[!! error: \(#function)] \(error)")
+                    }
                 }
                 .keyboardShortcut(.return, modifiers: .command)
             }
@@ -69,4 +74,19 @@ struct ChatInputView: View {
             Divider()
         }
     }
+    
+    @Environment(\.colorScheme) var style: ColorScheme
+    var foreground: NSColor {
+        switch style {
+        case .light: return .black
+        case .dark: return .white
+        @unknown default:
+            return .black
+        }
+    }
+    
+    var background: NSColor {
+        .clear
+    }
+    
 }

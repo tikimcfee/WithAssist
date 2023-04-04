@@ -12,14 +12,31 @@ struct MainAppView: View {
     @ObservedObject var chatController: ChatController
     
     var body: some View {
+        chatBody
+    }
+    
+    @ViewBuilder
+    var chatBody: some View {
         NavigationSplitView(
             sidebar: {
                 listView()
+            },
+            detail: {
+                mainInteractionsView()
                     .toolbar {
-                        ToolbarItem(placement:  .primaryAction) {
+                        ToolbarItem {
                             newConversationView
                         }
                     }
+            }
+        )
+    }
+    
+    @ViewBuilder
+    var tripleColumnBody: some View {
+        NavigationSplitView(
+            sidebar: {
+                listView()
             },
             content: {
                 mainInteractionsView()
@@ -27,12 +44,12 @@ struct MainAppView: View {
             },
             detail: {
                 conversationView()
-                    
             }
         )
         .navigationSplitViewStyle(.automatic)
     }
     
+    @ViewBuilder
     var newConversationView: some View {
         Button(
             action: {

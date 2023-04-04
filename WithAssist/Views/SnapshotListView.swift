@@ -78,35 +78,34 @@ struct SnapshotListView: View, Serialized {
     @ViewBuilder
     func listItem(_ index: Int, _ snapshot: Snapshot) -> some View {
         HStack(alignment: .center) {
-            Button(
-                action: {
-                    deleting = true
-                    deleteTarget = snapshot
-                },
-                label: {
-                    Image(systemName: "x.square.fill")
-                        .foregroundColor(.red)
-                }
-            )
-            .buttonStyle(.plain)
-            
-            Button(
-                action: {
-                    selection = index
-                },
-                label: {
-                    cell(snapshot)
-                }
-            )
-            .buttonStyle(.plain)
+            cell(snapshot)
+            delete(snapshot)
         }
         .padding()
         .border(Color.gray, width: 0.5)
         .background(
             snapshot.id == store.currentSnapshot?.id
                 ? .blue.opacity(0.1415)
-                : .clear
+                : .blue.opacity(0.0002) // needs some visible value for tap target
         )
+        .onTapGesture {
+            selection = index
+        }
+    }
+    
+    @ViewBuilder
+    func delete(_ snapshot: Snapshot) -> some View {
+        Button(
+            action: {
+                deleting = true
+                deleteTarget = snapshot
+            },
+            label: {
+                Image(systemName: "x.square.fill")
+                    .foregroundColor(.red)
+            }
+        )
+        .buttonStyle(.plain)
     }
     
     @ViewBuilder
@@ -114,5 +113,6 @@ struct SnapshotListView: View, Serialized {
         Text(snapshot.name)
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

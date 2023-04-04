@@ -8,6 +8,20 @@
 import SwiftUI
 import OpenAI
 
+struct MaybeHidden: ViewModifier {
+    let hidden: Bool
+    func body(content: Content) -> some View {
+        if hidden { content.hidden() }
+        else { content }
+    }
+}
+
+extension View {
+    func doNotDraw(if isHidden: Bool) -> some View {
+        modifier(MaybeHidden(hidden: isHidden))
+    }
+}
+
 struct ConversationView: View, Serialized {
     @ObservedObject var store: ChatController
     @ObservedObject var state: ChatController.SnapshotState
@@ -30,23 +44,43 @@ struct ConversationView: View, Serialized {
     
     var body: some View {
         if let snapshot {
-//            ScrollViewReader { proxy in
-            List(
-                Array(snapshot.chatMessages.reversed().enumerated()),
-                id: \.offset
-            ) { (index, message) in
-                    messageCellOptionsWrapper(message)
-                        .border(Color.gray.opacity(0.33), width: 1)
-                        .tag(index)
+            ScrollViewReader { proxy in
+                List(
+                    Array(snapshot.chatMessages.enumerated()),
+                    id: \.offset
+                ) { (index, message) in
+                    let isUser = message.role == "user"
+                    let isAssistant = message.role == "assistant"
+                    
+                    HStack {
+                        if isUser { Spacer() }
+
+                        messageCellOptionsWrapper(message)
+                            .border(Color.gray.opacity(0.33), width: 1)
+                            .tag(index)
+                            .padding(
+                                isUser ? .leading : .trailing,
+                                96
+                            )
+                            .padding(.bottom, 8)
+                        
+                        if isAssistant { Spacer() }
+                    }
                 }
                 .listStyle(.inset)
-//                .onChange(of: snapshot.results) { _ in
-//                    if let last = snapshot.chatMessages.last {
-//                        print("Scroll to: \(last.id)")
-//                        proxy.scrollTo(last.id, anchor: .bottom)
-//                    }
-//                }
-//            }
+                .onChange(of: snapshot.results.count) { _ in
+                    if let last = snapshot.chatMessages.first {
+                        print("Scroll to: \(last.content.prefix(32))...")
+                        proxy.scrollTo(last.id, anchor: .bottom)
+                    }
+                }
+                .onAppear {
+                    if let last = snapshot.chatMessages.first {
+                        print("Scroll to: \(last.content.prefix(32))...")
+                        proxy.scrollTo(last.id, anchor: .bottom)
+                    }
+                }
+            }
         }
     }
     
@@ -54,25 +88,12 @@ struct ConversationView: View, Serialized {
     func messageCellOptionsWrapper(_ message: OpenAI.Chat) -> some View {
         ZStack(alignment: .topTrailing) {
             if let messageToEdit = editMessage, messageToEdit.id == message.id {
-                EditView(
-                    toEdit: messageToEdit,
-                    onComplete: { updated in
-                        asyncIsolated {
-                            await store.update(
-                                message: message,
-                                to: updated
-                            )
-                            editMessage = nil
-                        }
-                    },
-                    onDismiss: {
-                        showOptionsMessage = nil
-                        editMessage = nil
-                    }
-                )
+                editView(message)
             } else if showOptionsMessage?.id == message.id {
-                messageCell(message)
-                hoverOptions(for: message)
+                ZStack(alignment: .topTrailing){
+                    messageCell(message)
+                    hoverOptions(for: message)
+                }
             } else {
                 messageCell(message)
             }
@@ -83,72 +104,92 @@ struct ConversationView: View, Serialized {
             } else {
                 self.showOptionsMessage = nil
             }
-            
         }
-//        .sheet(item: $editMessage) { toEdit in
-//            EditView(
-//                toEdit: toEdit,
-//                currentText: toEdit.content,
-//                onComplete: { updated in
-//                    asyncMain {
-//                        await store.updateMessageInstance(updated)
-//                        editMessage = nil
-//                    }
-//                },
-//                onDismiss: {
-//                    showOptionsMessage = nil
-//                    editMessage = nil
-//                }
-//            )
-//        }
+    }
+    
+    @ViewBuilder
+    func editView(_ message: OpenAI.Chat) -> some View {
+        if let messageToEdit = editMessage,
+            messageToEdit.id == message.id
+        {
+            EditView(
+                toEdit: messageToEdit,
+                onComplete: { updated in
+                    asyncIsolated {
+                        await store.update(
+                            message: message,
+                            to: updated
+                        )
+                        editMessage = nil
+                    }
+                },
+                onDismiss: {
+                    showOptionsMessage = nil
+                    editMessage = nil
+                }
+            )
+        }
     }
     
     @ViewBuilder
     func hoverOptions(for message: OpenAI.Chat) -> some View {
         VStack(alignment: .trailing) {
-            Button(
-                action: {
-                    asyncIsolated {
-                        print("Deleting: \(message.content.prefix(32))...")
-                        await store.removeMessage(message)
-                    }
-                },
-                label: {
-                    Label("Delete", systemImage: "minus.circle.fill")
-                }
-            )
-            .foregroundColor(.white)
-            
-            Button(
-                action: {
-                    print("Editing: \(message.content.prefix(32))...")
-                    editMessage = message
-                },
-                label: {
-                    Label("Edit", systemImage: "pencil")
-                }
-            )
-            .foregroundColor(.white)
+            deleteButton(message)
+            editButton(message)
         }
         .padding(8)
         .background(Color.gray)
     }
     
+    
+    @ViewBuilder
+    func deleteButton(_ message: OpenAI.Chat) -> some View {
+        Button(
+            action: {
+                asyncIsolated {
+                    print("Deleting: \(message.content.prefix(32))...")
+                    await store.removeMessage(message)
+                }
+            },
+            label: {
+                Label("Delete", systemImage: "minus.circle.fill")
+            }
+        )
+        .foregroundColor(.white)
+    }
+    
+    @ViewBuilder
+    func editButton(_ message: OpenAI.Chat) -> some View {
+        Button(
+            action: {
+                print("Editing: \(message.content.prefix(32))...")
+                editMessage = message
+            },
+            label: {
+                Label("Edit", systemImage: "pencil")
+            }
+        )
+        .foregroundColor(.white)
+    }
+    
     @ViewBuilder
     func messageCell(_ message: OpenAI.Chat) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading) {
             Text(message.role)
                 .italic()
-                .fontWeight(.light)
-                .font(.caption)
+                .fontWeight(.bold)
+                .font(.callout)
             
             Text(message.content)
                 .textSelection(.enabled)
-                .frame(maxWidth: .infinity, alignment: .leading)
+//                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(maxWidth: 600, alignment: .leading)
         }
         .padding(8)
     }
 }
+
+
 
 import RichTextKit
 struct EditView: View {
@@ -181,11 +222,11 @@ struct EditView: View {
         toEdit: OpenAI.Chat,
         onComplete: @escaping (OpenAI.Chat) -> Void,
         onDismiss: @escaping () -> Void) {
-        self.toEdit = toEdit
-        self.onComplete = onComplete
-        self.onDismiss = onDismiss
-        self._draft = State(wrappedValue: NSAttributedString(string: toEdit.content))
-    }
+            self.toEdit = toEdit
+            self.onComplete = onComplete
+            self.onDismiss = onDismiss
+            self._draft = State(wrappedValue: NSAttributedString(string: toEdit.content))
+        }
     
     var body: some View {
         VStack(alignment: .trailing) {
@@ -198,7 +239,7 @@ struct EditView: View {
                     component.setBackgroundColor(to: background, at: draft.richTextRange)
                 }
             )
-            .frame(minHeight: 96, maxHeight: 480)
+            .frame(maxHeight: 450)
             
             if !draft.string.isEmpty {
                 Button("Save") {

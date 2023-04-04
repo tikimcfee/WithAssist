@@ -9,11 +9,14 @@ import SwiftUI
 import OpenAI
 
 struct SettingsView: View {
-    @ObservedObject var chat: ChatController
+    @ObservedObject var controller: ChatController
     
     var body: some View {
         List {
-            textBody()
+            Button("Update token") {
+                controller.setNeedsNewToken()
+            }
+            userField()
             modelPickerView()
             sliderBody()
         }
@@ -21,14 +24,14 @@ struct SettingsView: View {
     }
     
     @ViewBuilder
-    func textBody() -> some View {
-        TextField("User", text: $chat.paramState.current.user)
+    func userField() -> some View {
+        TextField("User", text: $controller.paramState.current.user)
             .underline()
     }
     
     @ViewBuilder
     func modelPickerView() -> some View {
-        Picker("GPT Model", selection: $chat.paramState.current.chatModel) {
+        Picker("GPT Model", selection: $controller.paramState.current.chatModel) {
             ForEach(Model.allCases) { model in
                 Text(model.rawValue)
                     .tag(model)
@@ -42,8 +45,8 @@ struct SettingsView: View {
             name: "Tokens",
             use: .constant(true),
             value: .init(
-                get: { Double(chat.paramState.current.maxTokens) },
-                set: { chat.paramState.current.maxTokens = Int($0.rounded()) }
+                get: { Double(controller.paramState.current.maxTokens) },
+                set: { controller.paramState.current.maxTokens = Int($0.rounded()) }
             ),
             range: 0.0...8000,
             step: 500
@@ -51,29 +54,29 @@ struct SettingsView: View {
         
         ToggleSlider(
             name: "Probability Mass (top-p)",
-            use: $chat.paramState.current.useTopProbabilityMass,
-            value: $chat.paramState.current.topProbabilityMass,
+            use: $controller.paramState.current.useTopProbabilityMass,
+            value: $controller.paramState.current.topProbabilityMass,
             range: 0.0...1.0
         )
         
         ToggleSlider(
             name: "Temperature",
-            use: $chat.paramState.current.useTemperature,
-            value: $chat.paramState.current.temperature,
+            use: $controller.paramState.current.useTemperature,
+            value: $controller.paramState.current.temperature,
             range: 0.0...2.0
         )
         
         ToggleSlider(
             name: "Frequency Penalty",
-            use: $chat.paramState.current.useFrequencyPenalty,
-            value: $chat.paramState.current.frequencyPenalty,
+            use: $controller.paramState.current.useFrequencyPenalty,
+            value: $controller.paramState.current.frequencyPenalty,
             range: -2.0...2.0
         )
         
         ToggleSlider(
             name: "Presence Penalty",
-            use: $chat.paramState.current.usePresencePenalty,
-            value: $chat.paramState.current.presencePenalty,
+            use: $controller.paramState.current.usePresencePenalty,
+            value: $controller.paramState.current.presencePenalty,
             range: -2.0...2.0
         )
     }

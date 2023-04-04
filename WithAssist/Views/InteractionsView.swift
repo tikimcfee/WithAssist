@@ -9,12 +9,24 @@ import SwiftUI
 import OpenAI
 import Combine
 
+struct SettingsPush: Hashable, Equatable {
+    
+}
+
 struct InteractionsView: View, Serialized {
     
     @ObservedObject var controller: ChatController
     @ObservedObject var state: ChatController.SnapshotState
     @StateObject var serializer = Serializer()
+    
     @State var isLoading: Bool = false
+    @State var showPrompt: Bool = false
+    @State var showSettings: Bool = false
+    @State var showErrors: Bool = false
+    
+    @State var approximateTokens: Int = 0
+    @State var maxTokens: Int = 0
+    @State var inputTokens: Int = 0
     
     init(controller: ChatController) {
         self.controller = controller
@@ -25,29 +37,97 @@ struct InteractionsView: View, Serialized {
         controller.snapshotState.currentSnapshot
     }
     
+    private var hasErrors: Bool {
+        snapshot?.errors.isEmpty == false
+    }
+    
     var body: some View {
+        chatView
+            .disabled(isLoading || controller.needsToken)
+            .overlay(loadingOverlayView())
+            .overlay(updateTokenView())
+            .onChange(of: state.currentSnapshot) { _ in
+                asyncIsolated {
+                    await updateApproximateTokens()
+                }
+            }
+            .onReceive(controller.paramState.$current) {
+                maxTokens = $0.maxTokens
+            }
+    }
+    
+    @ViewBuilder
+    var chatView: some View {
+        VStack {
+            ConversationView(
+                store: controller
+            )
+            tokenCountView
+            inputView()
+        }
+        .sheet(isPresented: $showPrompt) {
+            promptInjectorView()
+                .frame(width: 600, height: 450)
+        }
+        .sheet(isPresented: $showErrors) {
+            errorView()
+                .frame(width: 600, height: 450)
+        }
+        .sheet(isPresented: $showSettings) {
+            SettingsView(controller: controller)
+                .frame(width: 600, height: 450)
+        }
+        .toolbar {
+            ToolbarItem {
+                Button (action: {
+                    showPrompt.toggle()
+                }, label: {
+                    Image(systemName: "person.2.gobackward")
+                })
+            }
+            
+            ToolbarItem {
+                Button (action: {
+                    showSettings.toggle()
+                }, label: {
+                    Image(systemName: "gearshape.2.fill")
+                })
+            }
+            
+            if hasErrors {
+                ToolbarItem(placement: .navigation) {
+                    Button (action: {
+                        showErrors.toggle()
+                    }, label: {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                    })
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    var rootView: some View {
         VStack {
             Button("Update token") {
                 controller.setNeedsNewToken()
             }
             
             nameView()
-            if let snapshot {
-                promptInjectorView(snapshot)
-            }
+            promptInjectorView()
             inputView()
             
-            SettingsView(chat: controller)
+            tokenCountView
             
-            if let snapshot {
-                if !snapshot.errors.isEmpty {
-                    errorView(snapshot: snapshot)
-                }
-            }
+            SettingsView(controller: controller)
+            errorView()
         }
-        .disabled(isLoading || controller.needsToken)
-        .overlay(loadingOverlayView())
-        .overlay(updateTokenView())
+    }
+    
+    @ViewBuilder
+    var tokenCountView: some View {
+        Text("\(inputTokens)/\(maxTokens - approximateTokens) [Chat: \(approximateTokens)]")
+            .frame(maxWidth: .infinity, alignment: .trailing)
     }
     
     @ViewBuilder
@@ -66,15 +146,17 @@ struct InteractionsView: View, Serialized {
     }
     
     @ViewBuilder
-    func promptInjectorView(_ snapshot: Snapshot) -> some View {
-        PromptInjectorView(
-            draft: snapshot.chatMessages.first?.content ?? "",
-            didRequestSetPrompt: { updatedPromptText in
-                loadOnMain {
-                    await controller.resetPrompt(to: updatedPromptText)
+    func promptInjectorView() -> some View {
+        if let snapshot {
+            PromptInjectorView(
+                draft: snapshot.chatMessages.first?.content ?? "",
+                didRequestSetPrompt: { updatedPromptText in
+                    loadOnMain {
+                        await controller.resetPrompt(to: updatedPromptText)
+                    }
                 }
-            }
-        ).id(snapshot.id)
+            ).id(snapshot.id)
+        }
     }
     
     @ViewBuilder
@@ -89,7 +171,8 @@ struct InteractionsView: View, Serialized {
                 loadOnMain {
                     await controller.retryFromCurrent()
                 }
-            }
+            },
+            inputTokens: $inputTokens
         )
     }
     
@@ -111,13 +194,20 @@ struct InteractionsView: View, Serialized {
     }
     
     @ViewBuilder
-    func errorView(snapshot: Snapshot) -> some View {
-        List {
-            ForEach(snapshot.errors) { error in
-                Text(error.message)
+    func errorView() -> some View {
+        if let snapshot, hasErrors {
+            List {
+                ForEach(snapshot.errors) { error in
+                    Text(error.message)
+                        .onLongPressGesture {
+                            asyncIsolated {
+                                await controller.removeError(error)
+                            }
+                        }
+                }
             }
+            .frame(maxHeight: 256.0)
         }
-        .frame(maxHeight: 256.0)
     }
     
     @ViewBuilder
@@ -131,6 +221,7 @@ struct InteractionsView: View, Serialized {
         asyncIsolated {
             await setIsLoading(isLoading: true)
             await action()
+            await updateApproximateTokens()
             await setIsLoading(isLoading: false)
         }
     }
@@ -139,5 +230,19 @@ struct InteractionsView: View, Serialized {
         await MainActor.run {
             isLoading = target
         }
+    }
+    
+    func updateApproximateTokens() async {
+        await MainActor.run {
+            // 4 characters ~ 1 token
+            approximateTokens = Int(Double(currentCharacterCount) / 4.0)
+        }
+    }
+    
+    var currentCharacterCount: Int {
+        snapshot?.chatMessages.lazy.map {
+            $0.content.count
+        }.reduce(0, +)
+        ?? 0
     }
 }

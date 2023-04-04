@@ -13,8 +13,6 @@ import Metal
 import MetalKit
 import OpenAI
 
-private let OPENAI_API_KEY = "your-key-here"
-
 extension OpenAI.Chat: Identifiable {
     public var id: Int { hashValue }
 }
@@ -42,7 +40,7 @@ extension ClientStore {
     }()
     
     static func makeAPIClient() -> OpenAI {
-        let client = OpenAI(apiToken: OPENAI_API_KEY)
+        let client = OpenAI(apiToken: OPENAI_API_KEY ?? "")
         
         return client
     }

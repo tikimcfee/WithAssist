@@ -9,7 +9,7 @@ import Foundation
 import OpenAI
 import Combine
 
-struct ChatRequest {
+struct ChatRequest: Equatable, Hashable {
     var useUser = true
     var user: String = "lugo-core-conversation-query"
     

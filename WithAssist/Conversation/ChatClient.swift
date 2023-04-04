@@ -9,6 +9,8 @@ import Foundation
 import OpenAI
 import Combine
 
+let OPENAI_API_KEY = ProcessInfo.processInfo.environment["OPENAI_API_KEY"]
+
 protocol GlobalStoreReader {
     var snapshotStorage: FileStorageSerial { get }
 }
@@ -54,6 +56,10 @@ class ChatController: ObservableObject {
         self.openAI = openAI
         self.snapshotState = SnapshotState()
         self.paramState = ParamState()
+        
+        if OPENAI_API_KEY != nil {
+            needsToken = false
+        }
     }
     
     func saveManual() {
@@ -85,6 +91,13 @@ class ChatController: ObservableObject {
             var targetCopy = toUpdate
             await requestResponseFromGPT(&targetCopy)
             toUpdate = targetCopy
+        }
+    }
+    
+    func removeError(_ toRemove: AppError) async {
+        await snapshotState.updateCurrent { current in
+            let id = toRemove.id
+            current.errors.removeAll(where: { id == $0.id })
         }
     }
     

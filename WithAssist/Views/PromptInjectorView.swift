@@ -69,7 +69,7 @@ struct PromptInjectorView: View {
                 component.setBackgroundColor(to: background, at: draft.richTextRange)
             }
         )
-        .frame(height: 200)
+        .frame(maxHeight: 600)
         .alert(
             "Reset this conversation and save new prompt?",
             isPresented: $changePrompt,
