@@ -65,16 +65,8 @@ struct InteractionsView: View, Serialized {
             tokenCountView
             inputView()
         }
-        .sheet(isPresented: $showPrompt) {
-            promptInjectorView()
-                .frame(width: 600, height: 450)
-        }
-        .sheet(isPresented: $showErrors) {
+        .popover(isPresented: $showErrors) {
             errorView()
-                .frame(width: 600, height: 450)
-        }
-        .sheet(isPresented: $showSettings) {
-            SettingsView(controller: controller)
                 .frame(width: 600, height: 450)
         }
         .toolbar {
@@ -84,6 +76,10 @@ struct InteractionsView: View, Serialized {
                 }, label: {
                     Image(systemName: "person.2.gobackward")
                 })
+                .popover(isPresented: $showPrompt) {
+                    promptInjectorView()
+                        .frame(width: 600, height: 450)
+                }
             }
             
             ToolbarItem {
@@ -92,6 +88,10 @@ struct InteractionsView: View, Serialized {
                 }, label: {
                     Image(systemName: "gearshape.2.fill")
                 })
+                .popover(isPresented: $showSettings) {
+                    SettingsView(controller: controller)
+                        .frame(width: 450, height: 450)
+                }
             }
             
             if hasErrors {
