@@ -75,6 +75,10 @@ extension ChatController {
                 )
                 
                 self.allSnapshots = loaded
+            } catch let error as CocoaError where error.isFileError {
+                print("[load error] File does not exist. Creating default snapshot.", error)
+                let (_, index) = allSnapshots.createNewSnapshot()
+                currentIndex = index
             } catch {
                 print("[load error]", error)
             }
