@@ -201,14 +201,32 @@ Received response:
     }
     
     func makeChatQuery(_ snapshot: Snapshot?) -> ChatQuery {
-        ChatQuery(
+        
+        let candidateMessage = (snapshot?.chatMessages ?? [])
+        var contextWindow: [Chat] = []
+        var runningTokenCount = 0
+        for message in candidateMessage.reversed() {
+            // TODO: Replace with actual tokenization and token count someday.
+            let tokenEstimate = message.content.count / 4
+            if tokenEstimate + runningTokenCount < 3000 {
+                contextWindow.append(message)
+                runningTokenCount += message.content.count
+            } else {
+                print("[ChatClient] Limiting Context Window.")
+                break // Early stop.
+            }
+        }
+        print("[ChatClient] Took \(contextWindow.count)/\(candidateMessage.count) of the previous message.")
+        contextWindow.reverse()
+        
+        return ChatQuery(
             model: paramState.current.chatModel,
-            messages: snapshot?.chatMessages ?? [],
+            messages: contextWindow,
             temperature: paramState.current.temperature,
             topP: paramState.current.topProbabilityMass,
             n: paramState.current.completions,
             stream: false,
-            maxTokens: paramState.current.maxTokens,
+            maxTokens: paramState.current.maxTokens - runningTokenCount,
             presencePenalty: paramState.current.presencePenalty,
             frequencyPenalty: paramState.current.frequencyPenalty,
             logitBias: paramState.current.logitBias,
