@@ -216,7 +216,7 @@ Received response:
                 break // Early stop.
             }
         }
-        print("[ChatClient] Took \(contextWindow.count)/\(candidateMessage.count) of the previous message.")
+        print("[ChatClient] Took \(contextWindow.count)/\(candidateMessage.count) of the previous messages.")
         contextWindow.reverse()
         
         return ChatQuery(
