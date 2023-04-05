@@ -31,6 +31,9 @@ extension Model: CaseIterable {
 
 let FallbackTokenLimit = 4000
 let ModelTokenLimit: [Model: Int] = [
+    Model.curie: 2000,
+    Model.babbage: 2000,
+    Model.ada: 2000,
     Model.gpt3_5Turbo: 4000,
     Model.gpt3_5Turbo0301: 4000,
     Model.gpt4: 8000,
