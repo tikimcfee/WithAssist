@@ -20,7 +20,7 @@ struct ChatRequest: Equatable, Hashable {
     var topProbabilityMass: Double = 0.7
     
     var completions: Int = 1
-    var maxTokens: Int = 4000
+    var maxTokens: Int = ModelTokenLimit[.gpt4] ?? FallbackTokenLimit
     
     var usePresencePenalty = false
     var presencePenalty: Double = 0.5

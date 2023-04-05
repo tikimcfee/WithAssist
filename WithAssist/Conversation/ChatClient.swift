@@ -207,7 +207,7 @@ Received response:
         var runningTokenCount = 0
         for message in candidateMessage.reversed() {
             // TODO: Replace with actual tokenization and token count someday.
-            let tokenEstimate = message.content.count / 4
+            let tokenEstimate = message.content.approximateTokens
             if tokenEstimate + runningTokenCount < 3000 {
                 contextWindow.append(message)
                 runningTokenCount += message.content.count
