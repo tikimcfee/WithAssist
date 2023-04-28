@@ -147,20 +147,20 @@ class FileStorageSerial: ObservableObject {
     private let decoder = JSONDecoder()
     
     func save<T: Codable>(_ object: T, to file: AppFile) throws {
-        let url = try getURL(for: file)
+        let url = try url(for: file)
         let data = try encoder.encode(object)
         try data.write(to: url, options: .atomicWrite)
     }
     
     func load<T: Codable>(_ type: T.Type, from file: AppFile) throws -> T {
-        let url = try getURL(for: file)
+        let url = try url(for: file)
         print("[loader] loading: \(url)")
         let data = try Data(contentsOf: url)
         let decodedObject = try decoder.decode(T.self, from: data)
         return decodedObject
     }
     
-    private func getURL(for file: AppFile) throws -> URL {
+    func url(for file: AppFile) throws -> URL {
         let url = try fileManager.url(for: .documentDirectory,
                                       in: .userDomainMask,
                                       appropriateFor: nil,

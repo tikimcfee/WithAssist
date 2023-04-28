@@ -7,25 +7,26 @@
 
 import SwiftUI
 import OpenAI
+import Foundation
 
 extension Model: CaseIterable {
     public static var allCases: [String] = [
-        "text-davinci-003",
-        "text-davinci-002",
-        "text-davinci-001",
-        "text-curie-001",
-        "text-babbage-001",
-        "text-search-babbage-doc-001",
-        "text-search-babbage-query-001",
-        "text-ada-001",
-        "text-embedding-ada-002",
-        "gpt-3.5-turbo",
-        "gpt-3.5-turbo-0301",
-        "gpt-4",
-        "gpt-4-0314",
-        "gpt-4-32k",
-        "gpt-4-32k-0314",
-        "whisper-1"
+        .textDavinci_003,
+        .textDavinci_002,
+        .textDavinci_001,
+        .curie,
+        .babbage,
+        .textSearchBabbadgeDoc,
+        .textSearchBabbageQuery001,
+        .ada,
+        .textEmbeddingAda,
+        .gpt3_5Turbo,
+        .gpt3_5Turbo0301,
+        .gpt4,
+        .gpt4_0314,
+        .gpt4_32k,
+        .gpt4_32k_0314,
+        .whisper_1
     ]
 }
 
@@ -40,8 +41,18 @@ struct SettingsView: View {
             userField()
             modelPickerView()
             sliderBody()
+            pathsView()
         }
         .listStyle(.sidebar)
+    }
+    
+    @ViewBuilder
+    func pathsView() -> some View {
+        Button("Copy conversation path to clipboard") {
+            if let url = try? FileStorageSerial.shared.url(for: .defaultSnapshot) {
+                NSPasteboard.general.setString(url.path(percentEncoded: false), forType: .string)
+            }
+        }
     }
     
     @ViewBuilder

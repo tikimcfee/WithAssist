@@ -239,7 +239,7 @@ struct EditView: View {
                     component.setBackgroundColor(to: background, at: draft.richTextRange)
                 }
             )
-            .frame(maxHeight: 450)
+            .frame(width: 600, height: 300)
             
             if !draft.string.isEmpty {
                 Button("Save") {
