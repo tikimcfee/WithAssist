@@ -28,6 +28,8 @@ struct ChatRequest: Equatable, Hashable {
     var useFrequencyPenalty = false
     var frequencyPenalty: Double = 0.5
     
+    var stop: [String]? = nil
+    
     var useLogitBias = false
     var logitBias: [String: Int]? = nil
     

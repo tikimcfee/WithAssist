@@ -17,7 +17,9 @@ typealias NSColor = UIColor
 struct ChatInputView: View {
     let didRequestSend: (Draft) throws -> Void
     let didRequestResend: () -> Void
+    let didRequestDraft: (Draft) throws -> Void
     @Binding var inputTokens: Int
+    var inputOnly: Bool = false
     
     @State var draft = NSAttributedString()
     
@@ -57,10 +59,24 @@ struct ChatInputView: View {
             Divider()
             
             HStack {
-                Button("Resend 􀱗") {
-                    didRequestResend()
+                if !inputOnly {
+                    Button("Resend 􀱗") {
+                        didRequestResend()
+                    }
                 }
-                .keyboardShortcut("r", modifiers: [.command, .option])
+                
+                Spacer()
+                
+                if !inputOnly {
+                    Button("Test Embedding") {
+                        do {
+                            try didRequestDraft(Draft(content: draft.string))
+                            draft = NSAttributedString()
+                        } catch {
+                            print("[!! error: \(#function)] \(error)")
+                        }
+                    }
+                }
                 
                 Spacer()
                 

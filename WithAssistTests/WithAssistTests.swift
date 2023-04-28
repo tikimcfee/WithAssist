@@ -25,13 +25,13 @@ final class WithAssistTests: XCTestCase {
         
         Task { [expect] in
             await client.chat.addMessage("Hello, this is dog")
-            let snapshot = client.chat.currentSnapshot
+            let snapshot = try XCTUnwrap(client.chat.snapshotState.currentSnapshot, "No snapshot no fun")
             
             XCTAssertFalse(snapshot.chatMessages.isEmpty, "Should receive a response from model")
             expect.fulfill()
         }
         
-        wait(for: [expect], timeout: 5.0)
+        wait(for: [expect], timeout: 30.0)
     }
     
     func testComplexChat() throws {
@@ -65,14 +65,14 @@ Please define a Swift and SwiftUI application to calculate the N'th Fibonacci nu
         
         Task { [awaitFinalChat] in
             await client.chat.resetPrompt(to: __PROMPT__)
-            var snapshot = client.chat.currentSnapshot
+            var snapshot = try XCTUnwrap(client.chat.snapshotState.currentSnapshot)
             XCTAssertTrue(
                 snapshot.errors.isEmpty,
                 "Should have no errors after reset"
             )
             
             await client.chat.addMessage(__PROMPT_FOLLOWUP__)
-            snapshot = client.chat.currentSnapshot
+            snapshot = try XCTUnwrap(client.chat.snapshotState.currentSnapshot)
             
             XCTAssertTrue(
                 snapshot.errors.isEmpty,
@@ -86,6 +86,35 @@ Please define a Swift and SwiftUI application to calculate the N'th Fibonacci nu
         }
         
         wait(for: [awaitFinalChat], timeout: 120.0)
+    }
+    
+    func testAgent() throws {
+        let client = ClientStore()
+        let agent = Agent(
+            runner: { chat in
+                await client.chat.addMessage(chat.content)
+                for message in client.chat.snapshotState.currentSnapshot?.chatMessages ?? [] {
+                    print("\(message.content)")
+                }
+                return client.chat.snapshotState.currentSnapshot?.chatMessages.last?.content ?? ""
+            }
+        )
+        
+        let expect = expectation(description: "Got a result")
+        
+        Task { [expect] in
+            let prompt =
+            """
+Thinking holistically about this process and your goal, what would you do to improve it in a small, incremental way?
+"""
+            await agent.run(prompt: prompt)
+            let snapshot = try XCTUnwrap(client.chat.snapshotState.currentSnapshot, "No snapshot no fun")
+            
+            XCTAssertFalse(snapshot.chatMessages.isEmpty, "Should receive a response from model")
+            expect.fulfill()
+        }
+        
+        wait(for: [expect], timeout: 30.0)
     }
 }
 

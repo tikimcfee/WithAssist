@@ -168,11 +168,16 @@ struct InteractionsView: View, Serialized {
                     await controller.retryFromCurrent()
                 }
             },
+            didRequestDraft: { draft in
+                loadOnMain {
+                    await controller.___testEmbedding(draft)
+                }
+            },
             inputTokens: $inputTokens
         )
     }
     
-    @MainActor @ViewBuilder
+    @ViewBuilder
     func nameView() -> some View {
         TextField(
             controller.snapshotState.currentSnapshot?.name ?? "<oopsie>",

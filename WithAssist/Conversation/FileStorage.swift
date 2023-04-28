@@ -140,6 +140,8 @@ class FileStorage {
 
 
 class FileStorageSerial: ObservableObject {
+    static let shared = FileStorageSerial()
+    
     private let fileManager = FileManager.default
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()

@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		45439AE129E4ED800062EF13 /* FileAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45439AE029E4ED800062EF13 /* FileAccess.swift */; };
+		45B63D4929DF749B0082FDC6 /* Agent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45B63D4829DF749B0082FDC6 /* Agent.swift */; };
+		45DA584529E781FD009701C5 /* Heptocomm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45DA584429E781FD009701C5 /* Heptocomm.swift */; };
+		45DA584629E781FD009701C5 /* Heptocomm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45DA584429E781FD009701C5 /* Heptocomm.swift */; };
 		B72A79FE29D5399E00BE4163 /* Snapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A79FD29D5399E00BE4163 /* Snapshot.swift */; };
 		B72A7A0029D539FA00BE4163 /* ChatClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A79FF29D539FA00BE4163 /* ChatClient.swift */; };
 		B72A7A0229D53E7D00BE4163 /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A7A0129D53E7D00BE4163 /* AppError.swift */; };
@@ -76,6 +80,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		45439AE029E4ED800062EF13 /* FileAccess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileAccess.swift; sourceTree = "<group>"; };
+		45B63D4829DF749B0082FDC6 /* Agent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Agent.swift; sourceTree = "<group>"; };
+		45DA584429E781FD009701C5 /* Heptocomm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Heptocomm.swift; sourceTree = "<group>"; };
 		B72A79FD29D5399E00BE4163 /* Snapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Snapshot.swift; sourceTree = "<group>"; };
 		B72A79FF29D539FA00BE4163 /* ChatClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatClient.swift; sourceTree = "<group>"; };
 		B72A7A0129D53E7D00BE4163 /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
@@ -143,6 +150,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		45B63D4729DF74910082FDC6 /* Agent */ = {
+			isa = PBXGroup;
+			children = (
+				45B63D4829DF749B0082FDC6 /* Agent.swift */,
+			);
+			path = Agent;
+			sourceTree = "<group>";
+		};
+		45DA584329E781E9009701C5 /* Heptocomm */ = {
+			isa = PBXGroup;
+			children = (
+				45DA584429E781FD009701C5 /* Heptocomm.swift */,
+			);
+			path = Heptocomm;
+			sourceTree = "<group>";
+		};
 		B73CB06929C662600047831E = {
 			isa = PBXGroup;
 			children = (
@@ -230,6 +253,8 @@
 		B73CB0A229C662890047831E /* Conversation */ = {
 			isa = PBXGroup;
 			children = (
+				45DA584329E781E9009701C5 /* Heptocomm */,
+				45B63D4729DF74910082FDC6 /* Agent */,
 				B7497FE229DBAF170030698A /* Tokens.swift */,
 				B73CB0A329C662980047831E /* CoreConversation.swift */,
 				B72A7A0129D53E7D00BE4163 /* AppError.swift */,
@@ -238,6 +263,7 @@
 				B72A7A0729D66B2900BE4163 /* ChatControllerState.swift */,
 				B72A7A0529D669A700BE4163 /* ChatRequest.swift */,
 				B7DBD15A29D13B9900776412 /* FileStorage.swift */,
+				45439AE029E4ED800062EF13 /* FileAccess.swift */,
 				B7DBD15C29D1404000776412 /* CodableAppStorage.swift */,
 				B72A79FD29D5399E00BE4163 /* Snapshot.swift */,
 			);
@@ -430,6 +456,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B73CB07829C662600047831E /* ChatPreviews.swift in Sources */,
+				45B63D4929DF749B0082FDC6 /* Agent.swift in Sources */,
 				B7497FE329DBAF170030698A /* Tokens.swift in Sources */,
 				B7C8B3F329D9D88C00B53B01 /* Serializer.swift in Sources */,
 				B7DBD15D29D1404000776412 /* CodableAppStorage.swift in Sources */,
@@ -443,6 +470,8 @@
 				B72A7A0629D669A700BE4163 /* ChatRequest.swift in Sources */,
 				B72A7A0429D5407300BE4163 /* SnapshotListView.swift in Sources */,
 				B73CB07629C662600047831E /* WithAssistApp.swift in Sources */,
+				45439AE129E4ED800062EF13 /* FileAccess.swift in Sources */,
+				45DA584529E781FD009701C5 /* Heptocomm.swift in Sources */,
 				B72A7A0829D66B2900BE4163 /* ChatControllerState.swift in Sources */,
 				B73CB0A429C662980047831E /* CoreConversation.swift in Sources */,
 				B7C8B3F129D7AFF600B53B01 /* PromptInjectorView.swift in Sources */,
@@ -482,6 +511,7 @@
 				B7EB2FA029DA34880049C4CA /* FileStorage.swift in Sources */,
 				B7EB2FA129DA34880049C4CA /* MainAppView.swift in Sources */,
 				B7EB2FA229DA34880049C4CA /* ConversationView.swift in Sources */,
+				45DA584629E781FD009701C5 /* Heptocomm.swift in Sources */,
 				B7EB2FA329DA34880049C4CA /* SettingsView.swift in Sources */,
 				B7EB2FA429DA34880049C4CA /* ChatRequest.swift in Sources */,
 				B7EB2FA529DA34880049C4CA /* SnapshotListView.swift in Sources */,
@@ -636,7 +666,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"WithAssist/Preview Content\"";
-				DEVELOPMENT_TEAM = XR2HQNSZ68;
+				DEVELOPMENT_TEAM = X72TF388K8;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -708,9 +738,10 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = XR2HQNSZ68;
+				DEVELOPMENT_TEAM = 5F5H835QPF;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
 				MACOSX_DEPLOYMENT_TARGET = 13.1;
@@ -731,9 +762,10 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = XR2HQNSZ68;
+				DEVELOPMENT_TEAM = 5F5H835QPF;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
 				MACOSX_DEPLOYMENT_TARGET = 13.1;
@@ -753,9 +785,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = XR2HQNSZ68;
+				DEVELOPMENT_TEAM = 5F5H835QPF;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
 				MACOSX_DEPLOYMENT_TARGET = 13.1;
@@ -775,9 +808,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = XR2HQNSZ68;
+				DEVELOPMENT_TEAM = 5F5H835QPF;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
 				MACOSX_DEPLOYMENT_TARGET = 13.1;

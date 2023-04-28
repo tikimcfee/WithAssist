@@ -74,6 +74,48 @@ class ChatController: ObservableObject {
         needsToken = true
     }
     
+    func ___testEmbedding(
+        _ draft: Draft
+    ) async {
+        do {
+            let embeddings = try await openAI.embeddings(
+                query: EmbeddingsQuery(
+                    model: paramState.current.chatModel,
+                    input: draft.content
+                )
+            )
+            print("[embedding] \(embeddings.data.count) top levels found")
+            if let first = embeddings.data.first {
+                print("[embedding [0]] \(first.index), [\(first.embedding.count)]: \(first.object)")
+            }
+            
+            trySaveEmbedding(embeddings)
+        } catch {
+            print("[!! error] \(error)")
+        }
+    }
+    
+    private func trySaveEmbedding(_ embedding: EmbeddingsResult) {
+        GlobalFileSelector.requestSystemUrl(for: "embedding result", completion: { target in
+            switch target {
+            case .some(let directory):
+                do {
+                    guard directory.hasDirectoryPath else { throw AppError.custom("must select directory [\(directory)]") }
+                    // lol get the raw value as cache or something ...
+                    try FileStorageSerial.shared.save(
+                        embedding,
+                        to: .custom("embedding-autosave-\(UUID()).json")
+                    )
+                } catch {
+                    print(error)
+                }
+                
+            default:
+                print("[embedding] no save target")
+            }
+        })
+    }
+    
     func addMessage(
         _ message: String,
         _ role: Chat.Role = .user
@@ -208,6 +250,7 @@ Received response:
             topP: paramState.current.topProbabilityMass,
             n: paramState.current.completions,
             stream: false,
+            stop: paramState.current.stop,
             maxTokens: paramState.current.maxTokens,
             presencePenalty: paramState.current.presencePenalty,
             frequencyPenalty: paramState.current.frequencyPenalty,
