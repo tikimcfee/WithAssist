@@ -25,6 +25,7 @@
 		B7497FE329DBAF170030698A /* Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7497FE229DBAF170030698A /* Tokens.swift */; };
 		B7497FE429DBAF210030698A /* Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7497FE229DBAF170030698A /* Tokens.swift */; };
 		B74CB94D29FC8F070070D163 /* EditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B74CB94C29FC8F070070D163 /* EditView.swift */; };
+		B7A2410829FDD19D00C81BCF /* EditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B74CB94C29FC8F070070D163 /* EditView.swift */; };
 		B7B829F329DB993500550002 /* OpenAI in Frameworks */ = {isa = PBXBuildFile; productRef = B7B829F229DB993500550002 /* OpenAI */; };
 		B7C2DDF329DBFC2C006CDF39 /* RichTextKit in Frameworks */ = {isa = PBXBuildFile; productRef = B7C2DDF229DBFC2C006CDF39 /* RichTextKit */; };
 		B7C2DDF529DBFC2C006CDF39 /* OpenAI in Frameworks */ = {isa = PBXBuildFile; productRef = B7C2DDF429DBFC2C006CDF39 /* OpenAI */; };
@@ -482,6 +483,7 @@
 				B7EB2F9C29DA34880049C4CA /* CodableAppStorage.swift in Sources */,
 				B7EB2F9D29DA34880049C4CA /* AppError.swift in Sources */,
 				B7EB2F9E29DA34880049C4CA /* InteractionsView.swift in Sources */,
+				B7A2410829FDD19D00C81BCF /* EditView.swift in Sources */,
 				B7EB2F9F29DA34880049C4CA /* ChatClient.swift in Sources */,
 				B7EB2FA029DA34880049C4CA /* FileStorage.swift in Sources */,
 				B7EB2FA129DA34880049C4CA /* MainAppView.swift in Sources */,

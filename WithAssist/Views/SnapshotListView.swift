@@ -10,7 +10,7 @@ import OpenAI
 
 struct SnapshotListView: View, Serialized {
     @EnvironmentObject var controller: ChatController
-    @EnvironmentObject var store: ChatController.SnapshotState
+    @EnvironmentObject var state: ChatController.SnapshotState
     @State var selection: Int = 0
     
     @StateObject var serializer = Serializer()
@@ -19,34 +19,9 @@ struct SnapshotListView: View, Serialized {
     @State var deleteTarget: Snapshot?
     
     var body: some View {
-        #if os(iOS)
-        ScrollView {
-            LazyVStack(alignment: .leading) {
-                ForEach(
-                    Array(store.allSnapshots.list.enumerated()),
-                    id: \.element.id
-                ) { (index, snapshot) in
-                    Button(
-                        action: {
-                            selection = index
-                        },
-                        label: {
-                            cell(snapshot)
-                        }
-                    ).buttonStyle(.bordered)
-                }
-            }
-        }
-        #else
-        List(
-            Array(store.allSnapshots.list.enumerated()),
-            id: \.element.id,
-            selection: $selection
-        ) { (index, snapshot) in
-            listItem(index, snapshot)
-        }
+        platformBody()
         .onChange(of: selection) {
-            store.currentIndex = $0
+            state.currentIndex = $0
         }
         .confirmationDialog(
             "Remove conversation?",
@@ -71,9 +46,43 @@ struct SnapshotListView: View, Serialized {
                     .italic()
             }
         )
-        #endif
-
     }
+    
+    @ViewBuilder
+    func platformBody() -> some View {
+        #if os(iOS)
+        compactBody()
+        #else
+        desktopBody()
+        #endif
+    }
+    
+    @ViewBuilder
+    func compactBody() -> some View {
+        ScrollView {
+            LazyVStack(alignment: .leading) {
+                ForEach(
+                    Array(state.allSnapshots.list.enumerated()),
+                    id: \.element.id
+                ) { (index, snapshot) in
+                    listItem(index, snapshot)
+                }
+            }
+        }
+    }
+    
+    #if os(macOS)
+    @ViewBuilder
+    func desktopBody() -> some View {
+        List(
+            Array(state.allSnapshots.list.enumerated()),
+            id: \.element.id,
+            selection: $selection
+        ) { (index, snapshot) in
+            listItem(index, snapshot)
+        }
+    }
+    #endif
     
     @ViewBuilder
     func listItem(

@@ -12,7 +12,23 @@ struct MainAppView: View {
     @ObservedObject var chatController: ChatController
     
     var body: some View {
+        #if os(macOS)
         chatBody
+        #else
+        compactBody
+        #endif
+    }
+    
+    @ViewBuilder
+    var compactBody: some View {
+        TabView {
+            listView()
+                .tabItem { Label("Contexts", systemImage: "list.bullet.rectangle") }
+            
+            mainInteractionsView()
+                .tabItem { Label("Converse", systemImage: "message.and.waveform") }
+                .toolbar { ToolbarItem { newConversationView } }
+        }
     }
     
     @ViewBuilder
