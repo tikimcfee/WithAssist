@@ -159,6 +159,7 @@ struct MessageCellOptionsWrapper: View, Serialized {
                 editMessage = nil
             }
         )
+        .frame(width: 600, height: 450)
     }
 }
 
