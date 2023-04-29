@@ -46,17 +46,17 @@ extension ChatController {
             
             $allSnapshots
                 .merge(with: manualSaves)
-                .handleEvents(receiveOutput: { _ in
-                    print("[chat state] Testing should save...")
-                })
+//                .handleEvents(receiveOutput: { _ in
+//                    print("[chat state] Testing should save...")
+//                })
                 .filter { !$0.isSaved && !$0.list.isEmpty }
-                .handleEvents(receiveOutput: { _ in
-                    print("[chat state] Save debouncing")
-                })
+//                .handleEvents(receiveOutput: { _ in
+//                    print("[chat state] Save debouncing")
+//                })
                 .debounce(for: 1, scheduler: Self.saveQueue)
-                .handleEvents(receiveOutput: { _ in
-                    print("[chat state] Testing duplicate...")
-                })
+//                .handleEvents(receiveOutput: { _ in
+//                    print("[chat state] Testing duplicate...")
+//                })
                 .removeDuplicates()
                 .map { snapshot -> AllSnapshots in
                     print("[chat state] Starting save")

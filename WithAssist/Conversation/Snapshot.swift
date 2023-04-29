@@ -11,13 +11,7 @@ import OpenAI
 struct AllSnapshots: Codable, Equatable, Hashable, Identifiable {
     var id: UUID = UUID()
     var list: [Snapshot]
-    var isSaved: Bool = false {
-        willSet {
-            if newValue == false {
-                print("why!?")
-            }
-        }
-    }
+    var isSaved: Bool = false
     
     init(list: [Snapshot] = []) {
         self.list = list

@@ -11,6 +11,8 @@ import OpenAI
 struct MainAppView: View {
     @ObservedObject var chatController: ChatController
     
+    @State var path: NavigationPath = NavigationPath()
+    
     var body: some View {
         #if os(macOS)
         chatBody
@@ -21,13 +23,19 @@ struct MainAppView: View {
     
     @ViewBuilder
     var compactBody: some View {
-        TabView {
+        NavigationStack(path: $path) {
             listView()
-                .tabItem { Label("Contexts", systemImage: "list.bullet.rectangle") }
-            
-            mainInteractionsView()
-                .tabItem { Label("Converse", systemImage: "message.and.waveform") }
                 .toolbar { ToolbarItem { newConversationView } }
+                .navigationDestination(for: Snapshot.self) { snapshot in
+                    mainInteractionsView()
+                        .navigationTitle(snapshot.name)
+                }
+        }
+        .onReceive(chatController.snapshotState.$publishedSnapshot) {
+            if let snapshot = $0 {
+                path = NavigationPath([snapshot])
+            }
+            
         }
     }
     

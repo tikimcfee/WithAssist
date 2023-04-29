@@ -47,11 +47,10 @@ struct InteractionsView: View, Serialized {
                 maxTokens = $0.maxTokens
             }
             .toolbar {
-                ToolbarItem(placement: .navigation) {
+                ToolbarItem(placement: .principal) {
                     nameView()
                 }
             }
-            .navigationTitle("")
     }
     
     @ViewBuilder
@@ -60,8 +59,12 @@ struct InteractionsView: View, Serialized {
             ConversationView(
                 controller: controller
             )
+            
             tokenCountView
+                .padding(.trailing)
+            
             inputView()
+                .padding()
         }
         .toolbar {
             ToolbarItem {

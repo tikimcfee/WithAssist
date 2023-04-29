@@ -11,7 +11,6 @@ import OpenAI
 struct SnapshotListView: View, Serialized {
     @EnvironmentObject var controller: ChatController
     @EnvironmentObject var state: ChatController.SnapshotState
-    @State var selection: Int = 0
     
     @StateObject var serializer = Serializer()
     
@@ -19,33 +18,39 @@ struct SnapshotListView: View, Serialized {
     @State var deleteTarget: Snapshot?
     
     var body: some View {
-        platformBody()
-        .onChange(of: selection) {
-            state.currentIndex = $0
-        }
-        .confirmationDialog(
-            "Remove conversation?",
-            isPresented: $deleting,
-            presenting: deleteTarget,
-            actions: { target in
-                Button(
-                    role: .destructive,
-                    action: {
-                        asyncIsolated {
-                            await controller.removeSnapshot(target)
-                        }
-                    },
-                    label: {
-                        Text("Delete '\(target.name)'")
+        rootBody()
+    }
+    
+    func rootBody() -> some View {
+        @ViewBuilder
+        func delete(_ target: Snapshot) -> some View {
+            Button(
+                role: .destructive,
+                action: {
+                    asyncIsolated {
+                        await controller.removeSnapshot(target)
                     }
-                )
-            },
-            message: { target in
-                let prefix: String = String(target.chatMessages.first?.content.prefix(128) ?? "")
-                Text("First message:\n \(prefix)...")
-                    .italic()
-            }
-        )
+                },
+                label: {
+                    Text("Delete '\(target.name)'")
+                }
+            )
+        }
+        
+        return platformBody()
+            .confirmationDialog(
+                "Remove conversation?",
+                isPresented: $deleting,
+                presenting: deleteTarget,
+                actions: { target in
+                    delete(target)
+                },
+                message: { target in
+                    let prefix: String = String(target.chatMessages.first?.content.prefix(128) ?? "")
+                    Text("First message:\n \(prefix)...")
+                        .italic()
+                }
+            )
     }
     
     @ViewBuilder
@@ -98,10 +103,10 @@ struct SnapshotListView: View, Serialized {
         .background(
             snapshot.id == controller.snapshotState.publishedSnapshot?.id
                 ? .blue.opacity(0.1415)
-                : .blue.opacity(0.0002) // needs some visible value for tap target
+                : .gray.opacity(0.1) // needs some visible value for tap target
         )
         .onTapGesture {
-            selection = index
+            controller.snapshotState.currentIndex = index
         }
     }
     
