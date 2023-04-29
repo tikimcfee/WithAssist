@@ -24,7 +24,6 @@ extension View {
 
 struct ConversationView: View, Serialized {
     @ObservedObject var controller: ChatController
-    @ObservedObject var state: ChatController.SnapshotState
     @StateObject var serializer = Serializer()
     
     @State var showOptionsMessage: Chat?
@@ -35,11 +34,10 @@ struct ConversationView: View, Serialized {
         controller: ChatController
     ) {
         self.controller = controller
-        self._state = ObservedObject(initialValue: controller.snapshotState)
     }
     
     var body: some View {
-        maybeRootView(state.publishedSnapshot)
+        maybeRootView(controller.snapshotState.publishedSnapshot)
     }
     
     @ViewBuilder
@@ -102,26 +100,6 @@ struct ChatRow: View {
     }
 }
 
-struct DeleteButton: View, Serialized {
-    let message: Chat
-    let controller: ChatController
-    
-    var body: some View {
-        Button(
-            action: {
-                asyncIsolated {
-                    print("Deleting: \(message.content.prefix(32))...")
-                    await controller.removeMessage(message)
-                }
-            },
-            label: {
-                Label("Delete", systemImage: "minus.circle.fill")
-            }
-        )
-        .foregroundColor(.white)
-    }
-}
-
 struct MessageCellOptionsWrapper: View, Serialized {
     @Binding var editMessage: Chat?
     @Binding var showOptionsMessage: Chat?
@@ -133,7 +111,7 @@ struct MessageCellOptionsWrapper: View, Serialized {
             if let messageToEdit = editMessage, messageToEdit.id == message.id {
                 editView(message)
             } else if showOptionsMessage?.id == message.id {
-                ZStack(alignment: .topTrailing){
+                ZStack(alignment: .topTrailing) {
                     MessageCell(message: message)
                     hoverOptions(for: message)
                 }
@@ -152,12 +130,18 @@ struct MessageCellOptionsWrapper: View, Serialized {
     
     @ViewBuilder
     func hoverOptions(for message: Chat) -> some View {
-        VStack(alignment: .trailing) {
-            DeleteButton(message: message, controller: controller)
+        HStack(alignment: .center) {
             EditButton(message: message, editMessage: $editMessage)
+                .padding(8)
+                .background(Color.gray)
+                .clipShape(Circle())
+            
+            DeleteButton(message: message, controller: controller)
+                .padding(8)
+                .background(Color.red)
+                .clipShape(Circle())
         }
         .padding(8)
-        .background(Color.gray)
     }
     
     @ViewBuilder
@@ -178,6 +162,27 @@ struct MessageCellOptionsWrapper: View, Serialized {
     }
 }
 
+struct DeleteButton: View, Serialized {
+    let message: Chat
+    let controller: ChatController
+    
+    var body: some View {
+        Button(
+            action: {
+                asyncIsolated {
+                    print("Deleting: \(message.content.prefix(32))...")
+                    await controller.removeMessage(message)
+                }
+            },
+            label: {
+                Image(systemName: "minus.circle.fill")
+                    .foregroundColor(.white)
+            }
+        )
+        .buttonStyle(.plain)
+    }
+}
+
 struct EditButton: View {
     let message: Chat
     @Binding var editMessage: Chat?
@@ -189,10 +194,11 @@ struct EditButton: View {
                 editMessage = message
             },
             label: {
-                Label("Edit", systemImage: "pencil")
+                Image(systemName: "pencil")
+                    .foregroundColor(.green)
             }
         )
-        .foregroundColor(.white)
+        .buttonStyle(.plain)
     }
 }
 

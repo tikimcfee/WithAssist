@@ -15,10 +15,9 @@ extension ChatController {
     class SnapshotState: ObservableObject, GlobalStoreReader {
         @Published var publishedSnapshot: Snapshot?
         @Published var currentIndex: Int = 0
-        
         @Published var allSnapshots: AllSnapshots = AllSnapshots() {
             willSet {
-                print("WHO!?")
+                print("[all snapshots set via field accessor]")
             }
         }
         
@@ -131,6 +130,7 @@ extension ChatController {
             await receiver(&updatedSnapshot)
             await MainActor.run { [updatedSnapshot] in
                 allSnapshots.storeChanges(to: updatedSnapshot)
+                publishedSnapshot = updatedSnapshot
             }
         }
         

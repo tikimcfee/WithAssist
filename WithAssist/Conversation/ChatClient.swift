@@ -60,6 +60,18 @@ class ChatController: ObservableObject {
         if OPENAI_API_KEY != nil {
             needsToken = false
         }
+        
+        snapshotState.$publishedSnapshot.sink { _ in
+            self.objectWillChange.send()
+        }.store(in: &bag)
+        
+        snapshotState.$allSnapshots.sink { _ in
+            self.objectWillChange.send()
+        }.store(in: &bag)
+        
+        snapshotState.$currentIndex.sink { _ in
+            self.objectWillChange.send()
+        }.store(in: &bag)
     }
     
     func saveManual() {
