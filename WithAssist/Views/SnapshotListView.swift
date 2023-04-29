@@ -76,7 +76,10 @@ struct SnapshotListView: View, Serialized {
     }
     
     @ViewBuilder
-    func listItem(_ index: Int, _ snapshot: Snapshot) -> some View {
+    func listItem(
+        _ index: Int,
+        _ snapshot: Snapshot
+    ) -> some View {
         HStack(alignment: .center) {
             cell(snapshot)
             delete(snapshot)
@@ -84,7 +87,7 @@ struct SnapshotListView: View, Serialized {
         .padding()
         .border(Color.gray, width: 0.5)
         .background(
-            snapshot.id == store.currentSnapshot?.id
+            snapshot.id == controller.snapshotState.publishedSnapshot?.id
                 ? .blue.opacity(0.1415)
                 : .blue.opacity(0.0002) // needs some visible value for tap target
         )

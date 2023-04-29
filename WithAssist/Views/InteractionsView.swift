@@ -29,12 +29,8 @@ struct InteractionsView: View, Serialized {
         self.state = controller.snapshotState
     }
     
-    private var snapshot: Snapshot? {
-        controller.snapshotState.currentSnapshot
-    }
-    
     private var hasErrors: Bool {
-        snapshot?.errors.isEmpty == false
+        state.publishedSnapshot?.errors.isEmpty == false
     }
     
     var body: some View {
@@ -42,7 +38,7 @@ struct InteractionsView: View, Serialized {
             .disabled(isLoading || controller.needsToken)
             .overlay(loadingOverlayView())
             .overlay(updateTokenView())
-            .onChange(of: state.currentSnapshot) { _ in
+            .onChange(of: state.publishedSnapshot) { _ in
                 asyncIsolated {
                     await updateApproximateTokens()
                 }
@@ -50,13 +46,19 @@ struct InteractionsView: View, Serialized {
             .onReceive(controller.paramState.$current) {
                 maxTokens = $0.maxTokens
             }
+            .toolbar {
+                ToolbarItem(placement: .navigation) {
+                    nameView()
+                }
+            }
+            .navigationTitle("")
     }
     
     @ViewBuilder
     var chatView: some View {
         VStack {
             ConversationView(
-                store: controller
+                controller: controller
             )
             tokenCountView
             inputView()
@@ -143,7 +145,7 @@ struct InteractionsView: View, Serialized {
     
     @ViewBuilder
     func promptInjectorView() -> some View {
-        if let snapshot {
+        if let snapshot = state.publishedSnapshot {
             PromptInjectorView(
                 draft: snapshot.chatMessages.first?.content ?? "",
                 didRequestSetPrompt: { updatedPromptText in
@@ -172,26 +174,29 @@ struct InteractionsView: View, Serialized {
         )
     }
     
-    @MainActor @ViewBuilder
+    @MainActor
+    @ViewBuilder
     func nameView() -> some View {
-        TextField(
-            controller.snapshotState.currentSnapshot?.name ?? "<oopsie>",
-            text: Binding<String>(
-                get: { controller.snapshotState.currentSnapshot?.name ?? "" },
-                set: { name in
-                    asyncIsolated {
-                        await controller.snapshotState.updateCurrent {
-                            $0.name = name
+        if let snapshot = state.publishedSnapshot {
+            TextField(
+                snapshot.name,
+                text: Binding<String>(
+                    get: { snapshot.name },
+                    set: { name in
+                        asyncIsolated {
+                            await controller.snapshotState.updateCurrent {
+                                $0.name = name
+                            }
                         }
                     }
-                }
+                )
             )
-        )
+        }
     }
     
     @ViewBuilder
     func errorView() -> some View {
-        if let snapshot, hasErrors {
+        if let snapshot = state.publishedSnapshot, hasErrors {
             List {
                 ForEach(snapshot.errors) { error in
                     Text(error.message)
@@ -236,7 +241,7 @@ struct InteractionsView: View, Serialized {
     }
     
     var currentCharacterCount: Int {
-        snapshot?.chatMessages.lazy.map {
+        state.publishedSnapshot?.chatMessages.lazy.map {
             $0.content.count
         }.reduce(0, +)
         ?? 0

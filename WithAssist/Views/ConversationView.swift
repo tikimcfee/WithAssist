@@ -23,7 +23,7 @@ extension View {
 }
 
 struct ConversationView: View, Serialized {
-    @ObservedObject var store: ChatController
+    @ObservedObject var controller: ChatController
     @ObservedObject var state: ChatController.SnapshotState
     @StateObject var serializer = Serializer()
     
@@ -32,70 +32,113 @@ struct ConversationView: View, Serialized {
     @State var isEditing: Bool = false
     
     init(
-        store: ChatController
+        controller: ChatController
     ) {
-        self.store = store
-        self._state = ObservedObject(initialValue: store.snapshotState)
-    }
-    
-    var snapshot: Snapshot? {
-        store.snapshotState.currentSnapshot
+        self.controller = controller
+        self._state = ObservedObject(initialValue: controller.snapshotState)
     }
     
     var body: some View {
+        maybeRootView(state.publishedSnapshot)
+    }
+    
+    @ViewBuilder
+    func maybeRootView(_ snapshot: Snapshot?) -> some View {
         if let snapshot {
             ScrollViewReader { proxy in
                 List(
                     Array(snapshot.chatMessages.enumerated()),
                     id: \.offset
                 ) { (index, message) in
-                    let isUser = message.role == "user"
-                    let isAssistant = message.role == "assistant"
-                    
-                    HStack {
-                        if isUser { Spacer() }
-
-                        messageCellOptionsWrapper(message)
-                            .border(Color.gray.opacity(0.33), width: 1)
-                            .tag(index)
-                            .padding(
-                                isUser ? .leading : .trailing,
-                                96
-                            )
-                            .padding(.bottom, 8)
-                        
-                        if isAssistant { Spacer() }
-                    }
+                    ChatRow(
+                        message: message,
+                        controller: controller,
+                        index: index,
+                        editMessage: $editMessage,
+                        showOptionsMessage: $showOptionsMessage
+                    )
                 }
                 .listStyle(.inset)
-                .onChange(of: snapshot.results.count) { _ in
-                    if let last = snapshot.chatMessages.first {
-                        print("Scroll to: \(last.content.prefix(32))...")
-                        proxy.scrollTo(last.id, anchor: .bottom)
-                    }
-                }
-                .onAppear {
-                    if let last = snapshot.chatMessages.first {
-                        print("Scroll to: \(last.content.prefix(32))...")
-                        proxy.scrollTo(last.id, anchor: .bottom)
-                    }
-                }
             }
+        } else {
+            Text("Select a converation")
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                .bold()
         }
     }
+}
+
+struct ChatRow: View {
+    let message: Chat
+    let controller: ChatController
+    let index: Int
     
-    @ViewBuilder
-    func messageCellOptionsWrapper(_ message: Chat) -> some View {
+    @Binding var editMessage: Chat?
+    @Binding var showOptionsMessage: Chat?
+    
+    var body: some View {
+        HStack {
+            let isUser = message.role == .user
+            let isAssistant = message.role == .assistant
+            
+            if isUser { Spacer() }
+            
+            MessageCellOptionsWrapper(
+                editMessage: $editMessage,
+                showOptionsMessage: $showOptionsMessage,
+                message: message,
+                controller: controller
+            )
+            .border(Color.gray.opacity(0.33), width: 1)
+            .padding(
+                isUser ? .leading : .trailing,
+                96
+            )
+            .padding(.bottom, 8)
+            .tag(index)
+            
+            if isAssistant { Spacer() }
+        }
+    }
+}
+
+struct DeleteButton: View, Serialized {
+    let message: Chat
+    let controller: ChatController
+    
+    var body: some View {
+        Button(
+            action: {
+                asyncIsolated {
+                    print("Deleting: \(message.content.prefix(32))...")
+                    await controller.removeMessage(message)
+                }
+            },
+            label: {
+                Label("Delete", systemImage: "minus.circle.fill")
+            }
+        )
+        .foregroundColor(.white)
+    }
+}
+
+struct MessageCellOptionsWrapper: View, Serialized {
+    @Binding var editMessage: Chat?
+    @Binding var showOptionsMessage: Chat?
+    let message: Chat
+    let controller: ChatController
+    
+    var body: some View {
         ZStack(alignment: .topTrailing) {
             if let messageToEdit = editMessage, messageToEdit.id == message.id {
                 editView(message)
             } else if showOptionsMessage?.id == message.id {
                 ZStack(alignment: .topTrailing){
-                    messageCell(message)
+                    MessageCell(message: message)
                     hoverOptions(for: message)
                 }
             } else {
-                messageCell(message)
+                MessageCell(message: message)
             }
         }
         .onHover { isInFrame in
@@ -108,58 +151,38 @@ struct ConversationView: View, Serialized {
     }
     
     @ViewBuilder
-    func editView(_ message: Chat) -> some View {
-        if let messageToEdit = editMessage,
-            messageToEdit.id == message.id
-        {
-            EditView(
-                toEdit: messageToEdit,
-                onComplete: { updated in
-                    asyncIsolated {
-                        await store.update(
-                            message: message,
-                            to: updated
-                        )
-                        editMessage = nil
-                    }
-                },
-                onDismiss: {
-                    showOptionsMessage = nil
-                    editMessage = nil
-                }
-            )
-        }
-    }
-    
-    @ViewBuilder
     func hoverOptions(for message: Chat) -> some View {
         VStack(alignment: .trailing) {
-            deleteButton(message)
-            editButton(message)
+            DeleteButton(message: message, controller: controller)
+            EditButton(message: message, editMessage: $editMessage)
         }
         .padding(8)
         .background(Color.gray)
     }
     
-    
     @ViewBuilder
-    func deleteButton(_ message: Chat) -> some View {
-        Button(
-            action: {
+    func editView(_ message: Chat) -> some View {
+        EditView(
+            toEdit: message,
+            onComplete: { updated in
                 asyncIsolated {
-                    print("Deleting: \(message.content.prefix(32))...")
-                    await store.removeMessage(message)
+                    await controller.update(message: message, to: updated)
+                    editMessage = nil
                 }
             },
-            label: {
-                Label("Delete", systemImage: "minus.circle.fill")
+            onDismiss: {
+                showOptionsMessage = nil
+                editMessage = nil
             }
         )
-        .foregroundColor(.white)
     }
+}
+
+struct EditButton: View {
+    let message: Chat
+    @Binding var editMessage: Chat?
     
-    @ViewBuilder
-    func editButton(_ message: Chat) -> some View {
+    var body: some View {
         Button(
             action: {
                 print("Editing: \(message.content.prefix(32))...")
@@ -171,90 +194,23 @@ struct ConversationView: View, Serialized {
         )
         .foregroundColor(.white)
     }
+}
+
+struct MessageCell: View {
+    let message: Chat
     
-    @ViewBuilder
-    func messageCell(_ message: Chat) -> some View {
+    var body: some View {
         VStack(alignment: .leading) {
-            Text(message.role)
+            Text(message.role.rawValue)
                 .italic()
                 .fontWeight(.bold)
                 .font(.callout)
             
             Text(message.content)
                 .textSelection(.enabled)
-//                .frame(maxWidth: .infinity, alignment: .leading)
                 .frame(maxWidth: 600, alignment: .leading)
         }
         .padding(8)
-    }
-}
-
-
-
-import RichTextKit
-struct EditView: View {
-    let toEdit: Chat
-    let onComplete: (Chat) -> Void
-    let onDismiss: () -> Void
-    
-    @State var draft: NSAttributedString
-    
-    @StateObject private var context = {
-        let context = RichTextContext()
-        return context
-    }()
-    
-    @Environment(\.colorScheme) var style: ColorScheme
-    var foreground: NSColor {
-        switch style {
-        case .light: return .black
-        case .dark: return .white
-        @unknown default:
-            return .black
-        }
-    }
-    
-    var background: NSColor {
-        .clear
-    }
-    
-    init(
-        toEdit: Chat,
-        onComplete: @escaping (Chat) -> Void,
-        onDismiss: @escaping () -> Void) {
-            self.toEdit = toEdit
-            self.onComplete = onComplete
-            self.onDismiss = onDismiss
-            self._draft = State(wrappedValue: NSAttributedString(string: toEdit.content))
-        }
-    
-    var body: some View {
-        VStack(alignment: .trailing) {
-            RichTextEditor(
-                text: $draft,
-                context: context,
-                format: .plainText,
-                viewConfiguration: { component in
-                    component.setForegroundColor(to: foreground, at: draft.richTextRange)
-                    component.setBackgroundColor(to: background, at: draft.richTextRange)
-                }
-            )
-            .frame(maxHeight: 450)
-            
-            if !draft.string.isEmpty {
-                Button("Save") {
-                    onComplete(
-                        toEdit.updatedContent(of: draft.string)
-                    )
-                }
-            }
-            
-            Button("Cancel") {
-                onDismiss()
-            }
-        }
-        .padding(8)
-        .background(Color.blue.opacity(0.1))
     }
 }
 
@@ -266,3 +222,23 @@ extension Chat {
         )
     }
 }
+
+//                .onReceive($state.publishedSnapshot?.chatMessages) { messages in
+//                    if let last = messages?.last {
+//                        proxy.scrollTo(last, anchor: .bottom)
+//                    }
+//                }
+//                .onChange(of: snapshot.results.count) { new in
+//
+//                    if let last = new.chatMessages.first {
+//                        print("Scroll to: \(last.content.prefix(32))...")
+//
+//                    }
+//                }
+//                .onAppear {
+//                    proxy.scrollTo(snapshot.chatMessages.endIndex - 1, anchor: .bottom)
+//                    if let last = snapshot.chatMessages.first {
+//                        print("Scroll to: \(last.content.prefix(32))...")
+//
+//                    }
+//                }

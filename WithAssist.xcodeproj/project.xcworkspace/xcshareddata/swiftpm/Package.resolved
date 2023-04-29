@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/tikimcfee/OpenAI.git",
       "state" : {
-        "branch" : "saving_optionals",
-        "revision" : "b256d26de5ac764cfc03232bce073022c5c3c121"
+        "branch" : "main",
+        "revision" : "00935aff4fe39ca400c28235b9ffa382e62d6584"
       }
     },
     {
@@ -15,7 +15,7 @@
       "location" : "https://github.com/danielsaidi/RichTextKit.git",
       "state" : {
         "branch" : "main",
-        "revision" : "80e91deb13c926e8074932b67799fb82b4a6e901"
+        "revision" : "d97ddff95d391acfeaae8cafa29021587ae3460d"
       }
     }
   ],

@@ -77,7 +77,7 @@ struct MainAppView: View {
     @ViewBuilder
     func conversationView() -> some View {
         ConversationView(
-            store: chatController
+            controller: chatController
         )
     }
     

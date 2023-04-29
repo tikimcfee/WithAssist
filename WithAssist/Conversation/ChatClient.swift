@@ -157,8 +157,8 @@ class ChatController: ObservableObject {
             let result = try await performChatQuery(using: snapshot)
             snapshot.results.append(result)
             
-            if let choice = result.choices.first {
-                snapshot.chatMessages.append(choice.message)
+            if let choice = result.choices.first?.message {
+                snapshot.chatMessages.append(choice)
             }
         } catch {
             print("[!!error \(#fileID)]: \(error)")
@@ -184,7 +184,7 @@ extension ChatController {
         )
         
         let firstMessage =
-            result.choices.first?.message.content
+            result.choices.first?.message?.content
             ?? "<no response message>"
         
         print(

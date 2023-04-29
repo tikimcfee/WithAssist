@@ -49,7 +49,7 @@ struct SettingsView: View {
         TextField("User", text: $controller.paramState.current.user)
             .underline()
     }
-    
+
     @ViewBuilder
     func modelPickerView() -> some View {
         Picker("GPT Model", selection: $controller.paramState.current.chatModel) {
@@ -59,7 +59,7 @@ struct SettingsView: View {
             }
         }
     }
-    
+
     @ViewBuilder
     func sliderBody() -> some View {
         ToggleSlider(
@@ -72,28 +72,28 @@ struct SettingsView: View {
             range: 0.0...8000,
             step: 500
         )
-        
+
         ToggleSlider(
             name: "Probability Mass (top-p)",
             use: $controller.paramState.current.useTopProbabilityMass,
             value: $controller.paramState.current.topProbabilityMass,
             range: 0.0...1.0
         )
-        
+
         ToggleSlider(
             name: "Temperature",
             use: $controller.paramState.current.useTemperature,
             value: $controller.paramState.current.temperature,
             range: 0.0...2.0
         )
-        
+
         ToggleSlider(
             name: "Frequency Penalty",
             use: $controller.paramState.current.useFrequencyPenalty,
             value: $controller.paramState.current.frequencyPenalty,
             range: -2.0...2.0
         )
-        
+
         ToggleSlider(
             name: "Presence Penalty",
             use: $controller.paramState.current.usePresencePenalty,

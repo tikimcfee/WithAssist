@@ -39,6 +39,12 @@ struct AllSnapshots: Codable, Equatable, Hashable, Identifiable {
         isSaved = false
         return (new, index: list.endIndex - 1)
     }
+    
+    subscript(_ currentIndex: Int) -> Snapshot? {
+        guard list.indices.contains(currentIndex)
+        else { return nil }
+        return list[currentIndex]
+    }
 }
 
 struct Snapshot: Identifiable, Codable, Equatable, Hashable {

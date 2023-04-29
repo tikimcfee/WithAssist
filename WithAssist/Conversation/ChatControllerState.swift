@@ -13,7 +13,9 @@ import SwiftUI
 
 extension ChatController {
     class SnapshotState: ObservableObject, GlobalStoreReader {
+        @Published var publishedSnapshot: Snapshot?
         @Published var currentIndex: Int = 0
+        
         @Published var allSnapshots: AllSnapshots = AllSnapshots() {
             willSet {
                 print("WHO!?")
@@ -38,6 +40,11 @@ extension ChatController {
         }
         
         func setupAutosave() {
+            $currentIndex
+                .compactMap { self.allSnapshots[$0] }
+                .sink { self.publishedSnapshot = $0 }
+                .store(in: &bag)
+            
             $allSnapshots
                 .merge(with: manualSaves)
                 .handleEvents(receiveOutput: { _ in
@@ -98,7 +105,7 @@ extension ChatController {
         }
         
         public func usingCurrent(_ receiver: (Snapshot) -> Void) {
-            guard let usingCurrent = currentSnapshot else {
+            guard let usingCurrent = publishedSnapshot else {
                 print("[state update] no current snapshot to update")
                 return
             }
@@ -107,7 +114,7 @@ extension ChatController {
         }
         
         public func usingCurrent(_ receiver: (Snapshot) async -> Void) async {
-            guard let usingCurrent = currentSnapshot else {
+            guard let usingCurrent = publishedSnapshot else {
                 print("[state update] no current snapshot to update")
                 return
             }
@@ -116,7 +123,7 @@ extension ChatController {
         }
 
         public func updateCurrent(_ receiver: (inout Snapshot) async -> Void) async {
-            guard var updatedSnapshot = currentSnapshot else {
+            guard var updatedSnapshot = publishedSnapshot else {
                 print("[state update] no current snapshot to update")
                 return
             }
@@ -130,16 +137,6 @@ extension ChatController {
         public func update(_ receiver: (ChatController.SnapshotState)-> Void) async {
             await MainActor.run {
                 receiver(self)
-            }
-        }
-
-        public var currentSnapshot: Snapshot? {
-            get {
-                guard allSnapshots.list.indices.contains(currentIndex)
-                else {
-                    return nil
-                }
-                return allSnapshots.list[currentIndex]
             }
         }
         
