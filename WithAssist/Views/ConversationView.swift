@@ -44,19 +44,31 @@ struct ConversationView: View, Serialized {
     func maybeRootView(_ snapshot: Snapshot?) -> some View {
         if let snapshot {
             ScrollViewReader { proxy in
-                List(
-                    Array(snapshot.chatMessages.enumerated()),
-                    id: \.offset
-                ) { (index, message) in
-                    ChatRow(
-                        message: message,
-                        controller: controller,
-                        index: index,
-                        editMessage: $editMessage,
-                        showOptionsMessage: $showOptionsMessage
-                    )
+                ScrollView {
+                    LazyVStack {
+                        ForEach(
+                            Array(snapshot.chatMessages.enumerated()),
+                            id: \.offset
+                        ) { (index, message) in
+                            ChatRow(
+                                message: message,
+                                controller: controller,
+                                index: index,
+                                editMessage: $editMessage,
+                                showOptionsMessage: $showOptionsMessage
+                            )
+                            .tag(index)
+                        }
+                    }
                 }
-                .listStyle(.inset)
+                .onReceive(controller.snapshotState.$publishedSnapshot) { snapshot in
+                    guard let snapshot else { return }
+                    proxy.scrollTo(snapshot.chatMessages.endIndex - 1, anchor: .bottom)
+                }
+                .onChange(of: snapshot.chatMessages.count) { newCount in
+                    print("Scroll to: \(newCount)")
+                    proxy.scrollTo(newCount - 1, anchor: .bottom)
+                }
             }
         } else {
             Text("Select a converation")
@@ -157,12 +169,10 @@ struct MessageCellOptionsWrapper: View, Serialized {
         HStack(alignment: .center) {
             EditButton(message: message, editMessage: $editMessage)
                 .padding(8)
-                .background(Color.gray)
                 .clipShape(Circle())
             
             DeleteButton(message: message, controller: controller)
                 .padding(8)
-                .background(Color.red)
                 .clipShape(Circle())
         }
         .padding(8)
@@ -195,19 +205,20 @@ struct DeleteButton: View, Serialized {
     let controller: ChatController
     
     var body: some View {
-        Button(
+        LongPressButton(
+            staticColor: .red.opacity(0.12),
+            holdColor: .red,
+            label: {
+                Image(systemName: "minus.circle.fill")
+                    .foregroundColor(.red)
+            },
             action: {
                 asyncIsolated {
                     print("Deleting: \(message.content.prefix(32))...")
                     await controller.removeMessage(message)
                 }
-            },
-            label: {
-                Image(systemName: "minus.circle.fill")
-                    .foregroundColor(.white)
             }
         )
-        .buttonStyle(.plain)
     }
 }
 
@@ -256,23 +267,3 @@ extension Chat {
         )
     }
 }
-
-//                .onReceive($state.publishedSnapshot?.chatMessages) { messages in
-//                    if let last = messages?.last {
-//                        proxy.scrollTo(last, anchor: .bottom)
-//                    }
-//                }
-//                .onChange(of: snapshot.results.count) { new in
-//
-//                    if let last = new.chatMessages.first {
-//                        print("Scroll to: \(last.content.prefix(32))...")
-//
-//                    }
-//                }
-//                .onAppear {
-//                    proxy.scrollTo(snapshot.chatMessages.endIndex - 1, anchor: .bottom)
-//                    if let last = snapshot.chatMessages.first {
-//                        print("Scroll to: \(last.content.prefix(32))...")
-//
-//                    }
-//                }
