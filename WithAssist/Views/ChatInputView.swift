@@ -57,7 +57,7 @@ struct ChatInputView: View {
             Divider()
             
             HStack {
-                Button("Resend 􀱗") {
+                Button("Resend") {
                     didRequestResend()
                 }
                 .keyboardShortcut("r", modifiers: [.command, .option])
@@ -65,15 +65,24 @@ struct ChatInputView: View {
                 Spacer()
                 
                 Button("Send message") {
-                    do {
-                        try didRequestSend(Draft(content: draft.string))
-                        draft = NSAttributedString()
-                    } catch {
-                        print("[!! error: \(#function)] \(error)")
+                    Task {
+                        let toSave = draft
+                        await MainActor.run {
+                            draft = NSAttributedString()
+                        }
+                        do {
+                            try didRequestSend(Draft(content: toSave.string))
+                        } catch {
+                            print("[!! error: \(#function)] \(error)")
+                            await MainActor.run {
+                                draft = toSave
+                            }
+                        }
                     }
                 }
                 .keyboardShortcut(.return, modifiers: .command)
             }
+            .padding()
             
             Divider()
         }

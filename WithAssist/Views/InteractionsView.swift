@@ -8,6 +8,11 @@
 import SwiftUI
 import OpenAI
 import Combine
+func dismissKeys() {
+    #if os(iOS)
+    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    #endif
+}
 
 struct InteractionsView: View, Serialized {
     
@@ -59,6 +64,9 @@ struct InteractionsView: View, Serialized {
             ConversationView(
                 controller: controller
             )
+            .onTapGesture {
+                dismissKeys()
+            }
             
             tokenCountView
                 .padding(.trailing)
