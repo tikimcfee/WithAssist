@@ -74,6 +74,18 @@ struct InteractionsView: View, Serialized {
             inputView()
                 .padding()
         }
+        #if os(iOS)
+        .sheet(isPresented: $showPrompt) {
+            promptInjectorView()
+                .padding()
+        }
+        .sheet(isPresented: $showErrors) {
+            errorView()
+        }
+        .popover(isPresented: $showSettings) {
+            SettingsView(controller: controller)
+        }
+        #endif
         .toolbar {
             ToolbarItem {
                 Button (action: {
@@ -81,10 +93,12 @@ struct InteractionsView: View, Serialized {
                 }, label: {
                     Image(systemName: "person.2.gobackward")
                 })
+                #if os(macOS)
                 .popover(isPresented: $showPrompt) {
                     promptInjectorView()
                         .frame(width: 600, height: 450)
                 }
+                #endif
             }
             
             ToolbarItem {
@@ -93,10 +107,12 @@ struct InteractionsView: View, Serialized {
                 }, label: {
                     Image(systemName: "gearshape.2.fill")
                 })
+                #if os(macOS)
                 .popover(isPresented: $showSettings) {
                     SettingsView(controller: controller)
                         .frame(width: 450, height: 450)
                 }
+                #endif
             }
             
             if hasErrors {
@@ -106,10 +122,12 @@ struct InteractionsView: View, Serialized {
                     }, label: {
                         Image(systemName: "exclamationmark.triangle.fill")
                     })
+                    #if os(macOS)
                     .popover(isPresented: $showErrors) {
                         errorView()
                             .frame(width: 600, height: 450)
                     }
+                    #endif
                 }
             }
         }

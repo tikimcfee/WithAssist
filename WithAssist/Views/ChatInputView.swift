@@ -36,7 +36,7 @@ struct ChatInputView: View {
     
     @ViewBuilder
     var editorBody: some View {
-        VStack(alignment: .trailing) {
+        VStack(alignment: .trailing, spacing: 0) {
             RichTextEditor(
                 text: Binding(
                     get: { draft },
@@ -52,17 +52,13 @@ struct ChatInputView: View {
                     component.setBackgroundColor(to: background, at: draft.richTextRange)
                 }
             )
-            .frame(height: 200)
-            
-            Divider()
+            .frame(height: 100)
             
             HStack {
                 Button("Resend") {
                     didRequestResend()
                 }
                 .keyboardShortcut("r", modifiers: [.command, .option])
-                
-                Spacer()
                 
                 Button("Send message") {
                     Task {
@@ -82,7 +78,8 @@ struct ChatInputView: View {
                 }
                 .keyboardShortcut(.return, modifiers: .command)
             }
-            .padding()
+            .padding(.horizontal)
+            .padding(.vertical, 2)
             
             Divider()
         }

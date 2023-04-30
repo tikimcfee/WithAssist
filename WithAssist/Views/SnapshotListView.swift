@@ -79,12 +79,15 @@ struct SnapshotListView: View, Serialized {
     #if os(macOS)
     @ViewBuilder
     func desktopBody() -> some View {
-        List(
-            Array(state.allSnapshots.list.enumerated()),
-            id: \.element.id,
-            selection: $selection
-        ) { (index, snapshot) in
-            listItem(index, snapshot)
+        ScrollView {
+            LazyVStack(alignment: .leading) {
+                ForEach(
+                    Array(state.allSnapshots.list.enumerated()),
+                    id: \.element.id
+                ) { (index, snapshot) in
+                    listItem(index, snapshot)
+                }
+            }
         }
     }
     #endif

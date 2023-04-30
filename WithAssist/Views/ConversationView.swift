@@ -66,6 +66,14 @@ struct ConversationView: View, Serialized {
     }
 }
 
+let rolePad: CGFloat = {
+    #if os(iOS)
+    16
+    #else
+    96
+    #endif
+}()
+
 struct ChatRow: View {
     let message: Chat
     let controller: ChatController
@@ -90,7 +98,7 @@ struct ChatRow: View {
             .border(Color.gray.opacity(0.33), width: 1)
             .padding(
                 isUser ? .leading : .trailing,
-                96
+                rolePad
             )
             .padding(.bottom, 8)
             .tag(index)
@@ -107,7 +115,7 @@ struct MessageCellOptionsWrapper: View, Serialized {
     let controller: ChatController
     
     var body: some View {
-        ZStack(alignment: .topTrailing) {
+        Group {
             if let messageToEdit = editMessage, messageToEdit.id == message.id {
                 editView(message)
             } else if showOptionsMessage?.id == message.id {
@@ -115,8 +123,24 @@ struct MessageCellOptionsWrapper: View, Serialized {
                     MessageCell(message: message)
                     hoverOptions(for: message)
                 }
+                #if os(iOS)
+                    .background(Color.gray.opacity(0.02))
+                    .onTapGesture {
+                        showOptionsMessage = showOptionsMessage == message
+                            ? nil
+                            : message
+                    }
+                #endif
             } else {
                 MessageCell(message: message)
+                #if os(iOS)
+                    .background(Color.gray.opacity(0.02))
+                    .onTapGesture {
+                        showOptionsMessage = showOptionsMessage == message
+                            ? nil
+                            : message
+                    }
+                #endif
             }
         }
         .onHover { isInFrame in
@@ -159,7 +183,10 @@ struct MessageCellOptionsWrapper: View, Serialized {
                 editMessage = nil
             }
         )
-        .frame(width: 600, height: 450)
+        .padding(
+            message.role == .user ? .leading : .trailing,
+            rolePad
+        )
     }
 }
 
