@@ -41,9 +41,12 @@ struct AllSnapshots: Codable, Equatable, Hashable, Identifiable {
     }
 }
 
+extension ChatResult: Identifiable { }
+
 struct Snapshot: Identifiable, Codable, Equatable, Hashable {
     var id = UUID()
     var chatMessages: [Chat] = []
+    var chatResults: [ChatResult.ID: ChatResult] = [:]
     var errors: [AppError] = []
     var results: [ChatResult] = []
     var name: String = "Some conversation: \(Date.now)"
@@ -60,5 +63,82 @@ struct Snapshot: Identifiable, Codable, Equatable, Hashable {
         ]
         errors = []
         results = []
+    }
+}
+
+extension Snapshot {
+    mutating func updateResultsFromStream(piece: ChatResult) {
+        if var toUpdate = chatResults[piece.id] {
+            for choice in piece.choices {
+                toUpdate.upsertChoice(newChoice: choice)
+            }
+            chatResults[piece.id] = toUpdate
+        } else {
+            chatResults[piece.id] = piece
+        }
+    }
+}
+
+extension ChatResult {
+    mutating func upsertChoice(
+        newChoice: Choice
+    ) {
+        if let delta = newChoice.delta {
+            choices.upsertDelta(newChoice, delta)
+        }
+        else if let message = newChoice.message {
+            choices.upsertMessage(newChoice, message)
+        }
+    }
+}
+
+extension Array where Element == ChatResult.Choice {
+    mutating func upsertDelta(
+        _ newChoice: Element,
+        _ delta: ChatResult.Choice.Delta
+    ) {
+        if indices.contains(newChoice.index) {
+            self[newChoice.index].upsertDelta(delta)
+        } else {
+            self.append(newChoice)
+        }
+    }
+    
+    mutating func upsertMessage(
+        _ newChoice: Element,
+        _ message: Chat
+    ) {
+        if indices.contains(newChoice.index) {
+            self[newChoice.index].upsertMessage(message)
+        } else {
+            self.append(newChoice)
+        }
+    }
+}
+
+extension ChatResult.Choice {
+    mutating func upsertDelta(
+        _ delta: Delta
+    ) {
+        if var toUpdate = message {
+            toUpdate.content.append(delta.content ?? "")
+            message = toUpdate
+        } else {
+            message = Chat(
+                role: delta.role ?? .assistant,
+                content: delta.content ?? ""
+            )
+        }
+    }
+    
+    mutating func upsertMessage(
+        _ newMessage: Chat
+    ) {
+        if message != nil {
+            print("--- skipping message set; already exists")
+            return
+        } else {
+            message = newMessage
+        }
     }
 }

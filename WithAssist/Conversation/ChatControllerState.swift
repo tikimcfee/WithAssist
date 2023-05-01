@@ -22,6 +22,7 @@ extension ChatController {
         }
         
         private var manualSaves = PassthroughSubject<AllSnapshots, Never>()
+        public var targetFile: AppFile = .defaultSnapshot
         
         private(set) var bag = Set<AnyCancellable>()
         
@@ -77,7 +78,7 @@ extension ChatController {
                 print("[load sink] starting load")
                 let loaded = try snapshotStorage.load(
                     AllSnapshots.self,
-                    from: .defaultSnapshot
+                    from: targetFile
                 )
                 
                 self.allSnapshots = loaded
@@ -97,7 +98,7 @@ extension ChatController {
         private func onSaveSnapshots(_ all: AllSnapshots) {
             do {
                 print("[save sink] starting save to disk")
-                try snapshotStorage.save(all, to: .defaultSnapshot)
+                try snapshotStorage.save(all, to: targetFile)
             } catch {
                 print("[save error]", error)
             }

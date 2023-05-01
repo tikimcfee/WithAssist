@@ -212,19 +212,52 @@ Received response:
         return result
     }
     
-    func makeChatQuery(_ snapshot: Snapshot?) -> ChatQuery {
+    func makeChatQuery(
+        _ snapshot: Snapshot?,
+        stream: Bool? = false
+    ) -> ChatQuery {
         ChatQuery(
             model: paramState.current.chatModel,
             messages: snapshot?.chatMessages ?? [],
             temperature: paramState.current.temperature,
             topP: paramState.current.topProbabilityMass,
             n: paramState.current.completions,
-            stream: false,
+            stream: stream,
             maxTokens: paramState.current.maxTokens,
             presencePenalty: paramState.current.presencePenalty,
             frequencyPenalty: paramState.current.frequencyPenalty,
             logitBias: paramState.current.logitBias,
             user: paramState.current.user
         )
+    }
+}
+
+class ChatStreamController {
+    var chatController: ChatController
+    var llmAPI: OpenAI
+    
+    init(chatController: ChatController, llmAPI: OpenAI) {
+        self.chatController = chatController
+        self.llmAPI = llmAPI
+    }
+    
+    func startStream(
+        from query: ChatQuery
+    ) async {
+        let stream = llmAPI.chatsStream(query: query)
+        do {
+            for try await chatResult in stream {
+                await chatController.snapshotState.updateCurrent {
+                    $0.updateResultsFromStream(piece: chatResult)
+                    print("---")
+                    print($0.chatResults[chatResult.id]?.choices.first?.message?.content ?? "<no content>")
+                    print("---")
+                }
+            }
+        } catch {
+            print("[stream error] \(error)")
+        }
+        
+        print("- stream complete")
     }
 }
