@@ -8,72 +8,54 @@
 import SwiftUI
 import OpenAI
 import Combine
-import RichTextKit
 
 #if os(iOS)
 typealias NSColor = UIColor
 #endif
 
-struct ChatInputView: View {
+class DraftWrap: ObservableObject {
+    @Published var draft = NSAttributedString()
+}
+
+struct ChatInputView: View, Serialized {
     let didRequestSend: (Draft) throws -> Void
     let didRequestResend: () -> Void
     @Binding var inputTokens: Int
     
-    @State var draft = NSAttributedString()
-    
-    @StateObject private var context = {
-        let context = RichTextContext()
-        return context
-    }()
+    @FocusState var focused
+    @State var text: String = ""
     
     var body: some View {
         editorBody
             .border(Color.gray, width: 1)
-            .onChange(of: draft.string) { new in
-                inputTokens = draft.string.count / 4
+            .onChange(of: text) { new in
+                inputTokens = text.count / 4
             }
     }
     
     @ViewBuilder
     var editorBody: some View {
         VStack(alignment: .trailing, spacing: 0) {
-            RichTextEditor(
-                text: Binding(
-                    get: { draft },
-                    set: {
-                        draft = $0
-                        inputTokens = draft.string.count
-                    }
-                ),
-                context: context,
-                format: .plainText,
-                viewConfiguration: { component in
-                    component.setForegroundColor(to: foreground, at: draft.richTextRange)
-                    component.setBackgroundColor(to: background, at: draft.richTextRange)
-                }
-            )
-            .frame(height: 100)
+            TextEditor(text: $text)
+                .focused($focused)
+                .frame(height: 100)
             
             HStack {
                 Button("Resend") {
+                    focused = false
                     didRequestResend()
                 }
                 .keyboardShortcut("r", modifiers: [.command, .option])
                 
                 Button("Send message") {
-                    Task {
-                        let toSave = draft
-                        await MainActor.run {
-                            draft = NSAttributedString()
-                        }
-                        do {
-                            try didRequestSend(Draft(content: toSave.string))
-                        } catch {
-                            print("[!! error: \(#function)] \(error)")
-                            await MainActor.run {
-                                draft = toSave
-                            }
-                        }
+                    let backup = text
+                    do {
+                        focused = false
+                        text = ""
+                        try didRequestSend(Draft(content: backup))
+                    } catch {
+                        print("[!! error: \(#function)] \(error)")
+                        text = backup
                     }
                 }
                 .keyboardShortcut(.return, modifiers: .command)
