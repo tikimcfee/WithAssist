@@ -23,22 +23,24 @@ extension View {
 }
 
 class ActionState: ObservableObject {
-    var optionsTarget: ChatResult?
-    var editTarget: ChatResult?
+    @Published var optionsTarget: ChatResult?
+    @Published var editTarget: ChatResult?
     
     func showOptions(for result: ChatResult?) -> Bool {
-        optionsTarget?.id == result?.id
+        let show = optionsTarget?.id == result?.id
+        return show
     }
     
     func showEdit(for result: ChatResult?) -> Bool {
-        editTarget?.id == result?.id
+        let show = editTarget?.id == result?.id
+        return show
     }
 }
 
 struct ConversationView: View, Serialized {
     @ObservedObject var controller: ChatController
     @StateObject var serializer = Serializer()
-    @StateObject var hoverState = ActionState()
+    @StateObject var actionState = ActionState()
     
     init(
         controller: ChatController
@@ -48,41 +50,60 @@ struct ConversationView: View, Serialized {
     
     var body: some View {
         maybeRootView(controller.snapshotState.publishedSnapshot)
-            .environmentObject(hoverState)
+    }
+    
+    @ViewBuilder
+    func platformList(for snapshot: Snapshot?) -> some View {
+        #if os(iOS)
+        ScrollView {
+            LazyVStack {
+                listBody(for: snapshot)
+            }
+            .padding()
+        }
+        #else
+        List {
+            listBody(for: snapshot)
+        }
+        .listStyle(.plain)
+        #endif
+    }
+    
+    @ViewBuilder
+    func listBody(for snapshot: Snapshot?) -> some View {
+        if let snapshot {
+            ForEach(
+                snapshot.results
+            ) { result in
+                ChatRow(
+                    result: result,
+                    controller: controller
+                )
+                .tag(result.id)
+                .environmentObject(actionState)
+                .listRowSeparator(.hidden)
+            }
+        }
     }
     
     @ViewBuilder
     func maybeRootView(_ snapshot: Snapshot?) -> some View {
         if let snapshot {
             ScrollViewReader { proxy in
-                List {
-//                ScrollView {
-//                    LazyVStack {
-                        ForEach(
-                            snapshot.results
-                        ) { result in
-                            ChatRow(
-                                result: result,
-                                controller: controller
-                            )
-                            .tag(result.id)
+                platformList(for: snapshot)
+                    .onReceive(controller.snapshotState.$publishedSnapshot) { [proxy] snapshot in
+                        guard let snapshot else { return }
+                        print("Scroll to new: \(snapshot.id)")
+                        if let id = snapshot.results.last?.id {
+                            proxy.scrollTo(id, anchor: .bottom)
                         }
-//                    }
-                }
-                .listStyle(.plain)
-                .onReceive(controller.snapshotState.$publishedSnapshot) { snapshot in
-                    guard let snapshot else { return }
-                    print("Scroll to new: \(snapshot.id)")
-                    if let id = snapshot.results.last?.id {
-                        proxy.scrollTo(id, anchor: .bottom)
                     }
-                }
-                .onChange(of: snapshot.results.count) { newCount in
-                    print("Scroll to count: \(newCount)")
-                    if let id = snapshot.results.last?.id {
-                        proxy.scrollTo(id, anchor: .bottom)
+                    .onChange(of: snapshot.results.count) { [proxy] newCount in
+                        print("Scroll to count: \(newCount)")
+                        if let id = snapshot.results.last?.id {
+                            proxy.scrollTo(id, anchor: .bottom)
+                        }
                     }
-                }
             }
         } else {
             Text("Select a converation")
@@ -115,6 +136,7 @@ struct ChatRow: View {
                 result: result,
                 controller: controller
             )
+            .frame(maxWidth: 600, alignment: .leading)
             .border(Color.gray.opacity(0.33), width: 1)
             .padding(
                 isUser ? .leading : .trailing,
@@ -135,63 +157,51 @@ struct MessageCellOptionsWrapper: View, Serialized {
     
     var body: some View {
         rootBody()
-            .onHover { isInFrame in
-                if isInFrame {
-                    actionState.optionsTarget = result
-                } else {
-                    actionState.optionsTarget = nil
-                }
-            }
     }
     
     @ViewBuilder
     func rootBody() -> some View {
-        if actionState.showEdit(for: result) {
-            editView(result)
-        }
-        else if actionState.showOptions(for: result) {
-            ZStack(alignment: .topTrailing) {
-                MessageCell(result: result)
-                hoverOptions(for: result)
+        ZStack(alignment: .topTrailing) {
+            if actionState.showEdit(for: result) {
+                editView(result)
             }
-            #if os(iOS)
-                .background(Color.gray.opacity(0.02))
-                .onTapGesture {
-                    if showOptions {
-                        showOptionsResult = result
-                    } else {
-                        showOptionsResult = nil
-                    }
+            else {
+                MessageCell(result: result)
+                if actionState.showOptions(for: result) {
+                    hoverOptions(for: result)
                 }
-            #endif
+            }
         }
-        else {
-            MessageCell(result: result)
-            #if os(iOS)
-                .background(Color.gray.opacity(0.02))
-                .onTapGesture {
-                    if showOptions {
-                        showOptionsResult = result
-                    } else {
-                        showOptionsResult = nil
-                    }
-                }
-            #endif
+        .onHover { isInFrame in
+            print("Hover toggle: \(result.id) -> \(isInFrame)")
+            if isInFrame {
+                actionState.optionsTarget = result
+            } else {
+                actionState.optionsTarget = nil
+            }
         }
+        #if os(iOS)
+        .background(Color.gray.opacity(0.02))
+        .onTapGesture {
+            if actionState.optionsTarget?.id != result.id {
+                actionState.optionsTarget = result
+            } else {
+                actionState.optionsTarget = nil
+            }
+        }
+        #endif
     }
     
     @ViewBuilder
     func hoverOptions(for result: ChatResult) -> some View {
-        HStack(alignment: .center) {
+        HStack(alignment: .center, spacing: 0) {
             EditButton(result: result)
-                .padding(8)
-                .clipShape(Circle())
+                .padding(.horizontal, 4)
             
             DeleteButton(result: result, controller: controller)
-                .padding(8)
-                .clipShape(Circle())
+                .padding(.horizontal, 4)
         }
-        .padding(8)
+        .padding(.horizontal, 8)
     }
     
     @ViewBuilder
@@ -210,10 +220,6 @@ struct MessageCellOptionsWrapper: View, Serialized {
                 actionState.optionsTarget = nil
             }
         )
-        .padding(
-            result.firstMessage?.role == .user ? .leading : .trailing,
-            rolePad
-        )
     }
 }
 
@@ -227,6 +233,8 @@ struct DeleteButton: View, Serialized {
             holdColor: .red,
             label: {
                 Image(systemName: "minus.circle.fill")
+                    .resizable()
+                    .frame(width: 14, height: 14)
                     .foregroundColor(.red)
             },
             action: {
@@ -249,9 +257,12 @@ struct EditButton: View {
             },
             label: {
                 Image(systemName: "pencil")
+                    .resizable()
+                    .frame(width: 14, height: 14)
                     .foregroundColor(.green)
             }
         )
+        .padding()
         .buttonStyle(.plain)
     }
 }
@@ -261,7 +272,7 @@ struct MessageCell: View {
     
     var body: some View {
         if let message = result.firstMessage {
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 12.0) {
                 Text(message.role.rawValue)
                     .italic()
                     .fontWeight(.bold)

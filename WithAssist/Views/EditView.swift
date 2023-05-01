@@ -145,11 +145,11 @@ struct LongPressStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration
             .label
+            .padding(.horizontal, 6)
+            .padding(.vertical, 3)
             .simultaneousGesture(
                 gesture(configuration)
             )
-            .padding(.horizontal, 6)
-            .padding(.vertical, 3)
             .background(
                 pressedBackground(configuration)
             )
