@@ -12,13 +12,15 @@ import Combine
 struct ContentView_Previews: PreviewProvider {
     static let openAI = ClientStore.makeAPIClient()
     
-    static let snapshot = Snapshot(
-        chatMessages: [
-            .init(role: .system, content: "Hello, this is dog"),
-            .init(role: .user, content: "Hello dog, good borks?"),
-            .init(role: .assistant, content: "Very yes much always")
+    static let snapshot: Snapshot = {
+        var snapshot = Snapshot()
+        snapshot.results = [
+            .init(id: "", object: "", created: .pi, model: .gpt4, choices: [
+                .init(index: 0, message: .init(role: .assistant, content: "Hello, this is dog"), finishReason: nil)
+            ], usage: .init())
         ]
-    )
+        return snapshot
+    }()
     
     static let chat: ChatController = {
         let controller = ChatController(

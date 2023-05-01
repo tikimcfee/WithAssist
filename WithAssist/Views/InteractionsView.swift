@@ -40,7 +40,6 @@ struct InteractionsView: View, Serialized {
     
     var body: some View {
         chatView
-            .disabled(isLoading || controller.needsToken)
             .overlay(loadingOverlayView())
             .overlay(updateTokenView())
             .onChange(of: state.publishedSnapshot) { _ in
@@ -73,6 +72,7 @@ struct InteractionsView: View, Serialized {
             
             inputView()
                 .padding()
+                .disabled(isLoading || controller.needsToken)
         }
         #if os(iOS)
         .sheet(isPresented: $showPrompt) {
@@ -176,7 +176,7 @@ struct InteractionsView: View, Serialized {
     func promptInjectorView() -> some View {
         if let snapshot = state.publishedSnapshot {
             PromptInjectorView(
-                draft: snapshot.chatMessages.first?.content ?? "",
+                draft: snapshot.results.first?.choices.first?.message?.content ?? "",
                 didRequestSetPrompt: { updatedPromptText in
                     loadOnMain {
                         await controller.resetPrompt(to: updatedPromptText)
@@ -270,8 +270,8 @@ struct InteractionsView: View, Serialized {
     }
     
     var currentCharacterCount: Int {
-        state.publishedSnapshot?.chatMessages.lazy.map {
-            $0.content.count
+        state.publishedSnapshot?.results.lazy.map {
+            $0.choices.first?.message?.content.count ?? 0
         }.reduce(0, +)
         ?? 0
     }

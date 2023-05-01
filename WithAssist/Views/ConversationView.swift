@@ -22,13 +22,23 @@ extension View {
     }
 }
 
+class ActionState: ObservableObject {
+    var optionsTarget: ChatResult?
+    var editTarget: ChatResult?
+    
+    func showOptions(for result: ChatResult?) -> Bool {
+        optionsTarget?.id == result?.id
+    }
+    
+    func showEdit(for result: ChatResult?) -> Bool {
+        editTarget?.id == result?.id
+    }
+}
+
 struct ConversationView: View, Serialized {
     @ObservedObject var controller: ChatController
     @StateObject var serializer = Serializer()
-    
-    @State var showOptionsMessage: Chat?
-    @State var editMessage: Chat?
-    @State var isEditing: Bool = false
+    @StateObject var hoverState = ActionState()
     
     init(
         controller: ChatController
@@ -38,36 +48,40 @@ struct ConversationView: View, Serialized {
     
     var body: some View {
         maybeRootView(controller.snapshotState.publishedSnapshot)
+            .environmentObject(hoverState)
     }
     
     @ViewBuilder
     func maybeRootView(_ snapshot: Snapshot?) -> some View {
         if let snapshot {
             ScrollViewReader { proxy in
-                ScrollView {
-                    LazyVStack {
+                List {
+//                ScrollView {
+//                    LazyVStack {
                         ForEach(
-                            Array(snapshot.chatMessages.enumerated()),
-                            id: \.offset
-                        ) { (index, message) in
+                            snapshot.results
+                        ) { result in
                             ChatRow(
-                                message: message,
-                                controller: controller,
-                                index: index,
-                                editMessage: $editMessage,
-                                showOptionsMessage: $showOptionsMessage
+                                result: result,
+                                controller: controller
                             )
-                            .tag(index)
+                            .tag(result.id)
                         }
-                    }
+//                    }
                 }
+                .listStyle(.plain)
                 .onReceive(controller.snapshotState.$publishedSnapshot) { snapshot in
                     guard let snapshot else { return }
-                    proxy.scrollTo(snapshot.chatMessages.endIndex - 1, anchor: .bottom)
+                    print("Scroll to new: \(snapshot.id)")
+                    if let id = snapshot.results.last?.id {
+                        proxy.scrollTo(id, anchor: .bottom)
+                    }
                 }
-                .onChange(of: snapshot.chatMessages.count) { newCount in
-                    print("Scroll to: \(newCount)")
-                    proxy.scrollTo(newCount - 1, anchor: .bottom)
+                .onChange(of: snapshot.results.count) { newCount in
+                    print("Scroll to count: \(newCount)")
+                    if let id = snapshot.results.last?.id {
+                        proxy.scrollTo(id, anchor: .bottom)
+                    }
                 }
             }
         } else {
@@ -87,24 +101,18 @@ let rolePad: CGFloat = {
 }()
 
 struct ChatRow: View {
-    let message: Chat
+    let result: ChatResult
     let controller: ChatController
-    let index: Int
-    
-    @Binding var editMessage: Chat?
-    @Binding var showOptionsMessage: Chat?
     
     var body: some View {
         HStack {
-            let isUser = message.role == .user
-            let isAssistant = message.role == .assistant
+            let isUser = result.firstMessage?.role == .user
+            let isAssistant = result.firstMessage?.role == .assistant
             
             if isUser { Spacer() }
             
             MessageCellOptionsWrapper(
-                editMessage: $editMessage,
-                showOptionsMessage: $showOptionsMessage,
-                message: message,
+                result: result,
                 controller: controller
             )
             .border(Color.gray.opacity(0.33), width: 1)
@@ -113,7 +121,7 @@ struct ChatRow: View {
                 rolePad
             )
             .padding(.bottom, 8)
-            .tag(index)
+            .tag(result.id)
             
             if isAssistant { Spacer() }
         }
@@ -121,57 +129,65 @@ struct ChatRow: View {
 }
 
 struct MessageCellOptionsWrapper: View, Serialized {
-    @Binding var editMessage: Chat?
-    @Binding var showOptionsMessage: Chat?
-    let message: Chat
+    let result: ChatResult
     let controller: ChatController
+    @EnvironmentObject var actionState: ActionState
     
     var body: some View {
-        Group {
-            if let messageToEdit = editMessage, messageToEdit.id == message.id {
-                editView(message)
-            } else if showOptionsMessage?.id == message.id {
-                ZStack(alignment: .topTrailing) {
-                    MessageCell(message: message)
-                    hoverOptions(for: message)
+        rootBody()
+            .onHover { isInFrame in
+                if isInFrame {
+                    actionState.optionsTarget = result
+                } else {
+                    actionState.optionsTarget = nil
                 }
-                #if os(iOS)
-                    .background(Color.gray.opacity(0.02))
-                    .onTapGesture {
-                        showOptionsMessage = showOptionsMessage == message
-                            ? nil
-                            : message
-                    }
-                #endif
-            } else {
-                MessageCell(message: message)
-                #if os(iOS)
-                    .background(Color.gray.opacity(0.02))
-                    .onTapGesture {
-                        showOptionsMessage = showOptionsMessage == message
-                            ? nil
-                            : message
-                    }
-                #endif
             }
+    }
+    
+    @ViewBuilder
+    func rootBody() -> some View {
+        if actionState.showEdit(for: result) {
+            editView(result)
         }
-        .onHover { isInFrame in
-            if isInFrame {
-                self.showOptionsMessage = message
-            } else {
-                self.showOptionsMessage = nil
+        else if actionState.showOptions(for: result) {
+            ZStack(alignment: .topTrailing) {
+                MessageCell(result: result)
+                hoverOptions(for: result)
             }
+            #if os(iOS)
+                .background(Color.gray.opacity(0.02))
+                .onTapGesture {
+                    if showOptions {
+                        showOptionsResult = result
+                    } else {
+                        showOptionsResult = nil
+                    }
+                }
+            #endif
+        }
+        else {
+            MessageCell(result: result)
+            #if os(iOS)
+                .background(Color.gray.opacity(0.02))
+                .onTapGesture {
+                    if showOptions {
+                        showOptionsResult = result
+                    } else {
+                        showOptionsResult = nil
+                    }
+                }
+            #endif
         }
     }
     
     @ViewBuilder
-    func hoverOptions(for message: Chat) -> some View {
+    func hoverOptions(for result: ChatResult) -> some View {
         HStack(alignment: .center) {
-            EditButton(message: message, editMessage: $editMessage)
+            EditButton(result: result)
                 .padding(8)
                 .clipShape(Circle())
             
-            DeleteButton(message: message, controller: controller)
+            DeleteButton(result: result, controller: controller)
                 .padding(8)
                 .clipShape(Circle())
         }
@@ -179,29 +195,30 @@ struct MessageCellOptionsWrapper: View, Serialized {
     }
     
     @ViewBuilder
-    func editView(_ message: Chat) -> some View {
+    func editView(_ result: ChatResult) -> some View {
         EditView(
-            toEdit: message,
+            toEdit: result,
             onComplete: { updated in
                 asyncIsolated {
-                    await controller.update(message: message, to: updated)
-                    editMessage = nil
+                    await controller.updateResult(updated)
+                    actionState.editTarget = nil
+                    actionState.optionsTarget = nil
                 }
             },
             onDismiss: {
-                showOptionsMessage = nil
-                editMessage = nil
+                actionState.editTarget = nil
+                actionState.optionsTarget = nil
             }
         )
         .padding(
-            message.role == .user ? .leading : .trailing,
+            result.firstMessage?.role == .user ? .leading : .trailing,
             rolePad
         )
     }
 }
 
 struct DeleteButton: View, Serialized {
-    let message: Chat
+    let result: ChatResult
     let controller: ChatController
     
     var body: some View {
@@ -214,8 +231,7 @@ struct DeleteButton: View, Serialized {
             },
             action: {
                 asyncIsolated {
-                    print("Deleting: \(message.content.prefix(32))...")
-                    await controller.removeMessage(message)
+                    await controller.removeResult(result)
                 }
             }
         )
@@ -223,14 +239,13 @@ struct DeleteButton: View, Serialized {
 }
 
 struct EditButton: View {
-    let message: Chat
-    @Binding var editMessage: Chat?
+    let result: ChatResult
+    @EnvironmentObject var actionState: ActionState
     
     var body: some View {
         Button(
             action: {
-                print("Editing: \(message.content.prefix(32))...")
-                editMessage = message
+                actionState.editTarget = result
             },
             label: {
                 Image(systemName: "pencil")
@@ -242,20 +257,28 @@ struct EditButton: View {
 }
 
 struct MessageCell: View {
-    let message: Chat
+    let result: ChatResult
     
     var body: some View {
-        VStack(alignment: .leading) {
-            Text(message.role.rawValue)
-                .italic()
-                .fontWeight(.bold)
-                .font(.callout)
-            
-            Text(message.content)
-                .textSelection(.enabled)
-                .frame(maxWidth: 600, alignment: .leading)
+        if let message = result.firstMessage {
+            VStack(alignment: .leading) {
+                Text(message.role.rawValue)
+                    .italic()
+                    .fontWeight(.bold)
+                    .font(.callout)
+                
+                Text(message.content)
+                    .textSelection(.enabled)
+                    .frame(maxWidth: 600, alignment: .leading)
+            }
+            .padding(8)
         }
-        .padding(8)
+        else {
+            Text(".. no content")
+                .font(.subheadline)
+                .italic()
+                .padding(8)
+        }
     }
 }
 

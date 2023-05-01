@@ -45,8 +45,6 @@ extension ChatResult: Identifiable { }
 
 struct Snapshot: Identifiable, Codable, Equatable, Hashable {
     var id = UUID()
-    var chatMessages: [Chat] = []
-    var chatResults: [ChatResult.ID: ChatResult] = [:]
     var errors: [AppError] = []
     var results: [ChatResult] = []
     var name: String = "\(Date.now)"
@@ -57,25 +55,18 @@ struct Snapshot: Identifiable, Codable, Equatable, Hashable {
         return empty
     }()
     
-    mutating func resetForNewPrompt(_ prompt: String) {
-        chatMessages = [
-            Chat(role: .system, content: prompt)
-        ]
+    mutating func resetForNewPrompt(_ result: ChatResult) {
+        results = [result]
         errors = []
-        results = []
     }
     
     internal init(
         id: UUID = UUID(),
-        chatMessages: [Chat] = [],
-        chatResults: [ChatResult.ID : ChatResult] = [:],
         errors: [AppError] = [],
         results: [ChatResult] = [],
         name: String = "\(Date.now)"
     ) {
         self.id = id
-        self.chatMessages = chatMessages
-        self.chatResults = chatResults
         self.errors = errors
         self.results = results
         self.name = name
@@ -84,23 +75,47 @@ struct Snapshot: Identifiable, Codable, Equatable, Hashable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try container.decode(UUID.self, forKey: .id)
-        self.chatMessages = try container.decode([Chat].self, forKey: .chatMessages)
-        self.chatResults = try container.decodeIfPresent([ChatResult.ID : ChatResult].self, forKey: .chatResults) ?? [:]
         self.errors = try container.decode([AppError].self, forKey: .errors)
         self.results = try container.decode([ChatResult].self, forKey: .results)
         self.name = try container.decode(String.self, forKey: .name)
     }
 }
 
+extension ChatResult {
+    var firstMessage: Chat? {
+        choices.first?.message
+    }
+}
+
 extension Snapshot {
     mutating func updateResultsFromStream(piece: ChatResult) {
-        if var toUpdate = chatResults[piece.id] {
+        if var toUpdate = results[piece.id] {
             for choice in piece.choices {
                 toUpdate.upsertChoice(newChoice: choice)
             }
-            chatResults[piece.id] = toUpdate
+            results[piece.id] = toUpdate
         } else {
-            chatResults[piece.id] = piece
+            results[piece.id] = piece
+        }
+    }
+}
+
+extension Array where Element == ChatResult {
+    subscript (_ id: ChatResult.ID) -> ChatResult? {
+        get { first(where: { $0.id == id }) }
+        set {
+            let currentIndex = firstIndex(where: { $0.id == id })
+            if let newValue {
+                if let currentIndex {
+                    self[currentIndex] = newValue
+                } else {
+                    self.append(newValue)
+                }
+            } else {
+                if let currentIndex {
+                    self.remove(at: currentIndex)
+                }
+            }
         }
     }
 }

@@ -11,8 +11,8 @@ import OpenAI
 import SwiftUI
 
 struct EditView: View {
-    let toEdit: Chat
-    let onComplete: (Chat) -> Void
+    let toEdit: ChatResult
+    let onComplete: (ChatResult) -> Void
     let onDismiss: () -> Void
     
     @State var draft: NSAttributedString
@@ -37,14 +37,14 @@ struct EditView: View {
     }
     
     init(
-        toEdit: Chat,
-        onComplete: @escaping (Chat) -> Void,
+        toEdit: ChatResult,
+        onComplete: @escaping (ChatResult) -> Void,
         onDismiss: @escaping () -> Void
     ) {
         self.toEdit = toEdit
         self.onComplete = onComplete
         self.onDismiss = onDismiss
-        self._draft = State(wrappedValue: NSAttributedString(string: toEdit.content))
+        self._draft = State(wrappedValue: NSAttributedString(string: toEdit.firstMessage?.content ?? ""))
     }
     
     var body: some View {
@@ -68,8 +68,16 @@ struct EditView: View {
                         holdColor: .green,
                         label: { Text("Save") },
                         action: {
-                            let updatedChat = toEdit.updatedContent(of: draft.string)
-                            onComplete(updatedChat)
+                            if var firstChoice = toEdit.choices.first {
+                                firstChoice.message = Chat(
+                                    role: firstChoice.message?.role ?? .user,
+                                    content: draft.string
+                                )
+                                
+                                var newResult = toEdit
+                                newResult.choices[0] = firstChoice
+                                onComplete(newResult)
+                            }
                         }
                     )
                 }

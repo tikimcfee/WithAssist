@@ -50,7 +50,7 @@ final class WithAssistTests: XCTestCase {
             await client.chat.addMessage("Hello, this is dog")
             let snapshot = try XCTUnwrap(client.chat.snapshotState.publishedSnapshot)
             
-            XCTAssertFalse(snapshot.chatMessages.isEmpty, "Should receive a response from model")
+            XCTAssertFalse(snapshot.results.isEmpty, "Should receive a response from model")
             expect.fulfill()
         }
         
@@ -74,24 +74,26 @@ final class WithAssistTests: XCTestCase {
 //        let chatBody = """
 //        Ivan Lugo here checking on stream integration. If you get this, please return a short paragraph of your choosing - any topic, any thought, any idea. And just pick something random - don't worry about your having likeness to people or not, it's just a fun question. Don't tell me about being a language model - I know allll about your limitations, haha.
 //        """
+        let model: Model = .gpt3_5Turbo
         let chat = Chat(role: .system, content: chatBody)
         var snapshot = Snapshot()
-        snapshot.chatMessages.append(chat)
+        snapshot.results.append(chatBody.wrapAsContentOfUserResult(model: model))
         controller.snapshotState.publishedSnapshot = snapshot
         controller.snapshotState.allSnapshots.list = [snapshot]
         controller.paramState.current.temperature = 0.55
         controller.paramState.current.useTemperature = true
-        controller.paramState.current.chatModel = .gpt3_5Turbo
+        controller.paramState.current.chatModel = model
         controller.paramState.current.maxTokens = 500
         
         print("First message is: \(chat.id)")
         
         controller.snapshotState.$publishedSnapshot.sink { publishedSnapshot in
-            let maybeContent = publishedSnapshot?.chatResults.values.first?.choices.first?.message?.content
+            let maybeContent = publishedSnapshot?.results.first?.choices.first?.message?.content
             print("---")
             print("\(maybeContent ?? "...")")
             print("---")
-        }.store(in: &bag)
+        }
+        .store(in: &bag)
         
         let snapshotQuery = controller.makeChatQuery(snapshot, stream: true)
         await streamController.startStream(
@@ -146,7 +148,7 @@ Please define a Swift and SwiftUI application to calculate the N'th Fibonacci nu
                 "Should have no errors after new message"
             )
             
-            let lastResponse = try XCTUnwrap(snapshot.chatMessages.last)
+            let lastResponse = try XCTUnwrap(snapshot.results.last)
             print(lastResponse)
             
             awaitFinalChat.fulfill()

@@ -46,7 +46,10 @@ struct SnapshotListView: View, Serialized {
                     delete(target)
                 },
                 message: { target in
-                    let prefix: String = String(target.chatMessages.first?.content.prefix(128) ?? "")
+                    let results: [ChatResult] = state.publishedSnapshot?.results ?? []
+                    let first = results.first?.firstMessage?.content
+                    
+                    let prefix: String = String(first?.prefix(128) ?? "")
                     Text("First message:\n \(prefix)...")
                         .italic()
                 }

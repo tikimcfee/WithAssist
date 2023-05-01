@@ -91,19 +91,11 @@ class ChatController: ObservableObject {
         _ role: Chat.Role = .user
     ) async {
         await snapshotState.updateCurrent { toUpdate in
-            toUpdate.chatMessages.append(
-                Chat(
-                    role: role,
-                    content: message
-                )
+            toUpdate.results.append(
+                message.wrapAsContentOfUserResult(model: paramState.current.chatModel)
             )
         }
         
-//        await snapshotState.updateCurrent { toUpdate in
-//            var targetCopy = toUpdate
-//            await requestResponseFromGPT(&targetCopy)
-//            toUpdate = targetCopy
-//        }
         await startStream()
     }
     
@@ -127,28 +119,19 @@ class ChatController: ObservableObject {
         }
     }
     
-    func removeMessage(_ toRemove: Chat) async {
+    func removeResult(
+        _ toRemove: ChatResult
+    ) async {
         await snapshotState.updateCurrent { snapshot in
-            guard let removeIndex = snapshot.chatMessages.firstIndex(where: {
-                $0.id == toRemove.id
-            }) else {
-                print("[!! error: \(#function)] - cannot find message to remove")
-                return
-            }
-            snapshot.chatMessages.remove(at: removeIndex)
+            snapshot.results[toRemove.id] = nil
         }
     }
     
-    func update(message: Chat, to newMessage: Chat) async {
+    func updateResult(
+        _ newResult: ChatResult
+    ) async {
         await snapshotState.updateCurrent { snapshot in
-            guard let updateIndex = snapshot.chatMessages.firstIndex(where: {
-                $0.id == message.id
-            }) else {
-                print("[!! error: \(#function)] - cannot find message to update")
-                return
-            }
-            
-            snapshot.chatMessages[updateIndex] = newMessage
+            snapshot.results[newResult.id] = newResult
         }
     }
     
@@ -160,7 +143,9 @@ class ChatController: ObservableObject {
     
     func resetPrompt(to prompt: String) async {
         await snapshotState.updateCurrent { current in
-            current.resetForNewPrompt(prompt)
+            current.resetForNewPrompt(
+                prompt.wrapAsContentOfUserResult(model: paramState.current.chatModel)
+            )
             await requestResponseFromGPT(&current)
         }
     }
@@ -169,10 +154,6 @@ class ChatController: ObservableObject {
         do {
             let result = try await performChatQuery(using: snapshot)
             snapshot.results.append(result)
-            
-            if let choice = result.choices.first?.message {
-                snapshot.chatMessages.append(choice)
-            }
         } catch {
             print("[!!error \(#fileID)]: \(error)")
             snapshot.errors.append(AppError.wrapped(
@@ -183,21 +164,25 @@ class ChatController: ObservableObject {
     }
     
     func startStream() async {
-        await snapshotState.updateCurrent { current in
-            let query = makeChatQuery(current, stream: true)
-            let stream = openAI.chatsStream(query: query)
-            do {
-                for try await chatResult in stream {
-                    await snapshotState.updateCurrent {
-                        $0.updateResultsFromStream(piece: chatResult)
-                    }
-                }
-            } catch {
-                print("[stream controller - error] \(error)")
-            }
-            
-            print("[stream controller] stream complete")
+        guard let snapshot = snapshotState.publishedSnapshot else {
+            return
         }
+        let query = makeChatQuery(snapshot, stream: true)
+        do {
+            let stream = openAI.chatsStream(query: query)
+            for try await chatResult in stream {
+                await snapshotState.updateCurrent { current in
+                    print("updating: \(chatResult.id)")
+                    print("updating: \(chatResult.firstMessage?.content ?? "~x")")
+                    current.updateResultsFromStream(piece: chatResult)
+                }
+            }
+        } catch {
+            print("[stream controller - error] \(error)")
+        }
+        
+        print("[stream controller] stream complete")
+        
     }
     
     func loadController() {
@@ -237,7 +222,7 @@ Received response:
     ) -> ChatQuery {
         ChatQuery(
             model: paramState.current.chatModel,
-            messages: snapshot?.chatMessages ?? [],
+            messages: snapshot.firstMessageList,
             temperature: paramState.current.temperature,
             topP: paramState.current.topProbabilityMass,
             n: paramState.current.completions,
@@ -247,6 +232,35 @@ Received response:
             frequencyPenalty: paramState.current.frequencyPenalty,
             logitBias: paramState.current.logitBias,
             user: paramState.current.user
+        )
+    }
+}
+
+extension Optional where Wrapped == Snapshot {
+    var firstMessageList: [Chat] {
+        self?.results.compactMap {
+            $0.firstMessage
+        } ?? []
+    }
+}
+
+extension String {
+    func wrapAsContentOfUserResult(
+        model: Model
+    ) -> ChatResult {
+        ChatResult(
+            id: UUID().uuidString,
+            object: "chat.user-message",
+            created: Date.now.timeIntervalSince1970,
+            model: model,
+            choices: [
+                .init(
+                    index: 0,
+                    message: Chat(role: .user, content: self),
+                    finishReason: nil
+                )
+            ],
+            usage: ChatResult.Usage()
         )
     }
 }
