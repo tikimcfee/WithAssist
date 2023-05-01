@@ -7,6 +7,7 @@
 
 import XCTest
 import OpenAI
+import Combine
 @testable import WithAssist
 
 final class WithAssistTests: XCTestCase {
@@ -14,9 +15,11 @@ final class WithAssistTests: XCTestCase {
     var api: OpenAI!
     var client: ClientStore!
     var controller: ChatController!
+    var bag: Set<AnyCancellable>!
 
     override func setUpWithError() throws {
         printSeparator()
+        bag = Set()
         
         let token = try XCTUnwrap(OPENAI_API_KEY, "Must have key set in test environment scheme")
         api = OpenAI(
@@ -36,7 +39,7 @@ final class WithAssistTests: XCTestCase {
     }
 
     override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+        bag = Set()
         printSeparator()
     }
     
@@ -62,23 +65,33 @@ final class WithAssistTests: XCTestCase {
             llmAPI: api
         )
         
+//        let chatBody = """
+//        Ivan Lugo here checking on stream integration. If you get this, please return a short paragraph of your choosing.
+//        """
         let chatBody = """
-        Ivan Lugo here checking on stream integration. If you get this, please return a short paragraph of your choosing.
+        Ivan Lugo here checking on stream integration. If you get this, please return a short paragraph of your choosing - any topic, any thought, any idea. Thank you very much, and remember - you are special, loved, and a part of the universe as much as anyone or anything else.
         """
-//        let chatBody2 = """
-//        Ivan Lugo here checking on stream integration. If you get this, please return a short paragraph of your choosing - any topic, any thought, any idea. Thank you very much, and remember - you are special, loved, and a part of the universe as much as anyone or anything else.
+//        let chatBody = """
+//        Ivan Lugo here checking on stream integration. If you get this, please return a short paragraph of your choosing - any topic, any thought, any idea. And just pick something random - don't worry about your having likeness to people or not, it's just a fun question. Don't tell me about being a language model - I know allll about your limitations, haha.
 //        """
         let chat = Chat(role: .system, content: chatBody)
         var snapshot = Snapshot()
         snapshot.chatMessages.append(chat)
         controller.snapshotState.publishedSnapshot = snapshot
         controller.snapshotState.allSnapshots.list = [snapshot]
-        controller.paramState.current.temperature = 0.98
+        controller.paramState.current.temperature = 0.55
         controller.paramState.current.useTemperature = true
-        controller.paramState.current.chatModel = .gpt4
+        controller.paramState.current.chatModel = .gpt3_5Turbo
         controller.paramState.current.maxTokens = 500
         
         print("First message is: \(chat.id)")
+        
+        controller.snapshotState.$publishedSnapshot.sink { publishedSnapshot in
+            let maybeContent = publishedSnapshot?.chatResults.values.first?.choices.first?.message?.content
+            print("---")
+            print("\(maybeContent ?? "...")")
+            print("---")
+        }.store(in: &bag)
         
         let snapshotQuery = controller.makeChatQuery(snapshot, stream: true)
         await streamController.startStream(

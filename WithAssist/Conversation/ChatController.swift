@@ -249,9 +249,6 @@ class ChatStreamController {
             for try await chatResult in stream {
                 await chatController.snapshotState.updateCurrent {
                     $0.updateResultsFromStream(piece: chatResult)
-                    print("---")
-                    print($0.chatResults[chatResult.id]?.choices.first?.message?.content ?? "<no content>")
-                    print("---")
                 }
             }
         } catch {
