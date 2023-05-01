@@ -246,7 +246,7 @@ Received response:
             topP: paramState.current.topProbabilityMass,
             n: paramState.current.completions,
             stream: stream,
-            maxTokens: paramState.current.maxTokens,
+            maxTokens: paramState.current.maxTokens - runningTokenCount,
             presencePenalty: paramState.current.presencePenalty,
             frequencyPenalty: paramState.current.frequencyPenalty,
             logitBias: paramState.current.logitBias,
