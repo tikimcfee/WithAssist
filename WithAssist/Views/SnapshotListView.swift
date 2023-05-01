@@ -10,8 +10,7 @@ import OpenAI
 
 struct SnapshotListView: View, Serialized {
     @EnvironmentObject var controller: ChatController
-    @EnvironmentObject var store: ChatController.SnapshotState
-    @State var selection: Int = 0
+    @EnvironmentObject var state: ChatController.SnapshotState
     
     @StateObject var serializer = Serializer()
     
@@ -19,64 +18,88 @@ struct SnapshotListView: View, Serialized {
     @State var deleteTarget: Snapshot?
     
     var body: some View {
-        #if os(iOS)
-        ScrollView {
-            LazyVStack(alignment: .leading) {
-                ForEach(
-                    Array(store.allSnapshots.list.enumerated()),
-                    id: \.element.id
-                ) { (index, snapshot) in
-                    Button(
-                        action: {
-                            selection = index
-                        },
-                        label: {
-                            cell(snapshot)
-                        }
-                    ).buttonStyle(.bordered)
-                }
-            }
-        }
-        #else
-        List(
-            Array(store.allSnapshots.list.enumerated()),
-            id: \.element.id,
-            selection: $selection
-        ) { (index, snapshot) in
-            listItem(index, snapshot)
-        }
-        .onChange(of: selection) {
-            store.currentIndex = $0
-        }
-        .confirmationDialog(
-            "Remove conversation?",
-            isPresented: $deleting,
-            presenting: deleteTarget,
-            actions: { target in
-                Button(
-                    role: .destructive,
-                    action: {
-                        asyncIsolated {
-                            await controller.removeSnapshot(target)
-                        }
-                    },
-                    label: {
-                        Text("Delete '\(target.name)'")
+        rootBody()
+    }
+    
+    func rootBody() -> some View {
+        @ViewBuilder
+        func delete(_ target: Snapshot) -> some View {
+            Button(
+                role: .destructive,
+                action: {
+                    asyncIsolated {
+                        await controller.removeSnapshot(target)
                     }
-                )
-            },
-            message: { target in
-                let prefix: String = String(target.chatMessages.first?.content.prefix(128) ?? "")
-                Text("First message:\n \(prefix)...")
-                    .italic()
-            }
-        )
-        #endif
-
+                },
+                label: {
+                    Text("Delete '\(target.name)'")
+                }
+            )
+        }
+        
+        return platformBody()
+            .confirmationDialog(
+                "Remove conversation?",
+                isPresented: $deleting,
+                presenting: deleteTarget,
+                actions: { target in
+                    delete(target)
+                },
+                message: { target in
+                    let results: [ChatResult] = state.publishedSnapshot?.results ?? []
+                    let first = results.first?.firstMessage?.content
+                    
+                    let prefix: String = String(first?.prefix(128) ?? "")
+                    Text("First message:\n \(prefix)...")
+                        .italic()
+                }
+            )
     }
     
     @ViewBuilder
-    func listItem(_ index: Int, _ snapshot: Snapshot) -> some View {
+    func platformBody() -> some View {
+        #if os(iOS)
+        compactBody()
+        #else
+        desktopBody()
+        #endif
+    }
+    
+    @ViewBuilder
+    func compactBody() -> some View {
+        ScrollView {
+            LazyVStack(alignment: .leading) {
+                ForEach(
+                    Array(state.allSnapshots.list.enumerated()),
+                    id: \.element.id
+                ) { (index, snapshot) in
+                    listItem(index, snapshot)
+                }
+            }
+        }
+    }
+    
+    #if os(macOS)
+    @ViewBuilder
+    func desktopBody() -> some View {
+        ScrollView {
+            LazyVStack(alignment: .leading) {
+                ForEach(
+                    Array(state.allSnapshots.list.enumerated()),
+                    id: \.element.id
+                ) { (index, snapshot) in
+                    listItem(index, snapshot)
+                }
+            }
+        }
+    }
+    #endif
+    
+    @ViewBuilder
+    func listItem(
+        _ index: Int,
+        _ snapshot: Snapshot
+    ) -> some View {
         HStack(alignment: .center) {
             cell(snapshot)
             delete(snapshot)
@@ -84,12 +107,12 @@ struct SnapshotListView: View, Serialized {
         .padding()
         .border(Color.gray, width: 0.5)
         .background(
-            snapshot.id == store.currentSnapshot?.id
+            snapshot.id == controller.snapshotState.publishedSnapshot?.id
                 ? .blue.opacity(0.1415)
-                : .blue.opacity(0.0002) // needs some visible value for tap target
+                : .gray.opacity(0.1) // needs some visible value for tap target
         )
         .onTapGesture {
-            selection = index
+            controller.snapshotState.currentIndex = index
         }
     }
     

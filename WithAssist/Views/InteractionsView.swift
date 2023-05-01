@@ -8,6 +8,11 @@
 import SwiftUI
 import OpenAI
 import Combine
+func dismissKeys() {
+    #if os(iOS)
+    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    #endif
+}
 
 struct InteractionsView: View, Serialized {
     
@@ -29,20 +34,15 @@ struct InteractionsView: View, Serialized {
         self.state = controller.snapshotState
     }
     
-    private var snapshot: Snapshot? {
-        controller.snapshotState.currentSnapshot
-    }
-    
     private var hasErrors: Bool {
-        snapshot?.errors.isEmpty == false
+        state.publishedSnapshot?.errors.isEmpty == false
     }
     
     var body: some View {
         chatView
-            .disabled(isLoading || controller.needsToken)
             .overlay(loadingOverlayView())
             .overlay(updateTokenView())
-            .onChange(of: state.currentSnapshot) { _ in
+            .onChange(of: state.publishedSnapshot) { _ in
                 asyncIsolated {
                     await updateApproximateTokens()
                 }
@@ -50,17 +50,42 @@ struct InteractionsView: View, Serialized {
             .onReceive(controller.paramState.$current) {
                 maxTokens = $0.maxTokens
             }
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    nameView()
+                }
+            }
     }
     
     @ViewBuilder
     var chatView: some View {
         VStack {
             ConversationView(
-                store: controller
+                controller: controller
             )
+            .onTapGesture {
+                dismissKeys()
+            }
+            
             tokenCountView
+                .padding(.trailing)
+            
             inputView()
+                .padding()
+                .disabled(isLoading || controller.needsToken)
         }
+        #if os(iOS)
+        .sheet(isPresented: $showPrompt) {
+            promptInjectorView()
+                .padding()
+        }
+        .sheet(isPresented: $showErrors) {
+            errorView()
+        }
+        .popover(isPresented: $showSettings) {
+            SettingsView(controller: controller)
+        }
+        #endif
         .toolbar {
             ToolbarItem {
                 Button (action: {
@@ -68,10 +93,12 @@ struct InteractionsView: View, Serialized {
                 }, label: {
                     Image(systemName: "person.2.gobackward")
                 })
+                #if os(macOS)
                 .popover(isPresented: $showPrompt) {
                     promptInjectorView()
                         .frame(width: 600, height: 450)
                 }
+                #endif
             }
             
             ToolbarItem {
@@ -80,10 +107,12 @@ struct InteractionsView: View, Serialized {
                 }, label: {
                     Image(systemName: "gearshape.2.fill")
                 })
+                #if os(macOS)
                 .popover(isPresented: $showSettings) {
                     SettingsView(controller: controller)
                         .frame(width: 450, height: 450)
                 }
+                #endif
             }
             
             if hasErrors {
@@ -93,10 +122,12 @@ struct InteractionsView: View, Serialized {
                     }, label: {
                         Image(systemName: "exclamationmark.triangle.fill")
                     })
+                    #if os(macOS)
                     .popover(isPresented: $showErrors) {
                         errorView()
                             .frame(width: 600, height: 450)
                     }
+                    #endif
                 }
             }
         }
@@ -143,9 +174,9 @@ struct InteractionsView: View, Serialized {
     
     @ViewBuilder
     func promptInjectorView() -> some View {
-        if let snapshot {
+        if let snapshot = state.publishedSnapshot {
             PromptInjectorView(
-                draft: snapshot.chatMessages.first?.content ?? "",
+                draft: snapshot.results.first?.choices.first?.message?.content ?? "",
                 didRequestSetPrompt: { updatedPromptText in
                     loadOnMain {
                         await controller.resetPrompt(to: updatedPromptText)
@@ -172,26 +203,29 @@ struct InteractionsView: View, Serialized {
         )
     }
     
-    @MainActor @ViewBuilder
+    @MainActor
+    @ViewBuilder
     func nameView() -> some View {
-        TextField(
-            controller.snapshotState.currentSnapshot?.name ?? "<oopsie>",
-            text: Binding<String>(
-                get: { controller.snapshotState.currentSnapshot?.name ?? "" },
-                set: { name in
-                    asyncIsolated {
-                        await controller.snapshotState.updateCurrent {
-                            $0.name = name
+        if let snapshot = state.publishedSnapshot {
+            TextField(
+                snapshot.name,
+                text: Binding<String>(
+                    get: { snapshot.name },
+                    set: { name in
+                        asyncIsolated {
+                            await controller.snapshotState.updateCurrent {
+                                $0.name = name
+                            }
                         }
                     }
-                }
+                )
             )
-        )
+        }
     }
     
     @ViewBuilder
     func errorView() -> some View {
-        if let snapshot, hasErrors {
+        if let snapshot = state.publishedSnapshot, hasErrors {
             List {
                 ForEach(snapshot.errors) { error in
                     Text(error.message)
@@ -236,8 +270,8 @@ struct InteractionsView: View, Serialized {
     }
     
     var currentCharacterCount: Int {
-        snapshot?.chatMessages.lazy.map {
-            $0.content.count
+        state.publishedSnapshot?.results.lazy.map {
+            $0.choices.first?.message?.content.count ?? 0
         }.reduce(0, +)
         ?? 0
     }

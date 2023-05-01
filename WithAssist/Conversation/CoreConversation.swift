@@ -13,10 +13,6 @@ import Metal
 import MetalKit
 import OpenAI
 
-extension Chat: Identifiable {
-    public var id: Int { hashValue }
-}
-
 class ClientStore {
     var client: OpenAI
     var chat: ChatController

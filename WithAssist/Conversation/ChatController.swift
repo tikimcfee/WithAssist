@@ -60,6 +60,18 @@ class ChatController: ObservableObject {
         if OPENAI_API_KEY != nil {
             needsToken = false
         }
+        
+        snapshotState.$publishedSnapshot.sink { _ in
+            self.objectWillChange.send()
+        }.store(in: &bag)
+        
+        snapshotState.$allSnapshots.sink { _ in
+            self.objectWillChange.send()
+        }.store(in: &bag)
+        
+        snapshotState.$currentIndex.sink { _ in
+            self.objectWillChange.send()
+        }.store(in: &bag)
     }
     
     func saveManual() {
@@ -79,19 +91,12 @@ class ChatController: ObservableObject {
         _ role: Chat.Role = .user
     ) async {
         await snapshotState.updateCurrent { toUpdate in
-            toUpdate.chatMessages.append(
-                Chat(
-                    role: role,
-                    content: message
-                )
+            toUpdate.results.append(
+                message.wrapAsContentOfUserResult(model: paramState.current.chatModel)
             )
         }
         
-        await snapshotState.updateCurrent { toUpdate in
-            var targetCopy = toUpdate
-            await requestResponseFromGPT(&targetCopy)
-            toUpdate = targetCopy
-        }
+        await startStream()
     }
     
     func removeError(_ toRemove: AppError) async {
@@ -114,28 +119,19 @@ class ChatController: ObservableObject {
         }
     }
     
-    func removeMessage(_ toRemove: Chat) async {
+    func removeResult(
+        _ toRemove: ChatResult
+    ) async {
         await snapshotState.updateCurrent { snapshot in
-            guard let removeIndex = snapshot.chatMessages.firstIndex(where: {
-                $0.id == toRemove.id
-            }) else {
-                print("[!! error: \(#function)] - cannot find message to remove")
-                return
-            }
-            snapshot.chatMessages.remove(at: removeIndex)
+            snapshot.results[toRemove.id] = nil
         }
     }
     
-    func update(message: Chat, to newMessage: Chat) async {
+    func updateResult(
+        _ newResult: ChatResult
+    ) async {
         await snapshotState.updateCurrent { snapshot in
-            guard let updateIndex = snapshot.chatMessages.firstIndex(where: {
-                $0.id == message.id
-            }) else {
-                print("[!! error: \(#function)] - cannot find message to update")
-                return
-            }
-            
-            snapshot.chatMessages[updateIndex] = newMessage
+            snapshot.results[newResult.id] = newResult
         }
     }
     
@@ -147,7 +143,9 @@ class ChatController: ObservableObject {
     
     func resetPrompt(to prompt: String) async {
         await snapshotState.updateCurrent { current in
-            current.resetForNewPrompt(prompt)
+            current.resetForNewPrompt(
+                prompt.wrapAsContentOfUserResult(model: paramState.current.chatModel)
+            )
             await requestResponseFromGPT(&current)
         }
     }
@@ -156,10 +154,6 @@ class ChatController: ObservableObject {
         do {
             let result = try await performChatQuery(using: snapshot)
             snapshot.results.append(result)
-            
-            if let choice = result.choices.first {
-                snapshot.chatMessages.append(choice.message)
-            }
         } catch {
             print("[!!error \(#fileID)]: \(error)")
             snapshot.errors.append(AppError.wrapped(
@@ -167,6 +161,28 @@ class ChatController: ObservableObject {
                 UUID()
             ))
         }
+    }
+    
+    func startStream() async {
+        guard let snapshot = snapshotState.publishedSnapshot else {
+            return
+        }
+        let query = makeChatQuery(snapshot, stream: true)
+        do {
+            let stream = openAI.chatsStream(query: query)
+            for try await chatResult in stream {
+                await snapshotState.updateCurrent { current in
+                    print("updating: \(chatResult.id)")
+                    print("updating: \(chatResult.firstMessage?.content ?? "~x")")
+                    current.updateResultsFromStream(piece: chatResult)
+                }
+            }
+        } catch {
+            print("[stream controller - error] \(error)")
+        }
+        
+        print("[stream controller] stream complete")
+        
     }
     
     func loadController() {
@@ -184,7 +200,7 @@ extension ChatController {
         )
         
         let firstMessage =
-            result.choices.first?.message.content
+            result.choices.first?.message?.content
             ?? "<no response message>"
         
         print(
@@ -200,15 +216,19 @@ Received response:
         return result
     }
     
-    func makeChatQuery(_ snapshot: Snapshot?) -> ChatQuery {
+    func makeChatQuery(
+        _ snapshot: Snapshot?,
+        stream: Bool = false
+    ) -> ChatQuery {
         
-        let candidateMessage = (snapshot?.chatMessages ?? [])
+        let limit = ModelTokenLimit[paramState.current.chatModel, default: FallbackTokenLimit]
+        let candidateMessages = snapshot.firstMessageList
         var contextWindow: [Chat] = []
         var runningTokenCount = 0
-        for message in candidateMessage.reversed() {
+        for message in candidateMessages.reversed() {
             // TODO: Replace with actual tokenization and token count someday.
             let tokenEstimate = message.content.approximateTokens
-            if tokenEstimate + runningTokenCount < 3000 {
+            if tokenEstimate + runningTokenCount < limit {
                 contextWindow.append(message)
                 runningTokenCount += message.content.count
             } else {
@@ -216,7 +236,7 @@ Received response:
                 break // Early stop.
             }
         }
-        print("[ChatClient] Took \(contextWindow.count)/\(candidateMessage.count) of the previous messages.")
+        print("[ChatClient] Took \(contextWindow.count)/\(candidateMessages.count) of the previous messages.")
         contextWindow.reverse()
         
         return ChatQuery(
@@ -225,12 +245,68 @@ Received response:
             temperature: paramState.current.temperature,
             topP: paramState.current.topProbabilityMass,
             n: paramState.current.completions,
-            stream: false,
-            maxTokens: paramState.current.maxTokens - runningTokenCount,
+            stream: stream,
+            maxTokens: paramState.current.maxTokens,
             presencePenalty: paramState.current.presencePenalty,
             frequencyPenalty: paramState.current.frequencyPenalty,
             logitBias: paramState.current.logitBias,
             user: paramState.current.user
         )
+    }
+}
+
+extension Optional where Wrapped == Snapshot {
+    var firstMessageList: [Chat] {
+        self?.results.compactMap {
+            $0.firstMessage
+        } ?? []
+    }
+}
+
+extension String {
+    func wrapAsContentOfUserResult(
+        model: Model
+    ) -> ChatResult {
+        ChatResult(
+            id: UUID().uuidString,
+            object: "chat.user-message",
+            created: Date.now.timeIntervalSince1970,
+            model: model,
+            choices: [
+                .init(
+                    index: 0,
+                    message: Chat(role: .user, content: self),
+                    finishReason: nil
+                )
+            ],
+            usage: ChatResult.Usage()
+        )
+    }
+}
+
+class ChatStreamController {
+    var chatController: ChatController
+    var llmAPI: OpenAI
+    
+    init(chatController: ChatController, llmAPI: OpenAI) {
+        self.chatController = chatController
+        self.llmAPI = llmAPI
+    }
+    
+    func startStream(
+        from query: ChatQuery
+    ) async {
+        let stream = llmAPI.chatsStream(query: query)
+        do {
+            for try await chatResult in stream {
+                await chatController.snapshotState.updateCurrent {
+                    $0.updateResultsFromStream(piece: chatResult)
+                }
+            }
+        } catch {
+            print("[stream controller - error] \(error)")
+        }
+        
+        print("[stream controller] stream complete")
     }
 }

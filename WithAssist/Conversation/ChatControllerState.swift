@@ -13,14 +13,16 @@ import SwiftUI
 
 extension ChatController {
     class SnapshotState: ObservableObject, GlobalStoreReader {
+        @Published var publishedSnapshot: Snapshot?
         @Published var currentIndex: Int = 0
         @Published var allSnapshots: AllSnapshots = AllSnapshots() {
             willSet {
-                print("WHO!?")
+                print("[all snapshots set via field accessor]")
             }
         }
         
         private var manualSaves = PassthroughSubject<AllSnapshots, Never>()
+        public var targetFile: AppFile = .defaultSnapshot
         
         private(set) var bag = Set<AnyCancellable>()
         
@@ -38,19 +40,24 @@ extension ChatController {
         }
         
         func setupAutosave() {
+            $currentIndex
+                .compactMap { self.allSnapshots[$0] }
+                .sink { self.publishedSnapshot = $0 }
+                .store(in: &bag)
+            
             $allSnapshots
                 .merge(with: manualSaves)
-                .handleEvents(receiveOutput: { _ in
-                    print("[chat state] Testing should save...")
-                })
+//                .handleEvents(receiveOutput: { _ in
+//                    print("[chat state] Testing should save...")
+//                })
                 .filter { !$0.isSaved && !$0.list.isEmpty }
-                .handleEvents(receiveOutput: { _ in
-                    print("[chat state] Save debouncing")
-                })
+//                .handleEvents(receiveOutput: { _ in
+//                    print("[chat state] Save debouncing")
+//                })
                 .debounce(for: 1, scheduler: Self.saveQueue)
-                .handleEvents(receiveOutput: { _ in
-                    print("[chat state] Testing duplicate...")
-                })
+//                .handleEvents(receiveOutput: { _ in
+//                    print("[chat state] Testing duplicate...")
+//                })
                 .removeDuplicates()
                 .map { snapshot -> AllSnapshots in
                     print("[chat state] Starting save")
@@ -71,7 +78,7 @@ extension ChatController {
                 print("[load sink] starting load")
                 let loaded = try snapshotStorage.load(
                     AllSnapshots.self,
-                    from: .defaultSnapshot
+                    from: targetFile
                 )
                 
                 self.allSnapshots = loaded
@@ -91,14 +98,14 @@ extension ChatController {
         private func onSaveSnapshots(_ all: AllSnapshots) {
             do {
                 print("[save sink] starting save to disk")
-                try snapshotStorage.save(all, to: .defaultSnapshot)
+                try snapshotStorage.save(all, to: targetFile)
             } catch {
                 print("[save error]", error)
             }
         }
         
         public func usingCurrent(_ receiver: (Snapshot) -> Void) {
-            guard let usingCurrent = currentSnapshot else {
+            guard let usingCurrent = publishedSnapshot else {
                 print("[state update] no current snapshot to update")
                 return
             }
@@ -107,7 +114,7 @@ extension ChatController {
         }
         
         public func usingCurrent(_ receiver: (Snapshot) async -> Void) async {
-            guard let usingCurrent = currentSnapshot else {
+            guard let usingCurrent = publishedSnapshot else {
                 print("[state update] no current snapshot to update")
                 return
             }
@@ -116,7 +123,7 @@ extension ChatController {
         }
 
         public func updateCurrent(_ receiver: (inout Snapshot) async -> Void) async {
-            guard var updatedSnapshot = currentSnapshot else {
+            guard var updatedSnapshot = publishedSnapshot else {
                 print("[state update] no current snapshot to update")
                 return
             }
@@ -124,22 +131,13 @@ extension ChatController {
             await receiver(&updatedSnapshot)
             await MainActor.run { [updatedSnapshot] in
                 allSnapshots.storeChanges(to: updatedSnapshot)
+                publishedSnapshot = updatedSnapshot
             }
         }
         
         public func update(_ receiver: (ChatController.SnapshotState)-> Void) async {
             await MainActor.run {
                 receiver(self)
-            }
-        }
-
-        public var currentSnapshot: Snapshot? {
-            get {
-                guard allSnapshots.list.indices.contains(currentIndex)
-                else {
-                    return nil
-                }
-                return allSnapshots.list[currentIndex]
             }
         }
         

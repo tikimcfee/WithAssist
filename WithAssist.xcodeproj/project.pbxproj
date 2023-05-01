@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		B72A79FE29D5399E00BE4163 /* Snapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A79FD29D5399E00BE4163 /* Snapshot.swift */; };
-		B72A7A0029D539FA00BE4163 /* ChatClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A79FF29D539FA00BE4163 /* ChatClient.swift */; };
+		B72A7A0029D539FA00BE4163 /* ChatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A79FF29D539FA00BE4163 /* ChatController.swift */; };
 		B72A7A0229D53E7D00BE4163 /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A7A0129D53E7D00BE4163 /* AppError.swift */; };
 		B72A7A0429D5407300BE4163 /* SnapshotListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A7A0329D5407300BE4163 /* SnapshotListView.swift */; };
 		B72A7A0629D669A700BE4163 /* ChatRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A7A0529D669A700BE4163 /* ChatRequest.swift */; };
@@ -24,6 +24,8 @@
 		B73CB0A429C662980047831E /* CoreConversation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B73CB0A329C662980047831E /* CoreConversation.swift */; };
 		B7497FE329DBAF170030698A /* Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7497FE229DBAF170030698A /* Tokens.swift */; };
 		B7497FE429DBAF210030698A /* Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7497FE229DBAF170030698A /* Tokens.swift */; };
+		B74CB94D29FC8F070070D163 /* EditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B74CB94C29FC8F070070D163 /* EditView.swift */; };
+		B7A2410829FDD19D00C81BCF /* EditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B74CB94C29FC8F070070D163 /* EditView.swift */; };
 		B7B829F329DB993500550002 /* OpenAI in Frameworks */ = {isa = PBXBuildFile; productRef = B7B829F229DB993500550002 /* OpenAI */; };
 		B7C2DDF329DBFC2C006CDF39 /* RichTextKit in Frameworks */ = {isa = PBXBuildFile; productRef = B7C2DDF229DBFC2C006CDF39 /* RichTextKit */; };
 		B7C2DDF529DBFC2C006CDF39 /* OpenAI in Frameworks */ = {isa = PBXBuildFile; productRef = B7C2DDF429DBFC2C006CDF39 /* OpenAI */; };
@@ -40,7 +42,7 @@
 		B7EB2F9C29DA34880049C4CA /* CodableAppStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7DBD15C29D1404000776412 /* CodableAppStorage.swift */; };
 		B7EB2F9D29DA34880049C4CA /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A7A0129D53E7D00BE4163 /* AppError.swift */; };
 		B7EB2F9E29DA34880049C4CA /* InteractionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7C8B3EC29D7AFA100B53B01 /* InteractionsView.swift */; };
-		B7EB2F9F29DA34880049C4CA /* ChatClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A79FF29D539FA00BE4163 /* ChatClient.swift */; };
+		B7EB2F9F29DA34880049C4CA /* ChatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A79FF29D539FA00BE4163 /* ChatController.swift */; };
 		B7EB2FA029DA34880049C4CA /* FileStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7DBD15A29D13B9900776412 /* FileStorage.swift */; };
 		B7EB2FA129DA34880049C4CA /* MainAppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7C8B3E829D7AF2800B53B01 /* MainAppView.swift */; };
 		B7EB2FA229DA34880049C4CA /* ConversationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7C8B3EE29D7AFC900B53B01 /* ConversationView.swift */; };
@@ -77,7 +79,7 @@
 
 /* Begin PBXFileReference section */
 		B72A79FD29D5399E00BE4163 /* Snapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Snapshot.swift; sourceTree = "<group>"; };
-		B72A79FF29D539FA00BE4163 /* ChatClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatClient.swift; sourceTree = "<group>"; };
+		B72A79FF29D539FA00BE4163 /* ChatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatController.swift; sourceTree = "<group>"; };
 		B72A7A0129D53E7D00BE4163 /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
 		B72A7A0329D5407300BE4163 /* SnapshotListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotListView.swift; sourceTree = "<group>"; };
 		B72A7A0529D669A700BE4163 /* ChatRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatRequest.swift; sourceTree = "<group>"; };
@@ -96,6 +98,7 @@
 		B73CB09329C662610047831E /* WithAssistUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithAssistUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		B73CB0A329C662980047831E /* CoreConversation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreConversation.swift; sourceTree = "<group>"; };
 		B7497FE229DBAF170030698A /* Tokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tokens.swift; sourceTree = "<group>"; };
+		B74CB94C29FC8F070070D163 /* EditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditView.swift; sourceTree = "<group>"; };
 		B7C8B3E829D7AF2800B53B01 /* MainAppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainAppView.swift; sourceTree = "<group>"; };
 		B7C8B3EA29D7AF7E00B53B01 /* ChatInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatInputView.swift; sourceTree = "<group>"; };
 		B7C8B3EC29D7AFA100B53B01 /* InteractionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractionsView.swift; sourceTree = "<group>"; };
@@ -215,6 +218,7 @@
 				B7C8B3E829D7AF2800B53B01 /* MainAppView.swift */,
 				B730F93F29D28867005808D6 /* SettingsView.swift */,
 				B72A7A0329D5407300BE4163 /* SnapshotListView.swift */,
+				B74CB94C29FC8F070070D163 /* EditView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -230,16 +234,16 @@
 		B73CB0A229C662890047831E /* Conversation */ = {
 			isa = PBXGroup;
 			children = (
-				B7497FE229DBAF170030698A /* Tokens.swift */,
-				B73CB0A329C662980047831E /* CoreConversation.swift */,
 				B72A7A0129D53E7D00BE4163 /* AppError.swift */,
-				B72A79FF29D539FA00BE4163 /* ChatClient.swift */,
-				B7C8B3F229D9D88C00B53B01 /* Serializer.swift */,
+				B72A79FF29D539FA00BE4163 /* ChatController.swift */,
 				B72A7A0729D66B2900BE4163 /* ChatControllerState.swift */,
 				B72A7A0529D669A700BE4163 /* ChatRequest.swift */,
-				B7DBD15A29D13B9900776412 /* FileStorage.swift */,
 				B7DBD15C29D1404000776412 /* CodableAppStorage.swift */,
+				B73CB0A329C662980047831E /* CoreConversation.swift */,
+				B7DBD15A29D13B9900776412 /* FileStorage.swift */,
+				B7C8B3F229D9D88C00B53B01 /* Serializer.swift */,
 				B72A79FD29D5399E00BE4163 /* Snapshot.swift */,
+				B7497FE229DBAF170030698A /* Tokens.swift */,
 			);
 			path = Conversation;
 			sourceTree = "<group>";
@@ -435,7 +439,8 @@
 				B7DBD15D29D1404000776412 /* CodableAppStorage.swift in Sources */,
 				B72A7A0229D53E7D00BE4163 /* AppError.swift in Sources */,
 				B7C8B3ED29D7AFA100B53B01 /* InteractionsView.swift in Sources */,
-				B72A7A0029D539FA00BE4163 /* ChatClient.swift in Sources */,
+				B74CB94D29FC8F070070D163 /* EditView.swift in Sources */,
+				B72A7A0029D539FA00BE4163 /* ChatController.swift in Sources */,
 				B7DBD15B29D13B9900776412 /* FileStorage.swift in Sources */,
 				B7C8B3E929D7AF2800B53B01 /* MainAppView.swift in Sources */,
 				B7C8B3EF29D7AFC900B53B01 /* ConversationView.swift in Sources */,
@@ -478,7 +483,8 @@
 				B7EB2F9C29DA34880049C4CA /* CodableAppStorage.swift in Sources */,
 				B7EB2F9D29DA34880049C4CA /* AppError.swift in Sources */,
 				B7EB2F9E29DA34880049C4CA /* InteractionsView.swift in Sources */,
-				B7EB2F9F29DA34880049C4CA /* ChatClient.swift in Sources */,
+				B7A2410829FDD19D00C81BCF /* EditView.swift in Sources */,
+				B7EB2F9F29DA34880049C4CA /* ChatController.swift in Sources */,
 				B7EB2FA029DA34880049C4CA /* FileStorage.swift in Sources */,
 				B7EB2FA129DA34880049C4CA /* MainAppView.swift in Sources */,
 				B7EB2FA229DA34880049C4CA /* ConversationView.swift in Sources */,
@@ -924,7 +930,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/tikimcfee/OpenAI.git";
 			requirement = {
-				branch = saving_optionals;
+				branch = main;
 				kind = branch;
 			};
 		};

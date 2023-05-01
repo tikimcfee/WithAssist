@@ -23,7 +23,10 @@ protocol Serialized {
     var serializer: Serializer { get }
 }
 
+private let globalSerializer = Serializer()
 extension Serialized {
+    var serializer: Serializer { globalSerializer }
+    
     func asyncIsolated(_ asyncFunction: @escaping () async -> Void) {
         serializer.asyncNonIsolated(asyncFunction)
     }
