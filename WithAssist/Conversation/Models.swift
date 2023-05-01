@@ -1,18 +1,12 @@
 //
-//  Tokens.swift
+//  Models.swift
 //  WithAssist
 //
-//  Created by Ivan Lugo on 4/3/23.
+//  Created on 4/5/23.
 //
 
 import Foundation
 import OpenAI
-
-extension String {
-    var approximateTokens: Int {
-        Int(Double(count) / 4.1)
-    }
-}
 
 extension Model: CaseIterable {
     public static var allCases: [String] = [
@@ -30,6 +24,7 @@ extension Model: CaseIterable {
         Model.textDavinci_002,
         Model.textDavinci_003,
         Model.textEmbeddingAda,
+        Model.textSearchBabbadgeDoc,
         Model.textSearchBabbageQuery001
     ]
 }

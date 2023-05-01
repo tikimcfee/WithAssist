@@ -85,7 +85,7 @@ final class WithAssistTests: XCTestCase {
         controller.paramState.current.chatModel = model
         controller.paramState.current.maxTokens = 500
         
-        print("First message is: \(chat.id)")
+        print("First message is: \(chat.content)")
         
         controller.snapshotState.$publishedSnapshot.sink { publishedSnapshot in
             let maybeContent = publishedSnapshot?.results.first?.choices.first?.message?.content
