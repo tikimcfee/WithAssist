@@ -99,11 +99,12 @@ class ChatController: ObservableObject {
             )
         }
         
-        await snapshotState.updateCurrent { toUpdate in
-            var targetCopy = toUpdate
-            await requestResponseFromGPT(&targetCopy)
-            toUpdate = targetCopy
-        }
+//        await snapshotState.updateCurrent { toUpdate in
+//            var targetCopy = toUpdate
+//            await requestResponseFromGPT(&targetCopy)
+//            toUpdate = targetCopy
+//        }
+        await startStream()
     }
     
     func removeError(_ toRemove: AppError) async {
@@ -181,6 +182,24 @@ class ChatController: ObservableObject {
         }
     }
     
+    func startStream() async {
+        await snapshotState.updateCurrent { current in
+            let query = makeChatQuery(current, stream: true)
+            let stream = openAI.chatsStream(query: query)
+            do {
+                for try await chatResult in stream {
+                    await snapshotState.updateCurrent {
+                        $0.updateResultsFromStream(piece: chatResult)
+                    }
+                }
+            } catch {
+                print("[stream controller - error] \(error)")
+            }
+            
+            print("[stream controller] stream complete")
+        }
+    }
+    
     func loadController() {
         snapshotState.load()
     }
@@ -252,9 +271,9 @@ class ChatStreamController {
                 }
             }
         } catch {
-            print("[stream error] \(error)")
+            print("[stream controller - error] \(error)")
         }
         
-        print("- stream complete")
+        print("[stream controller] stream complete")
     }
 }

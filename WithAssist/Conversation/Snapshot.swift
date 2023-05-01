@@ -49,7 +49,7 @@ struct Snapshot: Identifiable, Codable, Equatable, Hashable {
     var chatResults: [ChatResult.ID: ChatResult] = [:]
     var errors: [AppError] = []
     var results: [ChatResult] = []
-    var name: String = "Some conversation: \(Date.now)"
+    var name: String = "\(Date.now)"
     
     static let empty: Snapshot = {
         let empty = Snapshot()
@@ -63,6 +63,32 @@ struct Snapshot: Identifiable, Codable, Equatable, Hashable {
         ]
         errors = []
         results = []
+    }
+    
+    internal init(
+        id: UUID = UUID(),
+        chatMessages: [Chat] = [],
+        chatResults: [ChatResult.ID : ChatResult] = [:],
+        errors: [AppError] = [],
+        results: [ChatResult] = [],
+        name: String = "\(Date.now)"
+    ) {
+        self.id = id
+        self.chatMessages = chatMessages
+        self.chatResults = chatResults
+        self.errors = errors
+        self.results = results
+        self.name = name
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decode(UUID.self, forKey: .id)
+        self.chatMessages = try container.decode([Chat].self, forKey: .chatMessages)
+        self.chatResults = try container.decodeIfPresent([ChatResult.ID : ChatResult].self, forKey: .chatResults) ?? [:]
+        self.errors = try container.decode([AppError].self, forKey: .errors)
+        self.results = try container.decode([ChatResult].self, forKey: .results)
+        self.name = try container.decode(String.self, forKey: .name)
     }
 }
 
