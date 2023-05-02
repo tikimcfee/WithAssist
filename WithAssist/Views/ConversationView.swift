@@ -86,23 +86,30 @@ struct ConversationView: View, Serialized {
         }
     }
     
+    private func doListScroll(
+        in snapshot: Snapshot?,
+        proxy: ScrollViewProxy
+    ) {
+        // Dispatch is used to get around proxy not always finding the element to scroll to.
+        // There's a bit of a visual 'snap' when this happens.
+        DispatchQueue.main.async {
+            guard let snapshot else { return }
+            print("Scroll to new: \(snapshot.id)")
+            if let id = snapshot.results.last?.id {
+                withAnimation(.easeOut(duration: 0.1)) {
+                    proxy.scrollTo(id, anchor: .bottom)
+                }
+            }
+        }
+    }
+    
     @ViewBuilder
     func maybeRootView(_ snapshot: Snapshot?) -> some View {
         if let snapshot {
             ScrollViewReader { proxy in
                 platformList(for: snapshot)
-                    .onReceive(controller.snapshotState.$publishedSnapshot) { [proxy] snapshot in
-                        guard let snapshot else { return }
-                        print("Scroll to new: \(snapshot.id)")
-                        if let id = snapshot.results.last?.id {
-                            proxy.scrollTo(id, anchor: .bottom)
-                        }
-                    }
-                    .onChange(of: snapshot.results.count) { [proxy] newCount in
-                        print("Scroll to count: \(newCount)")
-                        if let id = snapshot.results.last?.id {
-                            proxy.scrollTo(id, anchor: .bottom)
-                        }
+                    .onReceive(controller.snapshotState.$publishedSnapshot) { snapshot in
+                        doListScroll(in: snapshot, proxy: proxy)
                     }
             }
         } else {
