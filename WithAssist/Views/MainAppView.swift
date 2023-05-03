@@ -15,7 +15,7 @@ struct MainAppView: View {
     
     var body: some View {
         #if os(macOS)
-        chatBody
+        splitViewBody
         #else
         compactBody
         #endif
@@ -40,7 +40,7 @@ struct MainAppView: View {
     }
     
     @ViewBuilder
-    var chatBody: some View {
+    var splitViewBody: some View {
         NavigationSplitView(
             sidebar: {
                 listView()
@@ -54,23 +54,6 @@ struct MainAppView: View {
                     }
             }
         )
-    }
-    
-    @ViewBuilder
-    var tripleColumnBody: some View {
-        NavigationSplitView(
-            sidebar: {
-                listView()
-            },
-            content: {
-                mainInteractionsView()
-                    .padding()
-            },
-            detail: {
-                conversationView()
-            }
-        )
-        .navigationSplitViewStyle(.automatic)
     }
     
     @ViewBuilder

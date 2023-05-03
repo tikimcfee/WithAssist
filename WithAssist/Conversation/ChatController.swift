@@ -87,13 +87,22 @@ class ChatController: ObservableObject {
     }
     
     func addMessage(
-        _ message: String,
-        _ role: Chat.Role = .user
+        _ message: String
     ) async {
         await snapshotState.updateCurrent { toUpdate in
             toUpdate.results.append(
                 message.wrapAsContentOfUserResult(model: paramState.current.chatModel)
             )
+        }
+        
+        await startStream()
+    }
+    
+    func appendResult(
+        _ message: ChatResult
+    ) async {
+        await snapshotState.updateCurrent { toUpdate in
+            toUpdate.results.append(message)
         }
         
         await startStream()
@@ -146,8 +155,9 @@ class ChatController: ObservableObject {
             current.resetForNewPrompt(
                 prompt.wrapAsContentOfUserResult(model: paramState.current.chatModel)
             )
-            await requestResponseFromGPT(&current)
         }
+        
+        await startStream()
     }
 
     func requestResponseFromGPT(_ snapshot: inout Snapshot) async {
@@ -265,7 +275,8 @@ extension Optional where Wrapped == Snapshot {
 
 extension String {
     func wrapAsContentOfUserResult(
-        model: Model
+        model: Model,
+        role: Chat.Role = .user
     ) -> ChatResult {
         ChatResult(
             id: UUID().uuidString,
@@ -275,7 +286,7 @@ extension String {
             choices: [
                 .init(
                     index: 0,
-                    message: Chat(role: .user, content: self),
+                    message: Chat(role: role, content: self),
                     finishReason: nil
                 )
             ],

@@ -25,6 +25,7 @@
 		B7497FE329DBAF170030698A /* Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7497FE229DBAF170030698A /* Tokens.swift */; };
 		B7497FE429DBAF210030698A /* Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7497FE229DBAF170030698A /* Tokens.swift */; };
 		B74CB94D29FC8F070070D163 /* EditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B74CB94C29FC8F070070D163 /* EditView.swift */; };
+		B76956E72A01DEBF0040022B /* MagiTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B76956E62A01DEBF0040022B /* MagiTests.swift */; };
 		B7A2410829FDD19D00C81BCF /* EditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B74CB94C29FC8F070070D163 /* EditView.swift */; };
 		B7B829F329DB993500550002 /* OpenAI in Frameworks */ = {isa = PBXBuildFile; productRef = B7B829F229DB993500550002 /* OpenAI */; };
 		B7C2DDF329DBFC2C006CDF39 /* RichTextKit in Frameworks */ = {isa = PBXBuildFile; productRef = B7C2DDF229DBFC2C006CDF39 /* RichTextKit */; };
@@ -99,6 +100,7 @@
 		B73CB0A329C662980047831E /* CoreConversation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreConversation.swift; sourceTree = "<group>"; };
 		B7497FE229DBAF170030698A /* Tokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tokens.swift; sourceTree = "<group>"; };
 		B74CB94C29FC8F070070D163 /* EditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditView.swift; sourceTree = "<group>"; };
+		B76956E62A01DEBF0040022B /* MagiTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MagiTests.swift; sourceTree = "<group>"; };
 		B7C8B3E829D7AF2800B53B01 /* MainAppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainAppView.swift; sourceTree = "<group>"; };
 		B7C8B3EA29D7AF7E00B53B01 /* ChatInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatInputView.swift; sourceTree = "<group>"; };
 		B7C8B3EC29D7AFA100B53B01 /* InteractionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractionsView.swift; sourceTree = "<group>"; };
@@ -194,6 +196,7 @@
 			isa = PBXGroup;
 			children = (
 				B73CB08729C662610047831E /* WithAssistTests.swift */,
+				B76956E62A01DEBF0040022B /* MagiTests.swift */,
 			);
 			path = WithAssistTests;
 			sourceTree = "<group>";
@@ -460,6 +463,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B76956E72A01DEBF0040022B /* MagiTests.swift in Sources */,
 				B73CB08829C662610047831E /* WithAssistTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
