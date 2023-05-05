@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B718E0E92A05409D00EA29D4 /* MagiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B718E0E82A05409D00EA29D4 /* MagiView.swift */; };
+		B718E0EB2A05410800EA29D4 /* Entity.swift in Sources */ = {isa = PBXBuildFile; fileRef = B718E0EA2A05410800EA29D4 /* Entity.swift */; };
+		B718E0ED2A05412F00EA29D4 /* MagiEntityStage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B718E0EC2A05412F00EA29D4 /* MagiEntityStage.swift */; };
 		B72A79FE29D5399E00BE4163 /* Snapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A79FD29D5399E00BE4163 /* Snapshot.swift */; };
 		B72A7A0029D539FA00BE4163 /* ChatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A79FF29D539FA00BE4163 /* ChatController.swift */; };
 		B72A7A0229D53E7D00BE4163 /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A7A0129D53E7D00BE4163 /* AppError.swift */; };
@@ -80,6 +83,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		B718E0E82A05409D00EA29D4 /* MagiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MagiView.swift; sourceTree = "<group>"; };
+		B718E0EA2A05410800EA29D4 /* Entity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Entity.swift; sourceTree = "<group>"; };
+		B718E0EC2A05412F00EA29D4 /* MagiEntityStage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MagiEntityStage.swift; sourceTree = "<group>"; };
 		B72A79FD29D5399E00BE4163 /* Snapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Snapshot.swift; sourceTree = "<group>"; };
 		B72A79FF29D539FA00BE4163 /* ChatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatController.swift; sourceTree = "<group>"; };
 		B72A7A0129D53E7D00BE4163 /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
@@ -258,6 +264,9 @@
 			isa = PBXGroup;
 			children = (
 				B76956E92A0216320040022B /* Magi.swift */,
+				B718E0EC2A05412F00EA29D4 /* MagiEntityStage.swift */,
+				B718E0EA2A05410800EA29D4 /* Entity.swift */,
+				B718E0E82A05409D00EA29D4 /* MagiView.swift */,
 			);
 			path = Magi;
 			sourceTree = "<group>";
@@ -457,6 +466,8 @@
 				B72A7A0029D539FA00BE4163 /* ChatController.swift in Sources */,
 				B7DBD15B29D13B9900776412 /* FileStorage.swift in Sources */,
 				B7C8B3E929D7AF2800B53B01 /* MainAppView.swift in Sources */,
+				B718E0EB2A05410800EA29D4 /* Entity.swift in Sources */,
+				B718E0E92A05409D00EA29D4 /* MagiView.swift in Sources */,
 				B7C8B3EF29D7AFC900B53B01 /* ConversationView.swift in Sources */,
 				B730F94029D28867005808D6 /* SettingsView.swift in Sources */,
 				B72A7A0629D669A700BE4163 /* ChatRequest.swift in Sources */,
@@ -468,6 +479,7 @@
 				B7C8B3F129D7AFF600B53B01 /* PromptInjectorView.swift in Sources */,
 				B72A79FE29D5399E00BE4163 /* Snapshot.swift in Sources */,
 				B7C8B3EB29D7AF7E00B53B01 /* ChatInputView.swift in Sources */,
+				B718E0ED2A05412F00EA29D4 /* MagiEntityStage.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

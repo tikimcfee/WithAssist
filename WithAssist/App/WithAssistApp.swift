@@ -7,10 +7,29 @@
 
 import SwiftUI
 
+// The sins of global state.
+class AppState {
+    static let global = AppState()
+    private init() { }
+    
+    private lazy var client = ClientStore.defaultClient
+    private lazy var chatController = ClientStore.defaultChat
+    lazy var defaultStore = ClientStore(client: client, chat: chatController)
+    
+    lazy var defaultMagi = Magi(name: "First Magi", controller: {
+        let controller = ChatController(openAI: client)
+        return controller
+    }())
+    lazy var defaultStage = {
+        let magi = defaultMagi
+        let stage = MagiEntityStage(magi: magi)
+        return stage
+    }()
+}
+
 @main
 struct WithAssistApp: App {
-    @State
-    var clientStore: ClientStore = Self.makeClient()
+    @ObservedObject var clientStore: ClientStore = AppState.global.defaultStore
     
     @Environment(\.scenePhase)
     private var scenePhase

@@ -23,13 +23,27 @@ struct MainAppView: View {
     
     @ViewBuilder
     var compactBody: some View {
-        NavigationStack(path: $path) {
-            listView()
-                .toolbar { ToolbarItem { newConversationView } }
-                .navigationDestination(for: Snapshot.self) { snapshot in
-                    mainInteractionsView()
-                        .navigationTitle(snapshot.name)
-                }
+        TabView {
+            
+            NavigationStack(path: $path) {
+                listView()
+                    .toolbar { ToolbarItem { newConversationView } }
+                    .navigationDestination(for: Snapshot.self) { snapshot in
+                        mainInteractionsView()
+                            .navigationTitle(snapshot.name)
+                    }
+            }
+            .tabItem {
+                Label("Conversations", systemImage: "message.fill")
+            }
+            
+            MagiView(
+                stage: AppState.global.defaultStage
+            )
+            .tabItem {
+                Label("Magi", systemImage: "magicmouse") // lol
+            }
+            
         }
         .onReceive(chatController.snapshotState.$publishedSnapshot) {
             if let snapshot = $0 {

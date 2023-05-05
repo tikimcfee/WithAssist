@@ -9,117 +9,19 @@ import OpenAI
 import Combine
 import Foundation
 
-actor MagiEntityStage {
-    @Published var magi: Magi
-    @Published var entity: LanguageEntity
-    
-    @Published var observations: [ChatResult] = []
-    
-    private var saveToken: Any?
-    private lazy var fileStore = FileStorageSerial()
-    private var consultTask: Task<Void, Error>?
-    
-    init(
-        magi: Magi,
-        entity: LanguageEntity
-    ) async {
-        self.magi = magi
-        self.entity = entity
-        
-        self.saveToken = $entity
-            .removeDuplicates()
-            .dropFirst()
-            .handleEvents(receiveOutput: saveEntity(_:))
-            .sink(receiveValue: communicateChange(_:))
-    }
-    
-    func communicateChange(_ entity: LanguageEntity) {
-        consultTask.map {
-            print("\($0) already running. oops.")
-        }
-        
-        consultTask = Task { [entity] in
-            if let modelResponse = await magi.consultModel(about: entity) {
-                observations.append(modelResponse)
-                print(modelResponse.firstMessage?.content ?? "<no content>")
-            } else {
-                print("[\(#function)] no change message")
-            }
-        }
-    }
-    
-    func saveEntity(_ entity: LanguageEntity) {
-        do {
-            try fileStore.save(entity, to: .custom("\(entity.name)-word-store"))
-        } catch {
-            print("[\(#function)] \(error)")
-        }
-    }
-}
-
-typealias EntityMap = [String: [String]]
-
-extension EntityMap: RawRepresentable {
-    public var rawValue: String {
-        do {
-            let data = try JSONEncoder().encode(self)
-            return String(data: data, encoding: .utf8) ?? ""
-        } catch {
-            print(error)
-            return ""
-        }
-    }
-    
-    public init?(rawValue: String) {
-        guard let data = rawValue.data(using: .utf8),
-              let map = try? JSONDecoder().decode(Self.self, from: data)
-        else {
-            return nil
-        }
-        self = map
-    }
-}
-
-struct LanguageEntity: Codable, Equatable, Hashable {
-    var name: String
-    var definitions: EntityMap = [:]
-    
-    subscript (_ word: String, _ index: Int = 0) -> String? {
-        get {
-            if let list = definitions[word],
-               list.indices.contains(index) {
-                return list[index]
-            }
-            return nil
-        }
-        set {
-            var list = definitions[word, default: []]
-            if list.indices.contains(index) {
-                if let newValue {
-                    list[index] = newValue
-                } else {
-                    list.remove(at: index)
-                }
-            } else {
-                if let newValue {
-                    list.append(newValue)
-                }
-            }
-            definitions[word] = list
-        }
-    }
-}
-
 class Magi: ObservableObject, Serialized {
     let name: String
-    let store: ClientStore
+    let controller: ChatController
     
     init(
         name: String,
-        store: ClientStore
+        controller: ChatController
     ) {
         self.name = name
-        self.store = store
+        self.controller = controller
+        
+        controller.snapshotState.targetFile = .custom("Magi:\(name).txt")
+        controller.controlNewConversation()
     }
     
     func consultModel(about entity: LanguageEntity) async -> ChatResult? {
@@ -130,20 +32,20 @@ class Magi: ObservableObject, Serialized {
         }
         
         // ask the model about the entity
-        store.chat.controlNewConversation()
-        await store.chat.snapshotState.updateCurrent { toUpdate in
+        controller.controlNewConversation()
+        await controller.snapshotState.updateCurrent { toUpdate in
             let preface = defaultPreface().wrapAsContentOfUserResult(
-                model: store.chat.paramState.current.chatModel,
+                model: controller.paramState.current.chatModel,
                 role: .user
             )
             
             let question = whatDoYouThink().wrapAsContentOfUserResult(
-                model: store.chat.paramState.current.chatModel,
+                model: controller.paramState.current.chatModel,
                 role: .user
             )
             
             let map = rawMap.wrapAsContentOfUserResult(
-                model: store.chat.paramState.current.chatModel,
+                model: controller.paramState.current.chatModel,
                 role: .user
             )
             
@@ -153,7 +55,7 @@ class Magi: ObservableObject, Serialized {
         }
         
         print("[\(#function)] - starting stream")
-        let streamResult = await store.chat.startStream()
+        let streamResult = await controller.startStream()
         print("[\(#function)] - got stream result")
         
         return streamResult
@@ -185,12 +87,3 @@ extension Magi {
         .empty
     }
 }
-
-struct EntityDelta {
-    static let empty = EntityDelta()
-}
-
-struct EntityUnion {
-    static let empty = EntityUnion()
-}
-

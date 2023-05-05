@@ -13,7 +13,7 @@ import Metal
 import MetalKit
 import OpenAI
 
-class ClientStore {
+class ClientStore: ObservableObject {
     var client: OpenAI
     var chat: ChatController
     
@@ -27,9 +27,9 @@ class ClientStore {
 }
 
 extension ClientStore {
-    private static let defaultClient = makeAPIClient()
+    static let defaultClient = makeAPIClient()
     
-    private static let defaultChat = {
+    static let defaultChat = {
         ChatController(
             openAI: defaultClient
         )
