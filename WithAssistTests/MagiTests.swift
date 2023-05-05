@@ -31,21 +31,38 @@ final class MagiTests: XCTestCase {
     func testTwoMagi() async throws {
         let magiOne = Magi(
             name: "FirstMagi",
-            clientStore: ClientStore(
+            store: ClientStore(
                 client: api,
                 chat: ChatController(openAI: api)
             )
         )
         
         let magiTwo = Magi(
-            name: "FirstMagi",
-            clientStore: ClientStore(
+            name: "SecondMagi",
+            store: ClientStore(
                 client: api,
                 chat: ChatController(openAI: api)
             )
         )
         
-        magi.store.chat.snapshotState.targetFile = .custom("\(magi.name).txt")
-        magi.store.chat.controlNewConversation()
+        func setup(magi: Magi) {
+            magi.store.chat.snapshotState.targetFile = .custom("Magi:\(magi.name).txt")
+        }
+        
+        setup(magi: magiOne)
+        setup(magi: magiTwo)
+        
+        var testEntity: LanguageEntity = LanguageEntity(name: "Ivan Lugo, of the first test context")
+        testEntity["hello"] = "a greeting between entities"
+        testEntity["greeting"] = "anything posed in a context meant to engage another entity"
+        testEntity["context"] = "the shared moment in relative space in where entities share enough dimensional correlation such that communication is possible"
+        print(testEntity.definitions)
+        
+        let stage = await MagiEntityStage(magi: magiOne, entity: testEntity)
+        let result = await magiOne.consultModel(about: testEntity)
+        
+        print(result?.firstMessage)
+        
+        XCTAssertNotNil(result, "Model should return a result")
     }
 }

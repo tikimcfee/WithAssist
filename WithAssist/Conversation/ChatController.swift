@@ -175,17 +175,16 @@ class ChatController: ObservableObject {
     
     @discardableResult
     func startStream() async -> ChatResult? {
+        guard let snapshot = snapshotState.publishedSnapshot else {
+            return nil
+        }
+        
         var streamResult: ChatResult? {
             willSet {
                 if streamResult?.id != newValue?.id {
                     print("[\(#function)] stream returned a new id for chat result")
                 }
             }
-        }
-        
-        
-        guard let snapshot = snapshotState.publishedSnapshot else {
-            return streamResult
         }
         
         let query = makeChatQuery(snapshot, stream: true)
@@ -197,6 +196,10 @@ class ChatController: ObservableObject {
 //                    print("updating: \(chatResult.id)")
 //                    print("updating: \(chatResult.firstMessage?.content ?? "~x")")
                     streamResult = current.updateResultsFromStream(piece: chatResult)
+                    
+                    current.results[chatResult.id].map {
+                        print("[stream controller]: \($0.firstMessage?.content ?? "...")")
+                    }
                 }
             }
             print("[stream controller] Stream complete.")
