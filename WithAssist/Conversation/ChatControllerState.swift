@@ -15,11 +15,12 @@ extension ChatController {
     class SnapshotState: ObservableObject, GlobalStoreReader {
         @Published var publishedSnapshot: Snapshot?
         @Published var currentIndex: Int = 0
-        @Published var allSnapshots: AllSnapshots = AllSnapshots() {
-            willSet {
-                print("[all snapshots set via field accessor]")
-            }
-        }
+        @Published var allSnapshots: AllSnapshots = AllSnapshots()
+//        {
+//            willSet {
+//                print("[all snapshots set via field accessor]")
+//            }
+//        }
         
         private var manualSaves = PassthroughSubject<AllSnapshots, Never>()
         public var targetFile: AppFile = .defaultSnapshot

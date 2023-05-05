@@ -26,6 +26,7 @@
 		B7497FE429DBAF210030698A /* Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7497FE229DBAF170030698A /* Tokens.swift */; };
 		B74CB94D29FC8F070070D163 /* EditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B74CB94C29FC8F070070D163 /* EditView.swift */; };
 		B76956E72A01DEBF0040022B /* MagiTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B76956E62A01DEBF0040022B /* MagiTests.swift */; };
+		B76956EA2A0216320040022B /* Magi.swift in Sources */ = {isa = PBXBuildFile; fileRef = B76956E92A0216320040022B /* Magi.swift */; };
 		B7A2410829FDD19D00C81BCF /* EditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B74CB94C29FC8F070070D163 /* EditView.swift */; };
 		B7B829F329DB993500550002 /* OpenAI in Frameworks */ = {isa = PBXBuildFile; productRef = B7B829F229DB993500550002 /* OpenAI */; };
 		B7C2DDF329DBFC2C006CDF39 /* RichTextKit in Frameworks */ = {isa = PBXBuildFile; productRef = B7C2DDF229DBFC2C006CDF39 /* RichTextKit */; };
@@ -101,6 +102,7 @@
 		B7497FE229DBAF170030698A /* Tokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tokens.swift; sourceTree = "<group>"; };
 		B74CB94C29FC8F070070D163 /* EditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditView.swift; sourceTree = "<group>"; };
 		B76956E62A01DEBF0040022B /* MagiTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MagiTests.swift; sourceTree = "<group>"; };
+		B76956E92A0216320040022B /* Magi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Magi.swift; sourceTree = "<group>"; };
 		B7C8B3E829D7AF2800B53B01 /* MainAppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainAppView.swift; sourceTree = "<group>"; };
 		B7C8B3EA29D7AF7E00B53B01 /* ChatInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatInputView.swift; sourceTree = "<group>"; };
 		B7C8B3EC29D7AFA100B53B01 /* InteractionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractionsView.swift; sourceTree = "<group>"; };
@@ -174,6 +176,7 @@
 		B73CB07429C662600047831E /* WithAssist */ = {
 			isa = PBXGroup;
 			children = (
+				B76956E82A0216280040022B /* Magi */,
 				B73CB0A229C662890047831E /* Conversation */,
 				B73CB0A129C6627E0047831E /* App */,
 				B73CB0A029C662710047831E /* Views */,
@@ -249,6 +252,14 @@
 				B7497FE229DBAF170030698A /* Tokens.swift */,
 			);
 			path = Conversation;
+			sourceTree = "<group>";
+		};
+		B76956E82A0216280040022B /* Magi */ = {
+			isa = PBXGroup;
+			children = (
+				B76956E92A0216320040022B /* Magi.swift */,
+			);
+			path = Magi;
 			sourceTree = "<group>";
 		};
 		B7DBD15329D0D2BB00776412 /* Packages */ = {
@@ -451,6 +462,7 @@
 				B72A7A0629D669A700BE4163 /* ChatRequest.swift in Sources */,
 				B72A7A0429D5407300BE4163 /* SnapshotListView.swift in Sources */,
 				B73CB07629C662600047831E /* WithAssistApp.swift in Sources */,
+				B76956EA2A0216320040022B /* Magi.swift in Sources */,
 				B72A7A0829D66B2900BE4163 /* ChatControllerState.swift in Sources */,
 				B73CB0A429C662980047831E /* CoreConversation.swift in Sources */,
 				B7C8B3F129D7AFF600B53B01 /* PromptInjectorView.swift in Sources */,

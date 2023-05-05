@@ -180,19 +180,18 @@ class ChatController: ObservableObject {
         let query = makeChatQuery(snapshot, stream: true)
         do {
             let stream = openAI.chatsStream(query: query)
+            print("[stream controller] Starting stream...")
             for try await chatResult in stream {
                 await snapshotState.updateCurrent { current in
-                    print("updating: \(chatResult.id)")
-                    print("updating: \(chatResult.firstMessage?.content ?? "~x")")
+//                    print("updating: \(chatResult.id)")
+//                    print("updating: \(chatResult.firstMessage?.content ?? "~x")")
                     current.updateResultsFromStream(piece: chatResult)
                 }
             }
+            print("[stream controller] Stream complete.")
         } catch {
             print("[stream controller - error] \(error)")
         }
-        
-        print("[stream controller] stream complete")
-        
     }
     
     func loadController() {

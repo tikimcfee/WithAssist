@@ -307,4 +307,14 @@ extension Chat {
             content: newContent
         )
     }
+    
+    func transform(
+        role newRole: Chat.Role? = nil,
+        content newContent: String? = nil
+    ) -> Chat {
+        Chat(
+            role: newRole ?? role,
+            content: newContent ?? content
+        )
+    }
 }
