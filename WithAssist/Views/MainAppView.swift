@@ -24,7 +24,6 @@ struct MainAppView: View {
     @ViewBuilder
     var compactBody: some View {
         TabView {
-            
             NavigationStack(path: $path) {
                 listView()
                     .toolbar { ToolbarItem { newConversationView } }
@@ -55,19 +54,30 @@ struct MainAppView: View {
     
     @ViewBuilder
     var splitViewBody: some View {
-        NavigationSplitView(
-            sidebar: {
-                listView()
-            },
-            detail: {
-                mainInteractionsView()
-                    .toolbar {
-                        ToolbarItem {
-                            newConversationView
+        TabView {
+            NavigationSplitView(
+                sidebar: {
+                    listView()
+                },
+                detail: {
+                    mainInteractionsView()
+                        .toolbar {
+                            ToolbarItem {
+                                newConversationView
+                            }
                         }
-                    }
+                }
+            ).tabItem {
+                Label("Conversations", systemImage: "message.fill")
             }
-        )
+            
+            MagiView(
+                stage: AppState.global.defaultStage
+            )
+            .tabItem {
+                Label("Magi", systemImage: "magicmouse") // lol
+            }
+        }
     }
     
     @ViewBuilder

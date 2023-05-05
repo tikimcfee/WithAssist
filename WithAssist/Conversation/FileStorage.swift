@@ -145,6 +145,7 @@ class FileStorageSerial: ObservableObject {
     private let decoder = JSONDecoder()
     
     func save<T: Codable>(_ object: T, to file: AppFile) throws {
+        print("[FileStorageSerial save] saving \(object) to \(file)")
         let url = try getURL(for: file)
         let data = try encoder.encode(object)
         try data.write(to: url, options: .atomicWrite)
@@ -152,10 +153,30 @@ class FileStorageSerial: ObservableObject {
     
     func load<T: Codable>(_ type: T.Type, from file: AppFile) throws -> T {
         let url = try getURL(for: file)
-        print("[loader] loading: \(url)")
+        print("[FileStorageSerial load] loading: \(url)")
         let data = try Data(contentsOf: url)
         let decodedObject = try decoder.decode(T.self, from: data)
         return decodedObject
+    }
+    
+    func load<T: Codable>(
+        _ type: T.Type,
+        from file: AppFile,
+        onMissingFile: @autoclosure () -> T
+    ) throws -> T {
+        let url = try getURL(for: file)
+        if !FileManager.default.fileExists(atPath: url.path) {
+            // Create the file with the default value if it doesn't exist
+            print("[loader] setting default: \(url)")
+            let defaultValue = onMissingFile()
+            try save(defaultValue, to: file)
+            return defaultValue
+        } else {
+            print("[loader] loading: \(url)")
+            let data = try Data(contentsOf: url)
+            let decodedObject = try decoder.decode(T.self, from: data)
+            return decodedObject
+        }
     }
     
     private func getURL(for file: AppFile) throws -> URL {

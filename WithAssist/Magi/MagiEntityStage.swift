@@ -24,26 +24,29 @@ class MagiEntityStage: ObservableObject {
     ) {
         self.magi = magi
         self.entity = entity
-        
-        resetSaveToken()
     }
     
     func resetSaveToken() {
         self.saveToken = $entity
-            .removeDuplicates()
+            .filter {
+                !$0.definitions.isEmpty
+            }
             .dropFirst()
-            .handleEvents(receiveOutput: saveEntity(_:))
-            .sink(receiveValue: communicateChange(_:))
+            .removeDuplicates()
+            .sink(receiveValue: saveEntity(_:))
     }
     
-    func communicateChange(_ entity: LanguageEntity) {
+    func generateObservation() {
         consultTask.map {
             print("\($0) already running. oops.")
         }
         
+        print("[\(#function)] starting change")
         consultTask = Task { [entity] in
             if let modelResponse = await magi.consultModel(about: entity) {
-                observations.append(modelResponse)
+                await MainActor.run {
+                    observations.append(modelResponse)
+                }
                 print(modelResponse.firstMessage?.content ?? "<no content>")
             } else {
                 print("[\(#function)] no change message")
@@ -56,8 +59,12 @@ class MagiEntityStage: ObservableObject {
     
     func loadEntity(named name: String) {
         do {
+            self.entity = try fileStore.load(
+                LanguageEntity.self,
+                from: file(name),
+                onMissingFile: LanguageEntity(name: name)
+            )
             resetSaveToken()
-            self.entity = try fileStore.load(LanguageEntity.self, from: file(name))
         } catch {
             print("[\(#function)] \(error)")
         }

@@ -13,6 +13,7 @@ class Magi: ObservableObject, Serialized {
     let name: String
     let controller: ChatController
     
+    
     init(
         name: String,
         controller: ChatController

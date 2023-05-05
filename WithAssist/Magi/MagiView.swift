@@ -11,6 +11,16 @@ import SwiftUI
 
 struct MagiView: View {
     @ObservedObject var stage: MagiEntityStage
+    var lolResult: String? {
+        stage.magi
+            .controller
+            .snapshotState
+            .publishedSnapshot?
+            .results
+            .last?
+            .firstMessage?
+            .content
+    }
     
     var body: some View {
         mainBody
@@ -19,15 +29,26 @@ struct MagiView: View {
     
     @ViewBuilder
     var mainBody: some View {
-        VStack {
+        VStack(alignment: .trailing) {
             loadEntityView()
-            
-            scrollingDefinitions()
             
             SaveDefinitionView(onSave: {
                 print("[\(#function)] starting word save")
                 stage.entity[$0.word].append($0.definition)
             })
+            
+            Button("Generate Observation") {
+                stage.generateObservation()
+            }
+            
+            if let result = lolResult {
+                Divider()
+                Text(result)
+            }
+            
+            Divider()
+            
+            scrollingDefinitions()
         }
     }
     @ViewBuilder
@@ -40,12 +61,14 @@ struct MagiView: View {
                 definitionsList()
             }
         }
+        .border(Color.gray, width: 1.0)
     }
     
     @ViewBuilder
     func definitionsList() -> some View {
         ForEach(stage.entity.definitions.sortedKeys, id: \.self) { key in
             Text(key)
+            
             if let definitions = stage.entity.definitions[key] {
                 VStack {
                     ForEach(definitions, id: \.self) { definition in
