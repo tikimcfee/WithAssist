@@ -55,15 +55,6 @@ actor MagiEntityStage {
             print("[\(#function)] \(error)")
         }
     }
-    
-    subscript (_ word: String) -> [String] {
-        get {
-            entity.definitions[word, default: []]
-        }
-        set {
-            entity.definitions[word] = newValue
-        }
-    }
 }
 
 typealias EntityMap = [String: [String]]
