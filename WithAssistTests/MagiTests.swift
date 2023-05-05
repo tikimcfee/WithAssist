@@ -29,9 +29,23 @@ final class MagiTests: XCTestCase {
     }
     
     func testTwoMagi() async throws {
-        let magi = Magi(name: "FirstMagi", store: ClientStore(client: api, chat: ChatController(openAI: api)))
-        magi.store.chat.snapshotState.targetFile = .custom("\(magi.name).txt")
+        let magiOne = Magi(
+            name: "FirstMagi",
+            clientStore: ClientStore(
+                client: api,
+                chat: ChatController(openAI: api)
+            )
+        )
         
+        let magiTwo = Magi(
+            name: "FirstMagi",
+            clientStore: ClientStore(
+                client: api,
+                chat: ChatController(openAI: api)
+            )
+        )
+        
+        magi.store.chat.snapshotState.targetFile = .custom("\(magi.name).txt")
         magi.store.chat.controlNewConversation()
     }
 }

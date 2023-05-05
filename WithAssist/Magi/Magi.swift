@@ -9,18 +9,67 @@ import OpenAI
 import Combine
 import Foundation
 
+actor MagiEntityStage {
+    @Published var magi: Magi
+    @Published var entity: LanguageEntity
+    
+    @Published var observations: [ChatResult] = []
+    
+    private var saveToken: Any?
+    private lazy var fileStore = FileStorageSerial()
+    private var consultTask: Task<Void, Error>?
+    
+    init(
+        magi: Magi,
+        entity: LanguageEntity
+    ) async {
+        self.magi = magi
+        self.entity = entity
+        
+        self.saveToken = $entity
+            .removeDuplicates()
+            .dropFirst()
+            .handleEvents(receiveOutput: saveEntity(_:))
+            .sink(receiveValue: communicateChange(_:))
+    }
+    
+    func communicateChange(_ entity: LanguageEntity) {
+        consultTask = Task {
+            if let modelResponse = await magi.consultModel() {
+                observations.append(modelResponse)
+                print(modelResponse.firstMessage?.content ?? "<no content>")
+            } else {
+                print("[\(#function)] no change message")
+            }
+        }
+    }
+    
+    func saveEntity(_ entity: LanguageEntity) {
+        do {
+            try fileStore.save(entity, to: .custom("\(entity.name)-word-store"))
+        } catch {
+            print("[\(#function)] \(error)")
+        }
+    }
+    
+    subscript (_ word: String) -> [String] {
+        get {
+            entity.definitions[word, default: []]
+        }
+        set {
+            entity.definitions[word] = newValue
+        }
+    }
+}
+
+struct LanguageEntity: Codable, Equatable, Hashable {
+    var name: String
+    var definitions: [String: [String]] = [:]
+}
+
 class Magi: ObservableObject, Serialized {
     let name: String
     let store: ClientStore
-    var bag = Set<AnyCancellable>()
-    
-    var serializer: Serializer = Serializer()
-    lazy var listenQueue = DispatchQueue(label: "\(name)-weewwdz")
-    
-    @Published var lastThought: ChatResult?
-    private var lastThoughtSummary: String {
-        (lastThought?.choices.first?.message?.content ?? "<nothing chosen>").prefix(32) + "..."
-    }
     
     init(
         name: String,
@@ -28,37 +77,32 @@ class Magi: ObservableObject, Serialized {
     ) {
         self.name = name
         self.store = store
+    }
+    
+    func consultModel() async -> ChatResult? {
+        let streamResult = await store.chat.startStream()
         
-        store.chat.snapshotState
-            .$publishedSnapshot
-            .compactMap { $0?.results.last }
-            .debounce(for: 2, scheduler: listenQueue)
-            .removeDuplicates { left, right in
-                left.id == right.id
-                && left.firstMessage?.content.count == right.firstMessage?.content.count
-            }
-            .sink { lastResult in
-                self.lastThought = lastResult
-                print("\t\t{ Magi: \(name) } - Set new thought: \(self.lastThoughtSummary)")
-            }.store(in: &bag)
-    }
-    
-    func listen(to otherMagi: Magi) {
-        otherMagi.$lastThought
-            .compactMap { $0 }
-            .sink { otherMagiThought in
-                self.respond(to: otherMagiThought, from: otherMagi)
-            }
-            .store(in: &bag)
-    }
-    
-    func respond(to result: ChatResult, from otherMagi: Magi) {
-        asyncIsolated { [name] in
-            var result = result
-            result.choices[0].message = result.firstMessage?.transform(role: .user)
-            
-            print("\t[\(name)] -> [\(otherMagi.name)] :::: (\(self.lastThoughtSummary))")
-            await self.store.chat.appendResult(result)
-        }
+        // ask the model about the entity
+        
+        return streamResult
     }
 }
+
+extension Magi {
+    static func - (_ left: Magi, _ right: Magi) -> EntityDelta {
+        .empty
+    }
+    
+    static func + (_ left: Magi, _ right: Magi) -> EntityUnion {
+        .empty
+    }
+}
+
+struct EntityDelta {
+    static let empty = EntityDelta()
+}
+
+struct EntityUnion {
+    static let empty = EntityUnion()
+}
+

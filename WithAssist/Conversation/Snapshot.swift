@@ -88,14 +88,17 @@ extension ChatResult {
 }
 
 extension Snapshot {
-    mutating func updateResultsFromStream(piece: ChatResult) {
+    @discardableResult
+    mutating func updateResultsFromStream(piece: ChatResult) -> ChatResult {
         if var toUpdate = results[piece.id] {
             for choice in piece.choices {
                 toUpdate.upsertChoice(newChoice: choice)
             }
             results[piece.id] = toUpdate
+            return toUpdate
         } else {
             results[piece.id] = piece
+            return piece
         }
     }
 }

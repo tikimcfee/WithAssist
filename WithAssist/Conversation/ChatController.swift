@@ -173,10 +173,21 @@ class ChatController: ObservableObject {
         }
     }
     
-    func startStream() async {
-        guard let snapshot = snapshotState.publishedSnapshot else {
-            return
+    @discardableResult
+    func startStream() async -> ChatResult? {
+        var streamResult: ChatResult? {
+            willSet {
+                if streamResult?.id != newValue?.id {
+                    print("[\(#function)] stream returned a new id for chat result")
+                }
+            }
         }
+        
+        
+        guard let snapshot = snapshotState.publishedSnapshot else {
+            return streamResult
+        }
+        
         let query = makeChatQuery(snapshot, stream: true)
         do {
             let stream = openAI.chatsStream(query: query)
@@ -185,13 +196,14 @@ class ChatController: ObservableObject {
                 await snapshotState.updateCurrent { current in
 //                    print("updating: \(chatResult.id)")
 //                    print("updating: \(chatResult.firstMessage?.content ?? "~x")")
-                    current.updateResultsFromStream(piece: chatResult)
+                    streamResult = current.updateResultsFromStream(piece: chatResult)
                 }
             }
             print("[stream controller] Stream complete.")
         } catch {
             print("[stream controller - error] \(error)")
         }
+        return streamResult
     }
     
     func loadController() {
