@@ -179,7 +179,7 @@ class FileStorageSerial: ObservableObject {
         }
     }
     
-    private func getURL(for file: AppFile) throws -> URL {
+    func getURL(for file: AppFile) throws -> URL {
         let url = try fileManager.url(for: .documentDirectory,
                                       in: .userDomainMask,
                                       appropriateFor: nil,

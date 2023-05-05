@@ -26,12 +26,22 @@ class MagiEntityStage: ObservableObject {
         self.entity = entity
     }
     
+    func exportEntity() {
+        let file = file(entity.name)
+        if let url = try? fileStore.getURL(for: file) {
+            print("Entity at: \(url)")
+        }
+    }
+    
+    func importEntity() {
+        
+    }
+    
     func resetSaveToken() {
         self.saveToken = $entity
             .filter {
                 !$0.definitions.isEmpty
             }
-            .dropFirst()
             .removeDuplicates()
             .sink(receiveValue: saveEntity(_:))
     }

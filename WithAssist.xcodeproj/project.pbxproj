@@ -10,6 +10,10 @@
 		B718E0E92A05409D00EA29D4 /* MagiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B718E0E82A05409D00EA29D4 /* MagiView.swift */; };
 		B718E0EB2A05410800EA29D4 /* Entity.swift in Sources */ = {isa = PBXBuildFile; fileRef = B718E0EA2A05410800EA29D4 /* Entity.swift */; };
 		B718E0ED2A05412F00EA29D4 /* MagiEntityStage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B718E0EC2A05412F00EA29D4 /* MagiEntityStage.swift */; };
+		B718E0F02A0569D200EA29D4 /* Magi.swift in Sources */ = {isa = PBXBuildFile; fileRef = B76956E92A0216320040022B /* Magi.swift */; };
+		B718E0F12A0569D500EA29D4 /* MagiEntityStage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B718E0EC2A05412F00EA29D4 /* MagiEntityStage.swift */; };
+		B718E0F22A0569D700EA29D4 /* Entity.swift in Sources */ = {isa = PBXBuildFile; fileRef = B718E0EA2A05410800EA29D4 /* Entity.swift */; };
+		B718E0F32A0569DD00EA29D4 /* MagiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B718E0E82A05409D00EA29D4 /* MagiView.swift */; };
 		B72A79FE29D5399E00BE4163 /* Snapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A79FD29D5399E00BE4163 /* Snapshot.swift */; };
 		B72A7A0029D539FA00BE4163 /* ChatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A79FF29D539FA00BE4163 /* ChatController.swift */; };
 		B72A7A0229D53E7D00BE4163 /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A7A0129D53E7D00BE4163 /* AppError.swift */; };
@@ -507,6 +511,7 @@
 			files = (
 				B7EB2F9A29DA34880049C4CA /* ChatPreviews.swift in Sources */,
 				B7497FE429DBAF210030698A /* Tokens.swift in Sources */,
+				B718E0F32A0569DD00EA29D4 /* MagiView.swift in Sources */,
 				B7EB2F9B29DA34880049C4CA /* Serializer.swift in Sources */,
 				B7EB2F9C29DA34880049C4CA /* CodableAppStorage.swift in Sources */,
 				B7EB2F9D29DA34880049C4CA /* AppError.swift in Sources */,
@@ -515,11 +520,14 @@
 				B7EB2F9F29DA34880049C4CA /* ChatController.swift in Sources */,
 				B7EB2FA029DA34880049C4CA /* FileStorage.swift in Sources */,
 				B7EB2FA129DA34880049C4CA /* MainAppView.swift in Sources */,
+				B718E0F22A0569D700EA29D4 /* Entity.swift in Sources */,
 				B7EB2FA229DA34880049C4CA /* ConversationView.swift in Sources */,
 				B7EB2FA329DA34880049C4CA /* SettingsView.swift in Sources */,
 				B7EB2FA429DA34880049C4CA /* ChatRequest.swift in Sources */,
 				B7EB2FA529DA34880049C4CA /* SnapshotListView.swift in Sources */,
 				B7EB2FA629DA34880049C4CA /* WithAssistApp.swift in Sources */,
+				B718E0F12A0569D500EA29D4 /* MagiEntityStage.swift in Sources */,
+				B718E0F02A0569D200EA29D4 /* Magi.swift in Sources */,
 				B7EB2FA729DA34880049C4CA /* ChatControllerState.swift in Sources */,
 				B7EB2FA829DA34880049C4CA /* CoreConversation.swift in Sources */,
 				B7EB2FA929DA34880049C4CA /* PromptInjectorView.swift in Sources */,

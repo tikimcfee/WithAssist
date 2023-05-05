@@ -11,25 +11,23 @@ import SwiftUI
 
 struct MagiView: View {
     @ObservedObject var stage: MagiEntityStage
-    var lolResult: String? {
-        stage.magi
-            .controller
-            .snapshotState
-            .publishedSnapshot?
-            .results
-            .last?
-            .firstMessage?
-            .content
-    }
+    @State var lastObservation: String?
     
     var body: some View {
         mainBody
             .frame(maxWidth: .infinity)
+            .padding()
+            .onReceive(
+                stage.magi.controller.snapshotState.$publishedSnapshot
+            ) { snapshot in
+                self.lastObservation = snapshot?
+                    .results.last?.firstMessage?.content
+            }
     }
     
     @ViewBuilder
     var mainBody: some View {
-        VStack(alignment: .trailing) {
+        VStack(alignment: .center) {
             loadEntityView()
             
             SaveDefinitionView(onSave: {
@@ -37,13 +35,28 @@ struct MagiView: View {
                 stage.entity[$0.word].append($0.definition)
             })
             
-            Button("Generate Observation") {
-                stage.generateObservation()
+            VStack {
+                Button("Generate Observation") {
+                    stage.generateObservation()
+                }.buttonStyle(.bordered)
+                
+                HStack {
+                    Button("Export") {
+                        stage.exportEntity()
+                    }.buttonStyle(.bordered)
+                    
+                    Button("Import") {
+                        stage.importEntity()
+                    }.buttonStyle(.bordered)
+                }
             }
             
-            if let result = lolResult {
+            if let result = lastObservation {
                 Divider()
-                Text(result)
+                ScrollView {
+                    Text(result)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }.frame(maxHeight: 320)
             }
             
             Divider()
@@ -54,10 +67,7 @@ struct MagiView: View {
     @ViewBuilder
     func scrollingDefinitions() -> some View {
         ScrollView {
-            LazyVGrid(columns: [
-                GridItem(.flexible(minimum: 48, maximum: 96)), // word
-                GridItem(.flexible(minimum: 48, maximum: 400)) // definitions
-            ]) {
+            LazyVStack {
                 definitionsList()
             }
         }
@@ -67,15 +77,23 @@ struct MagiView: View {
     @ViewBuilder
     func definitionsList() -> some View {
         ForEach(stage.entity.definitions.sortedKeys, id: \.self) { key in
-            Text(key)
-            
-            if let definitions = stage.entity.definitions[key] {
-                VStack {
-                    ForEach(definitions, id: \.self) { definition in
-                        Text(definition)
+            HStack (alignment: .top) {
+                Text(key)
+                    .layoutPriority(1)
+                
+                Spacer()
+                
+                if let definitions = stage.entity.definitions[key] {
+                    VStack(alignment: .leading) {
+                        ForEach(definitions, id: \.self) { definition in
+                            Text(definition)
+                        }
                     }
+                    .layoutPriority(1)
                 }
             }
+            .padding()
+            .frame(maxWidth: 320)
         }
     }
     
