@@ -53,10 +53,17 @@ struct MagiView: View {
             
             if let result = lastObservation {
                 Divider()
-                ScrollView {
-                    Text(result)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }.frame(maxHeight: 320)
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        Text(result)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .id("result")
+                    }
+                    .frame(maxHeight: 320)
+                    .onChange(of: lastObservation) { _ in
+                        proxy.scrollTo("result", anchor: .bottom)
+                    }
+                }
             }
             
             Divider()
@@ -111,6 +118,7 @@ struct NewEntry {
 struct SaveDefinitionView: View {
     @State var newWord: String = ""
     @State var newDefinition: String = ""
+    
     let onSave: (NewEntry) -> Void
     
     var body: some View {
@@ -118,16 +126,29 @@ struct SaveDefinitionView: View {
             TextField("Word", text: $newWord)
             TextField("Definition", text: $newDefinition)
 
-            Button("Save") {
-                triggerSave()
+            HStack {
+                Button("Random Word") {
+                    newWord = AppState.global.wordList.randomElement() ?? ""
+                }.buttonStyle(.bordered)
+                
+                Button("Save") {
+                    triggerSave()
+                }.buttonStyle(.bordered)
             }
         }
+    }
+    
+    func setRandomWord() {
+        
+        newDefinition = ""
     }
     
     func triggerSave() {
         onSave(
             NewEntry(word: newWord, definition: newDefinition)
         )
+        newWord = ""
+        newDefinition = ""                                                                              
     }
 }
 

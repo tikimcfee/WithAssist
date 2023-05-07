@@ -25,6 +25,14 @@ class AppState {
         let stage = MagiEntityStage(magi: magi)
         return stage
     }()
+    lazy var wordList: [String] = {
+        if let url = Bundle.main.url(forResource: "words-en", withExtension: "txt") {
+            if let contents = try? String(contentsOf: url) {
+                return contents.components(separatedBy: .newlines)
+            }
+        }
+        return []
+    }()
 }
 
 @main

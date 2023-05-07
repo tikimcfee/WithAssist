@@ -14,6 +14,8 @@
 		B718E0F12A0569D500EA29D4 /* MagiEntityStage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B718E0EC2A05412F00EA29D4 /* MagiEntityStage.swift */; };
 		B718E0F22A0569D700EA29D4 /* Entity.swift in Sources */ = {isa = PBXBuildFile; fileRef = B718E0EA2A05410800EA29D4 /* Entity.swift */; };
 		B718E0F32A0569DD00EA29D4 /* MagiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B718E0E82A05409D00EA29D4 /* MagiView.swift */; };
+		B718E0F52A05CAFA00EA29D4 /* words-en.txt in Resources */ = {isa = PBXBuildFile; fileRef = B718E0F42A05CAFA00EA29D4 /* words-en.txt */; };
+		B718E0F62A05CAFA00EA29D4 /* words-en.txt in Resources */ = {isa = PBXBuildFile; fileRef = B718E0F42A05CAFA00EA29D4 /* words-en.txt */; };
 		B72A79FE29D5399E00BE4163 /* Snapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A79FD29D5399E00BE4163 /* Snapshot.swift */; };
 		B72A7A0029D539FA00BE4163 /* ChatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A79FF29D539FA00BE4163 /* ChatController.swift */; };
 		B72A7A0229D53E7D00BE4163 /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A7A0129D53E7D00BE4163 /* AppError.swift */; };
@@ -90,6 +92,7 @@
 		B718E0E82A05409D00EA29D4 /* MagiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MagiView.swift; sourceTree = "<group>"; };
 		B718E0EA2A05410800EA29D4 /* Entity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Entity.swift; sourceTree = "<group>"; };
 		B718E0EC2A05412F00EA29D4 /* MagiEntityStage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MagiEntityStage.swift; sourceTree = "<group>"; };
+		B718E0F42A05CAFA00EA29D4 /* words-en.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "words-en.txt"; sourceTree = "<group>"; };
 		B72A79FD29D5399E00BE4163 /* Snapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Snapshot.swift; sourceTree = "<group>"; };
 		B72A79FF29D539FA00BE4163 /* ChatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatController.swift; sourceTree = "<group>"; };
 		B72A7A0129D53E7D00BE4163 /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
@@ -267,6 +270,7 @@
 		B76956E82A0216280040022B /* Magi */ = {
 			isa = PBXGroup;
 			children = (
+				B718E0F42A05CAFA00EA29D4 /* words-en.txt */,
 				B76956E92A0216320040022B /* Magi.swift */,
 				B718E0EC2A05412F00EA29D4 /* MagiEntityStage.swift */,
 				B718E0EA2A05410800EA29D4 /* Entity.swift */,
@@ -425,6 +429,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B718E0F52A05CAFA00EA29D4 /* words-en.txt in Resources */,
 				B73CB07E29C662610047831E /* Preview Assets.xcassets in Resources */,
 				B73CB07A29C662610047831E /* Assets.xcassets in Resources */,
 			);
@@ -448,6 +453,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B718E0F62A05CAFA00EA29D4 /* words-en.txt in Resources */,
 				B7EB2FAF29DA34880049C4CA /* Preview Assets.xcassets in Resources */,
 				B7EB2FB029DA34880049C4CA /* Assets.xcassets in Resources */,
 			);

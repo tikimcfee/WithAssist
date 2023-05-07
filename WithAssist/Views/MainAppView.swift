@@ -40,7 +40,7 @@ struct MainAppView: View {
                 stage: AppState.global.defaultStage
             )
             .tabItem {
-                Label("Magi", systemImage: "magicmouse") // lol
+                Label("Magi", systemImage: "shared.with.you") // lol
             }
             
         }
@@ -75,7 +75,7 @@ struct MainAppView: View {
                 stage: AppState.global.defaultStage
             )
             .tabItem {
-                Label("Magi", systemImage: "magicmouse") // lol
+                Label("Magi", systemImage: "shared.with.you") // lol
             }
         }
     }
