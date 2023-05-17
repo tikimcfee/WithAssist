@@ -218,24 +218,25 @@ Finally, you should be able to try doing this in any requested language and deve
 """
         
         let assistant = "\n\nAssistant: "
-        let humanMessage = "Hello!"
-        let prompt = human + humanMessage + assistant
+        let prompt = human + assistant
                 
         let request = ClaudeClient.Request(
             prompt: prompt,
             temperature: 1.0
         )
         
-        do {
-            for try await message in client.asyncCompletion(request: request) {
-                print(message.completion)
+        Task.detached {
+            do {
+                for try await message in client.asyncCompletion_Sessions(request: request) {
+                    print(message.completion)
+                }
+                expectation.fulfill()
+            } catch {
+                print(error)
             }
-            expectation.fulfill()
-        } catch {
-            print(error)
         }
         
-        await fulfillment(of: [expectation])
+        await fulfillment(of: [expectation], timeout: 10.0)
     }
 }
 

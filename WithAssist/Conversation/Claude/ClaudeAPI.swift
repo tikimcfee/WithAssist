@@ -17,21 +17,63 @@ class ClaudeClient {
     let apiURL = "https://api.anthropic.com"
     let defaultTimeout: TimeInterval = 600
     
-    var session: URLSession
+    var configuration: URLSessionConfiguration {
+        let sessionConfiguration = URLSessionConfiguration.default
+        sessionConfiguration.httpAdditionalHeaders = [
+            "X-API-Key": apiKey,
+            "Accept": "application/json",
+            "Client": "Anthropic SDK v1.0"
+        ]
+        sessionConfiguration.timeoutIntervalForRequest = 600
+        sessionConfiguration.timeoutIntervalForResource = 900
+        return sessionConfiguration
+    }
+    
+    lazy var session: URLSession = {
+        URLSession(configuration: configuration)
+    }()
     
     init(apiKey: String) {
         self.apiKey = apiKey
-        self.session = URLSession(configuration: {
-            let sessionConfiguration = URLSessionConfiguration.default
-            sessionConfiguration.httpAdditionalHeaders = [
-                "X-API-Key": apiKey,
-                "Accept": "application/json",
-                "Client": "Anthropic SDK v1.0"
-            ]
-            sessionConfiguration.timeoutIntervalForRequest = 600
-            sessionConfiguration.timeoutIntervalForResource = 900
-            return sessionConfiguration
-        }())
+    }
+    
+    func asyncCompletion_Sessions(
+        request: Request
+    ) -> AsyncThrowingStream<Response, Error> {
+        AsyncThrowingStream { continuation in
+            guard let data = request.asData() else {
+                continuation.finish(throwing: ClaudeError.invalidRequestData)
+                return
+            }
+            
+            let urlRequest = self.makeURLRequest(
+                method: "POST",
+                path: "/v1/complete",
+                params: data
+            )
+            
+            let session = StreamingSession<Response>(
+                urlRequest: urlRequest,
+                configure: { self.configuration }
+            )
+            
+            session.onReceiveContent = { session, value in
+                continuation.yield(value)
+            }
+            
+            session.onComplete = { session, error in
+                if let error {
+                    continuation.finish(throwing: error)
+                } else {
+                    continuation.finish()
+                }
+            }
+            
+            session.onProcessingError = { session, error in
+                continuation.finish(throwing: error)
+            }
+            session.perform()
+        }
     }
     
     func asyncCompletion(
@@ -336,5 +378,81 @@ extension Dictionary where Key == String, Value == Any {
     
     var maybeStop: String? {
         self["stop"] as? String
+    }
+}
+
+class StreamingSession<ResultType: Codable>: NSObject, Identifiable, URLSessionDelegate, URLSessionDataDelegate {
+    
+    enum StreamingError: Error {
+        case unknownContent
+        case emptyContent
+    }
+    
+    var onReceiveContent: ((StreamingSession, ResultType) -> Void)?
+    var onProcessingError: ((StreamingSession, Error) -> Void)?
+    var onComplete: ((StreamingSession, Error?) -> Void)?
+    
+    private let streamingCompletionMarker = "[DONE]"
+    private let urlRequest: URLRequest
+    
+    private let configure: () -> URLSessionConfiguration
+    private lazy var urlSession: URLSession = {
+        URLSession(
+            configuration: configure(),
+            delegate: self,
+            delegateQueue: nil
+        )
+    }()
+    
+    
+    init(
+        urlRequest: URLRequest,
+        configure: @escaping () -> URLSessionConfiguration
+    ) {
+        self.urlRequest = urlRequest
+        self.configure = configure
+    }
+    
+    func perform() {
+        self.urlSession
+            .dataTask(with: self.urlRequest)
+            .resume()
+    }
+    
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        onComplete?(self, error)
+    }
+    
+    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        guard let stringContent = String(data: data, encoding: .utf8) else {
+            onProcessingError?(self, StreamingError.unknownContent)
+            return
+        }
+        let jsonObjects = stringContent
+            .components(separatedBy: "data:")
+            .filter { $0.isEmpty == false }
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+        
+        guard jsonObjects.isEmpty == false, jsonObjects.first != streamingCompletionMarker else {
+            onProcessingError?(self, StreamingError.emptyContent)
+            return
+        }
+        jsonObjects.forEach { jsonContent  in
+            guard jsonContent != streamingCompletionMarker else {
+                onComplete?(self, nil)
+                return
+            }
+            guard let jsonData = jsonContent.data(using: .utf8) else {
+                onProcessingError?(self, StreamingError.unknownContent)
+                return
+            }
+            do {
+                let decoder = JSON_DECODER
+                let object = try decoder.decode(ResultType.self, from: jsonData)
+                onReceiveContent?(self, object)
+            } catch {
+                onProcessingError?(self, error)
+            }
+        }
     }
 }
