@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		457CC2C12A15345B00554380 /* ClaudeAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 457CC2C02A15345B00554380 /* ClaudeAPI.swift */; };
 		B72A79FE29D5399E00BE4163 /* Snapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A79FD29D5399E00BE4163 /* Snapshot.swift */; };
 		B72A7A0029D539FA00BE4163 /* ChatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A79FF29D539FA00BE4163 /* ChatController.swift */; };
 		B72A7A0229D53E7D00BE4163 /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A7A0129D53E7D00BE4163 /* AppError.swift */; };
@@ -78,6 +79,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		457CC2C02A15345B00554380 /* ClaudeAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeAPI.swift; sourceTree = "<group>"; };
 		B72A79FD29D5399E00BE4163 /* Snapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Snapshot.swift; sourceTree = "<group>"; };
 		B72A79FF29D539FA00BE4163 /* ChatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatController.swift; sourceTree = "<group>"; };
 		B72A7A0129D53E7D00BE4163 /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
@@ -146,6 +148,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		457CC2BF2A15344F00554380 /* Claude */ = {
+			isa = PBXGroup;
+			children = (
+				457CC2C02A15345B00554380 /* ClaudeAPI.swift */,
+			);
+			path = Claude;
+			sourceTree = "<group>";
+		};
 		B73CB06929C662600047831E = {
 			isa = PBXGroup;
 			children = (
@@ -236,6 +246,7 @@
 			children = (
 				B72A7A0129D53E7D00BE4163 /* AppError.swift */,
 				B72A79FF29D539FA00BE4163 /* ChatController.swift */,
+				457CC2BF2A15344F00554380 /* Claude */,
 				B72A7A0729D66B2900BE4163 /* ChatControllerState.swift */,
 				B72A7A0529D669A700BE4163 /* ChatRequest.swift */,
 				B7DBD15C29D1404000776412 /* CodableAppStorage.swift */,
@@ -439,6 +450,7 @@
 				B7DBD15D29D1404000776412 /* CodableAppStorage.swift in Sources */,
 				B72A7A0229D53E7D00BE4163 /* AppError.swift in Sources */,
 				B7C8B3ED29D7AFA100B53B01 /* InteractionsView.swift in Sources */,
+				457CC2C12A15345B00554380 /* ClaudeAPI.swift in Sources */,
 				B74CB94D29FC8F070070D163 /* EditView.swift in Sources */,
 				B72A7A0029D539FA00BE4163 /* ChatController.swift in Sources */,
 				B7DBD15B29D13B9900776412 /* FileStorage.swift in Sources */,
@@ -642,7 +654,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"WithAssist/Preview Content\"";
-				DEVELOPMENT_TEAM = XR2HQNSZ68;
+				DEVELOPMENT_TEAM = 5F5H835QPF;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -680,7 +692,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"WithAssist/Preview Content\"";
-				DEVELOPMENT_TEAM = XR2HQNSZ68;
+				DEVELOPMENT_TEAM = 5F5H835QPF;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
