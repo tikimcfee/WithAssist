@@ -156,6 +156,43 @@ Please define a Swift and SwiftUI application to calculate the N'th Fibonacci nu
         
         wait(for: [awaitFinalChat], timeout: 120.0)
     }
+    
+    func testCompletionStream() {
+        let client = ClaudeClient(apiKey: CLAUDE_API_KEY!)
+        
+        let expectation = XCTestExpectation(description: "Completion stream response")
+        
+        let human = "\n\nHuman: "
+        let assitant = "\n\nAssistant: "
+        
+        let humanMessage = "Hello!"
+        
+        let prompt = human + humanMessage + assitant
+        let params: [String : Any] = [
+            "prompt": prompt,            /* required by API */
+            "stream": true,
+            "model": "claude-v1.3-100k", /* required by API */
+            "max_tokens_to_sample": 500, /* required by API */
+            "stop_sequences": [
+                "\n\nHuman:"
+            ],
+            "temperature": 0.95
+        ]
+        
+        client.completion(params: params) { response in
+            guard let response = response else {
+                XCTFail("No response received")
+                expectation.fulfill()
+                return
+            }
+            
+            print(response)
+            
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 5)
+    }
 }
 
 func line() {

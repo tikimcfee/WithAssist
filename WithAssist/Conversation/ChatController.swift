@@ -10,6 +10,7 @@ import OpenAI
 import Combine
 
 let OPENAI_API_KEY = ProcessInfo.processInfo.environment["OPENAI_API_KEY"]
+let CLAUDE_API_KEY = ProcessInfo.processInfo.environment["CLAUDE_API_KEY"]
 
 protocol GlobalStoreReader {
     var snapshotStorage: FileStorageSerial { get }
