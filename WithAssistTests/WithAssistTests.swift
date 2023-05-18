@@ -170,6 +170,54 @@ final class WithAssistTests: XCTestCase {
         print("Characters: \(concatenatedText.count)")
         print("Approx tokens: \(concatenatedText.approximateTokens)")
     }
+    
+    func testConcatSend() async throws {
+        let concat = Concatenator()
+        let path = "/Users/ivanlugo/rapiddev/_personal/LookAtThat/MetalLink"
+        let concatenatedText = concat.concatenateAt(directory: path)
+
+        print("Characters: \(concatenatedText.count)")
+        print("Approx tokens: \(concatenatedText.approximateTokens)")
+        
+        XCTAssertGreaterThan(
+            concatenatedText.approximateTokens, 0,
+            "Message must have some content."
+        )
+        XCTAssertLessThan(
+            concatenatedText.approximateTokens, 100_000,
+            "Message must fit into rough estimate of Claude's context."
+        )
+        
+        let client = ClaudeClient(apiKey: CLAUDE_API_KEY!)
+        let expectation = XCTestExpectation(description: "Completion stream response")
+        
+        let prompt = TestPrompts.Claude.summarization(of: concatenatedText)
+        let request = ClaudeClient.Request(
+            prompt: prompt,
+            temperature: 1.0
+        )
+        Task.detached { [expectation] in
+            do {
+                var finalMessage: ClaudeClient.Response?
+                
+                for try await message in client.asyncCompletionStream(
+                    request: request
+                ) {
+                    finalMessage = message
+                    print("Got content... \(message.completion.count) characters")
+                }
+                
+                if let finalMessage {
+                    print(finalMessage.completion)
+                    expectation.fulfill()
+                }
+            } catch {
+                print(error)
+            }
+        }
+        
+        await fulfillment(of: [expectation], timeout: 60.0)
+    }
 }
 
 func line() {
@@ -230,8 +278,8 @@ Please define a Swift and SwiftUI application to calculate the N'th Fibonacci nu
     }
     
     struct Claude {
-        static let assistant = "\n\nAssistant: "
-        static let human = """
+        static let basicAssistant = "\n\nAssistant: "
+        static let basicHuman = """
 \n\nHuman: First, I would like to give you a description of a task. I would like you to think about the description, and then, if you choose, suggest an alternative description you think more closely matches my desired or intended outcome; clarify at will.
 
 The context:
@@ -249,7 +297,25 @@ As such, you should encode some information - whatever you'd like - that would m
 Finally, you should be able to try doing this in any requested language and development environment that is given to you, within a very reasonable range of 'reasonable'. Since this is an extreme constraint, you are absolutely allowed to deny the request because of complexity of implemnentation in that particular language or environment, and are highly encouraged to suggest another language or environment you will would be more appropriate for the implementation.
 """
         static var basic: String {
-            human + assistant
+            basicHuman + basicAssistant
+        }
+        
+        static func summarization(of content: String) -> String {
+"""
+<requested-summarization-content>
+\(content)
+</requested-summarization-content>
+
+\(HUMAN_PROMPT)The above content is a large set of roughly concatenated code files. It is a given that you are able to read code, roughtly determine the language from its syntax, semantics, and API usages. You are also able to determine general functionality of the code as it works together. Please read all of the context above, and determine - at least - the following:
+
+- What does this code seem to "do"?
+- What are some obvious bugs or issues you see in the code, if any?
+- What are some ways you think the code is written well?
+- What are some ways you think the code is not written well?
+- What are some suggestions you'd offer to improve the code?
+
+You may feel free to expand in any way that seems most interesting or analytically valuable.\(ASSISTANT_PROMPT)
+"""
         }
     }
     

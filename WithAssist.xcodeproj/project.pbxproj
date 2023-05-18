@@ -7,9 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		457CC2C12A15345B00554380 /* ClaudeAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 457CC2C02A15345B00554380 /* ClaudeAPI.swift */; };
+		457CC2C12A15345B00554380 /* ClaudeClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 457CC2C02A15345B00554380 /* ClaudeClient.swift */; };
 		45E4124B2A167D0700EC4F77 /* StreamingSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E4124A2A167D0700EC4F77 /* StreamingSession.swift */; };
 		45E4124C2A167D0700EC4F77 /* StreamingSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E4124A2A167D0700EC4F77 /* StreamingSession.swift */; };
+		45E4124E2A16833A00EC4F77 /* Concatenator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E4124D2A16833A00EC4F77 /* Concatenator.swift */; };
+		45E4124F2A16833A00EC4F77 /* Concatenator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E4124D2A16833A00EC4F77 /* Concatenator.swift */; };
 		B72A79FE29D5399E00BE4163 /* Snapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A79FD29D5399E00BE4163 /* Snapshot.swift */; };
 		B72A7A0029D539FA00BE4163 /* ChatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A79FF29D539FA00BE4163 /* ChatController.swift */; };
 		B72A7A0229D53E7D00BE4163 /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72A7A0129D53E7D00BE4163 /* AppError.swift */; };
@@ -81,8 +83,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		457CC2C02A15345B00554380 /* ClaudeAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeAPI.swift; sourceTree = "<group>"; };
+		457CC2C02A15345B00554380 /* ClaudeClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeClient.swift; sourceTree = "<group>"; };
 		45E4124A2A167D0700EC4F77 /* StreamingSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamingSession.swift; sourceTree = "<group>"; };
+		45E4124D2A16833A00EC4F77 /* Concatenator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Concatenator.swift; sourceTree = "<group>"; };
 		B72A79FD29D5399E00BE4163 /* Snapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Snapshot.swift; sourceTree = "<group>"; };
 		B72A79FF29D539FA00BE4163 /* ChatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatController.swift; sourceTree = "<group>"; };
 		B72A7A0129D53E7D00BE4163 /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
@@ -154,7 +157,8 @@
 		457CC2BF2A15344F00554380 /* Claude */ = {
 			isa = PBXGroup;
 			children = (
-				457CC2C02A15345B00554380 /* ClaudeAPI.swift */,
+				457CC2C02A15345B00554380 /* ClaudeClient.swift */,
+				45E4124D2A16833A00EC4F77 /* Concatenator.swift */,
 				45E4124A2A167D0700EC4F77 /* StreamingSession.swift */,
 			);
 			path = Claude;
@@ -449,12 +453,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				B73CB07829C662600047831E /* ChatPreviews.swift in Sources */,
+				45E4124E2A16833A00EC4F77 /* Concatenator.swift in Sources */,
 				B7497FE329DBAF170030698A /* Tokens.swift in Sources */,
 				B7C8B3F329D9D88C00B53B01 /* Serializer.swift in Sources */,
 				B7DBD15D29D1404000776412 /* CodableAppStorage.swift in Sources */,
 				B72A7A0229D53E7D00BE4163 /* AppError.swift in Sources */,
 				B7C8B3ED29D7AFA100B53B01 /* InteractionsView.swift in Sources */,
-				457CC2C12A15345B00554380 /* ClaudeAPI.swift in Sources */,
+				457CC2C12A15345B00554380 /* ClaudeClient.swift in Sources */,
 				B74CB94D29FC8F070070D163 /* EditView.swift in Sources */,
 				B72A7A0029D539FA00BE4163 /* ChatController.swift in Sources */,
 				B7DBD15B29D13B9900776412 /* FileStorage.swift in Sources */,
@@ -495,6 +500,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B7EB2F9A29DA34880049C4CA /* ChatPreviews.swift in Sources */,
+				45E4124F2A16833A00EC4F77 /* Concatenator.swift in Sources */,
 				B7497FE429DBAF210030698A /* Tokens.swift in Sources */,
 				B7EB2F9B29DA34880049C4CA /* Serializer.swift in Sources */,
 				B7EB2F9C29DA34880049C4CA /* CodableAppStorage.swift in Sources */,

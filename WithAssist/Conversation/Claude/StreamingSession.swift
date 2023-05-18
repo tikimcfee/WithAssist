@@ -24,6 +24,8 @@ class StreamingSession<ResultType: Codable>: NSObject, Identifiable, URLSessionD
             delegateQueue: nil
         )
     }()
+    
+    var incompleteJson: String?
      
     init(
         urlRequest: URLRequest,
@@ -49,31 +51,59 @@ class StreamingSession<ResultType: Codable>: NSObject, Identifiable, URLSessionD
             return
         }
         
+        print(">>>>>>>>>>")
+        print(stringContent.prefix(32))
+        print("<<<<<<<<<<")
+        if stringContent.localizedCaseInsensitiveContains("event: ping") {
+            print("~~~ Skipping ping event ~~~")
+            return
+        }
+        
         let jsonObjects = stringContent
             .components(separatedBy: "data:")
             .filter { $0.isEmpty == false }
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
         
-        guard jsonObjects.isEmpty == false, jsonObjects.first != streamingCompletionMarker else {
+        guard jsonObjects.isEmpty == false else {
             onProcessingError?(self, StreamingError.emptyContent)
             return
         }
         
-        for jsonContent in jsonObjects {
-            guard jsonContent != streamingCompletionMarker else {
+        for jsonObject in jsonObjects {
+            guard jsonObject != streamingCompletionMarker else {
+                print("[stream] found completion")
                 onComplete?(self, nil)
                 return
             }
+            
+            let jsonContent: String
+            if let incompleteJson {
+                jsonContent = incompleteJson + jsonObject
+                print("[stream] appending incomplete json...")
+            } else {
+                jsonContent = jsonObject
+            }
+            
             guard let jsonData = jsonContent.data(using: .utf8) else {
+                print("[stream] data processing error")
                 onProcessingError?(self, StreamingError.unknownContent)
                 return
             }
             do {
                 let decoder = JSON_DECODER
                 let object = try decoder.decode(ResultType.self, from: jsonData)
+                print("[stream] found content")
                 onReceiveContent?(self, object)
+                incompleteJson = nil
             } catch {
-                onProcessingError?(self, error)
+                print("[stream] decoding error, testing incomplete json")
+                if !jsonContent.hasSuffix("}") {
+                    print("[stream] setting incomplete json...")
+                    incompleteJson = incompleteJson?.appending(jsonContent) ?? jsonContent
+                }
+//                else {
+//                    onProcessingError?(self, error)
+//                }
             }
         }
     }
