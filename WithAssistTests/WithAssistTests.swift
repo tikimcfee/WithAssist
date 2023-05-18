@@ -160,6 +160,16 @@ final class WithAssistTests: XCTestCase {
         
         await fulfillment(of: [expectation], timeout: 10.0)
     }
+    
+    func testConcat() async throws {
+        let concat = Concatenator()
+        let path = "/Users/ivanlugo/localdev/recordcompany/WithAssist"
+
+        let concatenatedText = concat.concatenateAt(directory: path)
+
+        print("Characters: \(concatenatedText.count)")
+        print("Approx tokens: \(concatenatedText.approximateTokens)")
+    }
 }
 
 func line() {

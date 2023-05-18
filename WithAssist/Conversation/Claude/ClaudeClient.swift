@@ -3,11 +3,49 @@
 //  Created on 5/17/23.
 //
 
-private let HUMAN_STOP_SEQUENCE = ["\n\nHuman:"]
-private let HUMAN_PROMPT = "\n\nHuman: "
-private let ASSISTANT_PROMPT = "\n\nAssistant: "
+let HUMAN_STOP_SEQUENCE_RAW = "\n\nHuman:"
+let HUMAN_STOP_SEQUENCE = [HUMAN_STOP_SEQUENCE_RAW]
+let HUMAN_PROMPT = "\n\nHuman: "
+let ASSISTANT_PROMPT = "\n\nAssistant: "
 
 import Foundation
+
+extension String {
+    func replacingMatches(
+        pattern: String,
+        replace: (String) -> String?
+    ) -> String {
+        do {
+            let regex = try NSRegularExpression(pattern: pattern, options: [])
+            
+            let matches = regex.matches(
+                in: self,
+                options: [],
+                range: NSMakeRange(0, self.count)
+            )
+            
+            let mutableString = NSMutableString(string: self)
+            matches.reversed().forEach { match in
+                let range = Range(match.range, in: self)
+                if let range  {
+                    let replacement = replace(String(self[range]))
+                    if let replacement {
+                        regex.replaceMatches(
+                            in: mutableString,
+                            options: .reportCompletion,
+                            range: match.range,
+                            withTemplate: replacement
+                        )
+                    }
+                }
+            }
+            
+            return String(mutableString)
+        } catch {
+            return self
+        }
+    }
+}
 
 class ClaudeClient {
     let apiKey: String
