@@ -52,10 +52,10 @@ class StreamingSession<ResultType: Codable>: NSObject, Identifiable, URLSessionD
         }
         
         print(">>>>>>>>>>")
-        print(stringContent.prefix(32))
+        print(stringContent)
         print("<<<<<<<<<<")
         if stringContent.localizedCaseInsensitiveContains("event: ping") {
-            print("~~~ Skipping ping event ~~~")
+            print("~~~ Received ping event ~~~")
             return
         }
         
@@ -77,12 +77,13 @@ class StreamingSession<ResultType: Codable>: NSObject, Identifiable, URLSessionD
             }
             
             let jsonContent: String
-            if let incompleteJson {
-                jsonContent = incompleteJson + jsonObject
-                print("[stream] appending incomplete json...")
-            } else {
+//            if let incompleteJson {
+//                jsonContent = incompleteJson + jsonObject
                 jsonContent = jsonObject
-            }
+//                print("[stream] appending incomplete json...")
+//            } else {
+//                jsonContent = jsonObject
+//            }
             
             guard let jsonData = jsonContent.data(using: .utf8) else {
                 print("[stream] data processing error")
@@ -92,15 +93,15 @@ class StreamingSession<ResultType: Codable>: NSObject, Identifiable, URLSessionD
             do {
                 let decoder = JSON_DECODER
                 let object = try decoder.decode(ResultType.self, from: jsonData)
-                print("[stream] found content")
+//                print("[stream] found content")
                 onReceiveContent?(self, object)
-                incompleteJson = nil
+//                incompleteJson = nil
             } catch {
-                print("[stream] decoding error, testing incomplete json")
-                if !jsonContent.hasSuffix("}") {
-                    print("[stream] setting incomplete json...")
-                    incompleteJson = incompleteJson?.appending(jsonContent) ?? jsonContent
-                }
+//                print("[stream] decoding error, testing incomplete json")
+//                if !jsonContent.hasSuffix("}") {
+//                    print("[stream] setting incomplete json...")
+//                    incompleteJson = incompleteJson?.appending(jsonContent) ?? jsonContent
+//                }
 //                else {
 //                    onProcessingError?(self, error)
 //                }

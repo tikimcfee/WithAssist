@@ -6,6 +6,22 @@
 import Foundation
 
 class Concatenator {
+    func concatenate(
+        directories: [String]
+    ) -> String {
+        let filePaths = directories.lazy.map {
+            self.collectFiles(directory: $0)
+        }.flatMap { $0 }
+        
+        let concatenatedText = concatenate(paths: Array(filePaths))
+        let pattern = "(\\\\n\\\\nHuman:|\\\\n\\\\nAssistant:)"
+        let replacedVersion = concatenatedText.replacingMatches(
+            pattern: pattern,
+            replace: replaceKeywordMatch(_:)
+        )
+        return replacedVersion
+    }
+    
     func concatenateAt(
         directory: String
     ) -> String {
@@ -46,14 +62,17 @@ class Concatenator {
         }
         
         let keys: Set<URLResourceKey> = [.isDirectoryKey]
+        let types = ["swift", "metal", "m", "mm",]
         let lazyPaths = enumerator.lazy
             .compactMap { $0 as? URL }
             .filter {
                 (try? $0.resourceValues(forKeys: keys))?
                     .isDirectory == false
             }
-            .filter {
-                $0.lastPathComponent.hasSuffix("swift")
+            .filter { path in
+                types.contains(where: {
+                    path.lastPathComponent.hasSuffix($0)
+                })
             }
         return Array(lazyPaths)
     }

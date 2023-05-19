@@ -63,6 +63,8 @@
 		B7EB2FAF29DA34880049C4CA /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B73CB07D29C662610047831E /* Preview Assets.xcassets */; };
 		B7EB2FB029DA34880049C4CA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B73CB07929C662610047831E /* Assets.xcassets */; };
 		B7EB2FBD29DA66E90049C4CA /* RichTextKit in Frameworks */ = {isa = PBXBuildFile; productRef = B7EB2FBC29DA66E90049C4CA /* RichTextKit */; };
+		B7F7A6812A171097009F431E /* Parsing in Frameworks */ = {isa = PBXBuildFile; productRef = B7F7A6802A171097009F431E /* Parsing */; };
+		B7F7A6832A1710A3009F431E /* Parsing in Frameworks */ = {isa = PBXBuildFile; productRef = B7F7A6822A1710A3009F431E /* Parsing */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -123,6 +125,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B7F7A6812A171097009F431E /* Parsing in Frameworks */,
 				B7B829F329DB993500550002 /* OpenAI in Frameworks */,
 				B7EB2FBD29DA66E90049C4CA /* RichTextKit in Frameworks */,
 			);
@@ -146,6 +149,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B7F7A6832A1710A3009F431E /* Parsing in Frameworks */,
 				B7C2DDF529DBFC2C006CDF39 /* OpenAI in Frameworks */,
 				B7C2DDF329DBFC2C006CDF39 /* RichTextKit in Frameworks */,
 			);
@@ -301,6 +305,7 @@
 			packageProductDependencies = (
 				B7EB2FBC29DA66E90049C4CA /* RichTextKit */,
 				B7B829F229DB993500550002 /* OpenAI */,
+				B7F7A6802A171097009F431E /* Parsing */,
 			);
 			productName = WithAssist;
 			productReference = B73CB07229C662600047831E /* WithAssist.app */;
@@ -359,6 +364,7 @@
 			packageProductDependencies = (
 				B7C2DDF229DBFC2C006CDF39 /* RichTextKit */,
 				B7C2DDF429DBFC2C006CDF39 /* OpenAI */,
+				B7F7A6822A1710A3009F431E /* Parsing */,
 			);
 			productName = WithAssist;
 			productReference = B7EB2FB429DA34880049C4CA /* WithAssist-iOS.app */;
@@ -372,7 +378,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1420;
-				LastUpgradeCheck = 1420;
+				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					B73CB07129C662600047831E = {
 						CreatedOnToolsVersion = 14.2;
@@ -399,6 +405,7 @@
 			packageReferences = (
 				B7EB2FBB29DA66E90049C4CA /* XCRemoteSwiftPackageReference "RichTextKit" */,
 				B7B829F129DB993500550002 /* XCRemoteSwiftPackageReference "OpenAI" */,
+				B7F7A67F2A171097009F431E /* XCRemoteSwiftPackageReference "swift-parsing" */,
 			);
 			productRefGroup = B73CB07329C662600047831E /* Products */;
 			projectDirPath = "";
@@ -581,6 +588,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -639,6 +647,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -665,6 +674,7 @@
 				CODE_SIGN_ENTITLEMENTS = WithAssist/WithAssist.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"WithAssist/Preview Content\"";
 				DEVELOPMENT_TEAM = 5F5H835QPF;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -703,6 +713,7 @@
 				CODE_SIGN_ENTITLEMENTS = WithAssist/WithAssist.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"WithAssist/Preview Content\"";
 				DEVELOPMENT_TEAM = 5F5H835QPF;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -740,6 +751,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = XR2HQNSZ68;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
@@ -763,6 +775,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = XR2HQNSZ68;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
@@ -785,6 +798,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = XR2HQNSZ68;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
@@ -807,6 +821,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = XR2HQNSZ68;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
@@ -831,6 +846,7 @@
 				CODE_SIGN_ENTITLEMENTS = WithAssist/WithAssist.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"WithAssist/Preview Content\"";
 				DEVELOPMENT_TEAM = XR2HQNSZ68;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -869,6 +885,7 @@
 				CODE_SIGN_ENTITLEMENTS = WithAssist/WithAssist.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"WithAssist/Preview Content\"";
 				DEVELOPMENT_TEAM = XR2HQNSZ68;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -966,6 +983,14 @@
 				kind = branch;
 			};
 		};
+		B7F7A67F2A171097009F431E /* XCRemoteSwiftPackageReference "swift-parsing" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-parsing.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.12.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -992,6 +1017,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = B7EB2FBB29DA66E90049C4CA /* XCRemoteSwiftPackageReference "RichTextKit" */;
 			productName = RichTextKit;
+		};
+		B7F7A6802A171097009F431E /* Parsing */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B7F7A67F2A171097009F431E /* XCRemoteSwiftPackageReference "swift-parsing" */;
+			productName = Parsing;
+		};
+		B7F7A6822A1710A3009F431E /* Parsing */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B7F7A67F2A171097009F431E /* XCRemoteSwiftPackageReference "swift-parsing" */;
+			productName = Parsing;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -173,8 +173,13 @@ final class WithAssistTests: XCTestCase {
     
     func testConcatSend() async throws {
         let concat = Concatenator()
-        let path = "/Users/ivanlugo/rapiddev/_personal/LookAtThat/MetalLink"
-        let concatenatedText = concat.concatenateAt(directory: path)
+        
+        let rootPaths = [
+            "/Users/lugos/udev/manicmind/LookAtThat/MetalLink",
+            "/Users/lugos/udev/manicmind/LookAtThat/Interop/CodeGrids",
+            "/Users/lugos/udev/manicmind/LookAtThat/LookAtThat_AppKitTests"
+        ]
+        let concatenatedText = concat.concatenate(directories: rootPaths)
 
         print("Characters: \(concatenatedText.count)")
         print("Approx tokens: \(concatenatedText.approximateTokens)")
@@ -191,9 +196,10 @@ final class WithAssistTests: XCTestCase {
         let client = ClaudeClient(apiKey: CLAUDE_API_KEY!)
         let expectation = XCTestExpectation(description: "Completion stream response")
         
-        let prompt = TestPrompts.Claude.summarization(of: concatenatedText)
+        let prompt = TestPrompts.Claude.solvingAProblem(of: concatenatedText)
         let request = ClaudeClient.Request(
             prompt: prompt,
+            maxTokensToSample: 25_000,
             temperature: 1.0
         )
         Task.detached { [expectation] in
@@ -204,7 +210,9 @@ final class WithAssistTests: XCTestCase {
                     request: request
                 ) {
                     finalMessage = message
-                    print("Got content... \(message.completion.count) characters")
+                    
+                    printSeparator()
+                    print(message.completion)
                 }
                 
                 if let finalMessage {
@@ -216,7 +224,7 @@ final class WithAssistTests: XCTestCase {
             }
         }
         
-        await fulfillment(of: [expectation], timeout: 60.0)
+        await fulfillment(of: [expectation], timeout: 600.0)
     }
 }
 
@@ -315,6 +323,56 @@ Finally, you should be able to try doing this in any requested language and deve
 - What are some suggestions you'd offer to improve the code?
 
 You may feel free to expand in any way that seems most interesting or analytically valuable.\(ASSISTANT_PROMPT)
+"""
+        }
+        
+        static func solvingAProblem(of content: String) -> String {
+"""
+<requested-summarization-content>
+\(content)
+</requested-summarization-content>
+
+\(HUMAN_PROMPT)The above content is a large set of roughly concatenated code files. It is a given that you are able to read code, roughtly determine the language from its syntax, semantics, and API usages. You are also able to determine general functionality of the code as it works together. Please read all of the context above.
+
+Then, read and internalize this bulleted process:
+- The MetalLinkNode and InstancedObject abstractions are very, very close to being much more performant. I would like you to analyze that hierarchy of objects, and suggest a plan of integrating them such that *instances of nodes operate directly on their buffers*, instead of having a reference to their index so they can be updated. Please let me know if this makes sense.
+- When we have established a plan, we will start writing a series of tests to take those files and develop towards the first goal.
+- Along the way, we will simplify, cut and add functionality as it makes sense.
+- CodeGrids and MetalLinkNodes share a tight coupling with 'consume'. I want a way to directly fill a buffer with character data from a file without the lenghty character-by-character process of iteration. E.g., I'd like to find a way to compute things functionally instead of iteratively. At least, to do it more efficiently than I am.
+
+Here are some ways that we interact:
+- At any point, I can say "snapshot this", and you'll produce a running summary of everything we've done so far, so I can come back later. Make it something 'encoded' looking, so reading it has a high likelihood of producing high correlation words and ideas.
+- APOLOGIES ARE NOT ALWAYS NECESSARY! Please use them sparingly.
+- Do not duplicate, suggest, or rewrite specific examples of your ideas unless I ask. Although appreciated, we need to limit the text produced in our conversation for the sake of recovery.\(ASSISTANT_PROMPT)Here is a summary of my analysis and suggestions for improving the MetalLinkNode and MetalLinkInstancedObject hierarchy:
+
+- MetalLinkNode and InstancedObject currently have a reference to their buffer index, and then update the buffer using that index. This adds an extra layer of indirection and lookup.
+- A better approach would be for nodes to have a direct pointer to their buffer location. This would allow them to read and write from the buffer directly without needing to look up the index first.
+- To implement this, the buffer backing the nodes would need to provide a pointer to the start of a node's data when the node is created or added to the buffer. The node would store this pointer and use it for all buffer access.
+- When a node's data location in the buffer changes, the buffer would need to update the node's pointer. This adds some complexity but should provide a performance benefit.
+- CodeGrids and MetalLinkNodes creating character data from files could be made more efficient by reading the entire file contents into a buffer at once, rather than iterating character by character. The data in the buffer could then be parsed and added to the CodeGrid.
+- This bulk loading approach avoids the overhead of multiple iterations and string concatenation. The downside is that more memory may be required to hold the entire file contents at once. A balance may need to be found for very large files.
+
+Please let me know if you would like me to explain or expand on any part of this summary. I can also start working on developing tests and updated code to move the hierarchy in this direction if that would be helpful.
+ Here is a summary of my analysis and suggestions for improving the MetalLinkNode and MetalLinkInstancedObject hierarchy:
+
+- MetalLinkNode and InstancedObject currently have a reference to their buffer index, and then update the buffer using that index. This adds an extra layer of indirection and lookup.
+- A better approach would be for nodes to have a direct pointer to their buffer location. This would allow them to read and write from the buffer directly without needing to look up the index first.
+- To implement this, the buffer backing the nodes would need to provide a pointer to the start of a node's data when the node is created or added to the buffer. The node would store this pointer and use it for all buffer access.
+- When a node's data location in the buffer changes, the buffer would need to update the node's pointer. This adds some complexity but should provide a performance benefit.
+- CodeGrids and MetalLinkNodes creating character data from files could be made more efficient by reading the entire file contents into a buffer at once, rather than iterating character by character. The data in the buffer could then be parsed and added to the CodeGrid.
+- This bulk loading approach avoids the overhead of multiple iterations and string concatenation. The downside is that more memory may be required to hold the entire file contents at once. A balance may need to be found for very large files.
+
+Please let me know if you would like me to explain or expand on any part of this summary. I can also start working on developing tests and updated code to move the hierarchy in this direction if that would be helpful.\(HUMAN_PROMPT)This is excellent. Yep, it's exactly what I was looking for and more. I would like to start doing this now. Let's start wherever you think is best.\(ASSISTANT_PROMPT) I can give feedback, guidance and requests as we proceed.
+
+A few questions first:
+
+1. For the bulk loading, how would you see parsing the raw data and emitting nodes? My first thought is to avoid the current 'character by character' approach, and instead look for newlines (\n) to determine 'blocks' of text that represent nodes. But I'm not sure how robust that is.
+
+2. For the direct pointer access, how would you recommend implementing the 'update' to a node's new pointer when its data moves? I imagine some form of 'rebase' function, but haven't thought it through fully.
+
+3. Any other suggestions or ideas you have would be great to hear before we start. I'm looking to really improve the performance and simplify/cleanup these components.
+
+Go ahead and pick where you'd like to start, whether it's tests, updated code, or pseudocode examples. I appreciate any and all input. Let's do this!\(HUMAN_PROMPT)
 """
         }
     }
