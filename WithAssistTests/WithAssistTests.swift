@@ -177,7 +177,7 @@ final class WithAssistTests: XCTestCase {
         let rootPaths = [
             "/Users/lugos/udev/manicmind/LookAtThat/MetalLink",
             "/Users/lugos/udev/manicmind/LookAtThat/Interop/CodeGrids",
-            "/Users/lugos/udev/manicmind/LookAtThat/LookAtThat_AppKitTests"
+            "/Users/lugos/udev/manicmind/LookAtThat/LookAtThat_AppKitTests/CodeGrid"
         ]
         let concatenatedText = concat.concatenate(directories: rootPaths)
 
@@ -197,10 +197,13 @@ final class WithAssistTests: XCTestCase {
         let expectation = XCTestExpectation(description: "Completion stream response")
         
         let prompt = TestPrompts.Claude.solvingAProblem(of: concatenatedText)
+        print("Prompt Characters: \(prompt.count)")
+        print("Prompt Approx tokens: \(prompt.approximateTokens)")
+        
         let request = ClaudeClient.Request(
             prompt: prompt,
-            maxTokensToSample: 25_000,
-            temperature: 1.0
+            maxTokensToSample: 100_000,
+            temperature: 0.75
         )
         Task.detached { [expectation] in
             do {
@@ -216,6 +219,8 @@ final class WithAssistTests: XCTestCase {
                 }
                 
                 if let finalMessage {
+                    printSeparator()
+                    printSeparator()
                     print(finalMessage.completion)
                     expectation.fulfill()
                 }
@@ -334,45 +339,61 @@ You may feel free to expand in any way that seems most interesting or analytical
 
 \(HUMAN_PROMPT)The above content is a large set of roughly concatenated code files. It is a given that you are able to read code, roughtly determine the language from its syntax, semantics, and API usages. You are also able to determine general functionality of the code as it works together. Please read all of the context above.
 
-Then, read and internalize this bulleted process:
-- The MetalLinkNode and InstancedObject abstractions are very, very close to being much more performant. I would like you to analyze that hierarchy of objects, and suggest a plan of integrating them such that *instances of nodes operate directly on their buffers*, instead of having a reference to their index so they can be updated. Please let me know if this makes sense.
-- When we have established a plan, we will start writing a series of tests to take those files and develop towards the first goal.
-- Along the way, we will simplify, cut and add functionality as it makes sense.
-- CodeGrids and MetalLinkNodes share a tight coupling with 'consume'. I want a way to directly fill a buffer with character data from a file without the lenghty character-by-character process of iteration. E.g., I'd like to find a way to compute things functionally instead of iteratively. At least, to do it more efficiently than I am.
+Then, read and internalize these bullets:
+- The MetalLinkNode and InstancedObject abstractions are very, very close to being much more performant. I would like you to analyze that hierarchy of objects, and suggest a plan of integrating them such that *instances of nodes operate directly on their buffers*, instead of having a reference to their index so they can be updated. Ideally, *none* of the Swift node / object types will store data, and they will all be backed by whatever buffer they were instantiated from / pointing to.
+- CodeGrids and MetalLinkNodes share a tight coupling. Don't lose their functionality.
+- It is critical the 1:1 'glyph' approach is retained, as is the Metal toolkit. This is an iOS / macOS app first.
 
 Here are some ways that we interact:
 - At any point, I can say "snapshot this", and you'll produce a running summary of everything we've done so far, so I can come back later. Make it something 'encoded' looking, so reading it has a high likelihood of producing high correlation words and ideas.
 - APOLOGIES ARE NOT ALWAYS NECESSARY! Please use them sparingly.
-- Do not duplicate, suggest, or rewrite specific examples of your ideas unless I ask. Although appreciated, we need to limit the text produced in our conversation for the sake of recovery.\(ASSISTANT_PROMPT)Here is a summary of my analysis and suggestions for improving the MetalLinkNode and MetalLinkInstancedObject hierarchy:
+- Do not duplicate, suggest, or rewrite specific examples of your ideas unless I ask. Although appreciated, we need to limit the text produced in our conversation for the sake of recovery.
 
-- MetalLinkNode and InstancedObject currently have a reference to their buffer index, and then update the buffer using that index. This adds an extra layer of indirection and lookup.
-- A better approach would be for nodes to have a direct pointer to their buffer location. This would allow them to read and write from the buffer directly without needing to look up the index first.
-- To implement this, the buffer backing the nodes would need to provide a pointer to the start of a node's data when the node is created or added to the buffer. The node would store this pointer and use it for all buffer access.
-- When a node's data location in the buffer changes, the buffer would need to update the node's pointer. This adds some complexity but should provide a performance benefit.
-- CodeGrids and MetalLinkNodes creating character data from files could be made more efficient by reading the entire file contents into a buffer at once, rather than iterating character by character. The data in the buffer could then be parsed and added to the CodeGrid.
-- This bulk loading approach avoids the overhead of multiple iterations and string concatenation. The downside is that more memory may be required to hold the entire file contents at once. A balance may need to be found for very large files.
+Please start by writing a plan, and a small set of snippets to verify the plan and implementations start of matching.\(ASSISTANT_PROMPT)Here is a plan for integrating MetalLinkNode and InstancedObject to operate directly on their buffers:
 
-Please let me know if you would like me to explain or expand on any part of this summary. I can also start working on developing tests and updated code to move the hierarchy in this direction if that would be helpful.
- Here is a summary of my analysis and suggestions for improving the MetalLinkNode and MetalLinkInstancedObject hierarchy:
+- Remove the instanceBufferIndex field from MetalLinkNode. This field stores the index into the instance buffer for a given node. Instead, nodes should hold a direct pointer to their location in the buffer.
 
-- MetalLinkNode and InstancedObject currently have a reference to their buffer index, and then update the buffer using that index. This adds an extra layer of indirection and lookup.
-- A better approach would be for nodes to have a direct pointer to their buffer location. This would allow them to read and write from the buffer directly without needing to look up the index first.
-- To implement this, the buffer backing the nodes would need to provide a pointer to the start of a node's data when the node is created or added to the buffer. The node would store this pointer and use it for all buffer access.
-- When a node's data location in the buffer changes, the buffer would need to update the node's pointer. This adds some complexity but should provide a performance benefit.
-- CodeGrids and MetalLinkNodes creating character data from files could be made more efficient by reading the entire file contents into a buffer at once, rather than iterating character by character. The data in the buffer could then be parsed and added to the CodeGrid.
-- This bulk loading approach avoids the overhead of multiple iterations and string concatenation. The downside is that more memory may be required to hold the entire file contents at once. A balance may need to be found for very large files.
+- Remove the instanceState field from MetalLinkInstancedObject. This stores information about the instance buffer, including a pointer to it. Instead, MetalLinkInstancedObject should simply hold the MTLBuffer, and nodes should point into that buffer.
 
-Please let me know if you would like me to explain or expand on any part of this summary. I can also start working on developing tests and updated code to move the hierarchy in this direction if that would be helpful.\(HUMAN_PROMPT)This is excellent. Yep, it's exactly what I was looking for and more. I would like to start doing this now. Let's start wherever you think is best.\(ASSISTANT_PROMPT) I can give feedback, guidance and requests as we proceed.
+- When a node is added to an instanced object, instead of appending its information to the instanceState, directly write its information to the next available slot in the MTLBuffer. The node should hold a pointer to this location.
 
-A few questions first:
+- When a node's information needs to be updated, instead of looking up its index in the instanceState and updating that, directly update the MTLBuffer at the location the node points to.
 
-1. For the bulk loading, how would you see parsing the raw data and emitting nodes? My first thought is to avoid the current 'character by character' approach, and instead look for newlines (\n) to determine 'blocks' of text that represent nodes. But I'm not sure how robust that is.
+- Rendering can remain largely the same, setting the MTLBuffer on the render pipeline and drawing from it. However, model matrix updates will need to be done by nodes directly updating the buffer.
 
-2. For the direct pointer access, how would you recommend implementing the 'update' to a node's new pointer when its data moves? I imagine some form of 'rebase' function, but haven't thought it through fully.
+Here is a small code snippet to illustrate this plan:
 
-3. Any other suggestions or ideas you have would be great to hear before we start. I'm looking to really improve the performance and simplify/cleanup these components.
+```swift
+class MetalLinkInstancedObject<NodeType: MetalLinkNode> {
+    var buffer: MTLBuffer
+    
+    init(device: MTLDevice, count: Int) {
+        buffer = device.makeBuffer(length: MemoryLayout<NodeConstants>.stride * count, options: [])
+        // No more instanceState
+    }
+    
+    func addNode(_ node: NodeType) {
+        // Write node's info directly to next spot in buffer
+        let pointer = buffer.contents().bindMemory(to: NodeConstants.self, capacity: 1)
+        // Node holds pointer to its location
+        node.locationInBuffer = pointer
+        // ...
+    }
+    
+    func updateNode(_ node: NodeType) {
+        // Node directly updates buffer
+        let pointer = node.locationInBuffer
+        pointer.pointee.modelMatrix = node.modelMatrix
+    }
+}
 
-Go ahead and pick where you'd like to start, whether it's tests, updated code, or pseudocode examples. I appreciate any and all input. Let's do this!\(HUMAN_PROMPT)
+class NodeType: MetalLinkNode {
+    var locationInBuffer: UnsafeMutablePointer<NodeConstants>?
+    // No more instanceBufferIndex
+}
+```
+
+Please let me know if this plan and code snippets match your desired direction, or if any clarification is needed! I can provide more details and examples as needed.
 """
         }
     }
