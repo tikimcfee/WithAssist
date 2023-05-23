@@ -34,6 +34,17 @@ class GlobalFileStore {
 
 class ChatController: ObservableObject {
     let openAI: OpenAI
+    
+    
+    // Testing claude w/ Anthropic
+    let claude = ClaudeClient(apiKey: CLAUDE_API_KEY!)
+    
+    enum MessageTarget {
+        case openAI
+        case anthropic
+    }
+    var messageTarget: MessageTarget = .anthropic
+    
     private(set) var bag = Set<AnyCancellable>()
     
     @Published var snapshotState: SnapshotState
@@ -137,9 +148,7 @@ class ChatController: ObservableObject {
     }
     
     func retryFromCurrent() async {
-        await snapshotState.updateCurrent { current in
-            await requestResponseFromGPT(&current)
-        }
+        await startStream()
     }
     
     func resetPrompt(to prompt: String) async {
@@ -165,9 +174,45 @@ class ChatController: ObservableObject {
     }
     
     func startStream() async {
+        print("(\(#file):\(#function)) - starting stream to [\(messageTarget)]!")
+        
+        switch messageTarget {
+        case .anthropic:
+            await doClaudeStream()
+            
+        case .openAI:
+            await doOpenAIStream()
+        }
+    }
+    
+    func loadController() {
+        snapshotState.load()
+    }
+}
+
+extension ChatController {
+    func performChatQuery(using current: Snapshot) async throws -> ChatResult {
+        let name = String(cString: __dispatch_queue_get_label(nil))
+        print("--- Performing query on: \(name)")
+                
+        let result: ChatResult
+        switch messageTarget {
+        case .anthropic:
+            result = try await doClaudeRequest(using: current)
+            
+        case .openAI:
+            result = try await doOpenAIRequest(using: current)
+        }
+        
+        logResult(result)
+        return result
+    }
+    
+    func doOpenAIStream() async {
         guard let snapshot = snapshotState.publishedSnapshot else {
             return
         }
+        
         let query = makeChatQuery(snapshot, stream: true)
         do {
             let stream = openAI.chatsStream(query: query)
@@ -183,45 +228,104 @@ class ChatController: ObservableObject {
         }
         
         print("[stream controller] stream complete")
-        
     }
     
-    func loadController() {
-        snapshotState.load()
-    }
-}
-
-extension ChatController {
-    func performChatQuery(using current: Snapshot) async throws -> ChatResult {
-        let name = String(cString: __dispatch_queue_get_label(nil))
-        print("--- Performing query on: \(name)")
+    func doClaudeStream() async {
+        guard let snapshot = snapshotState.publishedSnapshot else {
+            return
+        }
         
-        let result = try await openAI.chats(
+        do {
+            let query = makeClaudeQuery(snapshot, stream: true)
+            let stream = claude.asyncCompletionStream(request: query)
+            
+            var choice = ChatResult.Choice(
+                index: 0,
+                message: Chat(role: .assistant, content: ""),
+                finishReason: "stop"
+            )
+            
+            var chatResult = ChatResult(
+                id: UUID().uuidString,
+                object: "claude-api-result",
+                created: Date.now.timeIntervalSince1970,
+                model: .__anthropic_claude,
+                choices: [choice],
+                usage: ChatResult.Usage()
+            )
+            
+            for try await queryItem in stream {
+                choice.message = Chat(role: .assistant, content: queryItem.completion)
+                chatResult.choices[0] = choice
+                await snapshotState.updateCurrent { current in
+                    print("updating: \(chatResult.id)")
+                    print("updating: \(chatResult.firstMessage?.content ?? "~x")")
+                    current.results[chatResult.id] = chatResult
+                }
+            }
+        } catch {
+            print("[stream controller - error] \(error)")
+        }
+        print("[stream controller] stream complete")
+    }
+    
+    func doOpenAIRequest(using current: Snapshot) async throws -> ChatResult {
+        try await openAI.chats(
             query: makeChatQuery(current)
         )
+    }
+    
+    func doClaudeRequest(using current: Snapshot) async throws -> ChatResult {
+        let query = makeClaudeQuery(current, stream: false)
+        let stream = claude.asyncCompletionStream(request: query)
         
-        let firstMessage =
-            result.choices.first?.message?.content
-            ?? "<no response message>"
-        
-        print(
-"""
+        var result = ChatResult(
+            id: UUID().uuidString,
+            object: "claude-api-result",
+            created: Date.now.timeIntervalSince1970,
+            model: .__anthropic_claude,
+            choices: [],
+            usage: ChatResult.Usage()
+        )
 
-Received response:
-----------------------------------------------------------------
-\(firstMessage)
-----------------------------------------------------------------
-
-""")
+        for try await queryItem in stream {
+            result.upsertChoice(
+                newChoice: ChatResult.Choice(
+                    index: 0,
+                    message: Chat(
+                        role: .assistant,
+                        content: queryItem.completion
+                    ),
+                    finishReason: "stop"
+                )
+            )
+        }
         
         return result
     }
     
-    func makeChatQuery(
+    func logResult(_ result: ChatResult) {
+        Task {
+            let firstMessage =
+                result.choices.first?.message?.content
+                ?? "<no response message>"
+            
+            print(
+            """
+
+            Received response:
+            ----------------------------------------------------------------
+            \(firstMessage)
+            ----------------------------------------------------------------
+
+            """)
+        }
+    }
+    
+    func collectContextChatWindow(
         _ snapshot: Snapshot?,
         stream: Bool = false
-    ) -> ChatQuery {
-        
+    ) -> ([Chat], Int) {
         let limit = ModelTokenLimit[paramState.current.chatModel, default: FallbackTokenLimit]
         let candidateMessages = snapshot.firstMessageList
         var contextWindow: [Chat] = []
@@ -238,7 +342,55 @@ Received response:
             }
         }
         print("[ChatClient] Took \(contextWindow.count)/\(candidateMessages.count) of the previous messages.")
-        contextWindow.reverse()
+        return (contextWindow.reversed(), runningTokenCount)
+    }
+    
+    func makeClaudeQuery(
+        _ snapshot: Snapshot?,
+        stream: Bool = false
+    ) -> ClaudeClient.Request {
+        let (
+            contextWindow,
+            runningTokenCount
+        ) = collectContextChatWindow(
+            snapshot,
+            stream: stream
+        )
+        
+        var finalPrompt = ""
+        for chat in contextWindow {
+            switch chat.role {
+            case .assistant: finalPrompt.append(CLAUDE_ASSISTANT_PROMPT)
+            case .system: finalPrompt.append(CLAUDE_ASSISTANT_PROMPT)
+            case .user: finalPrompt.append(CLAUDE_HUMAN_PROMPT)
+            }
+            finalPrompt.append(chat.content)
+        }
+        
+        // Append an assistant prompt as safety, it's a requirement of the API
+        if contextWindow.last?.role != .assistant {
+            finalPrompt.append(CLAUDE_ASSISTANT_PROMPT)
+        }
+        
+        return ClaudeClient.Request(
+            prompt: finalPrompt,
+            stream: stream,
+            maxTokensToSample: paramState.current.maxTokens - runningTokenCount,
+            temperature: Float(paramState.current.temperature)
+        )
+    }
+    
+    func makeChatQuery(
+        _ snapshot: Snapshot?,
+        stream: Bool = false
+    ) -> ChatQuery {
+        let (
+            contextWindow,
+            runningTokenCount
+        ) = collectContextChatWindow(
+            snapshot,
+            stream: stream
+        )
         
         return ChatQuery(
             model: paramState.current.chatModel,
@@ -285,29 +437,3 @@ extension String {
     }
 }
 
-class ChatStreamController {
-    var chatController: ChatController
-    var llmAPI: OpenAI
-    
-    init(chatController: ChatController, llmAPI: OpenAI) {
-        self.chatController = chatController
-        self.llmAPI = llmAPI
-    }
-    
-    func startStream(
-        from query: ChatQuery
-    ) async {
-        let stream = llmAPI.chatsStream(query: query)
-        do {
-            for try await chatResult in stream {
-                await chatController.snapshotState.updateCurrent {
-                    $0.updateResultsFromStream(piece: chatResult)
-                }
-            }
-        } catch {
-            print("[stream controller - error] \(error)")
-        }
-        
-        print("[stream controller] stream complete")
-    }
-}

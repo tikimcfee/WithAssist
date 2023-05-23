@@ -30,7 +30,8 @@ extension Model: CaseIterable {
         Model.textDavinci_002,
         Model.textDavinci_003,
         Model.textEmbeddingAda,
-        Model.textSearchBabbageQuery001
+        Model.textSearchBabbageQuery001,
+        Model.__anthropic_claude
     ]
 }
 
@@ -47,5 +48,10 @@ let ModelTokenLimit: [Model: Int] = [
     Model.gpt4_32k_0314: 32000,
     Model.textDavinci_001: 4000,
     Model.textDavinci_002: 4000,
-    Model.textDavinci_003: 4000
+    Model.textDavinci_003: 4000,
+    Model.__anthropic_claude: 110_000
+]
+let ModelTokenLimit_Default: Int = ModelTokenLimit[
+    Model.__anthropic_claude,
+    default: FallbackTokenLimit
 ]

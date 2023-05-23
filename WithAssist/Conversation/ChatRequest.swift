@@ -20,7 +20,7 @@ struct ChatRequest: Equatable, Hashable {
     var topProbabilityMass: Double = 0.7
     
     var completions: Int = 1
-    var maxTokens: Int = ModelTokenLimit[.gpt4] ?? FallbackTokenLimit
+    var maxTokens: Int = ModelTokenLimit_Default
     
     var usePresencePenalty = false
     var presencePenalty: Double = 0.5
@@ -31,5 +31,10 @@ struct ChatRequest: Equatable, Hashable {
     var useLogitBias = false
     var logitBias: [String: Int]? = nil
     
-    var chatModel: Model = .gpt4
+//    var chatModel: Model = .gpt4
+    var chatModel: Model = .__anthropic_claude
+}
+
+public extension Model {
+    static let __anthropic_claude = "__anthropic_claude"
 }

@@ -60,6 +60,33 @@ final class WithAssistTests: XCTestCase {
     func testStream() async throws {
         printStart(.message("Stream test"))
         
+        class ChatStreamController {
+            var chatController: ChatController
+            var llmAPI: OpenAI
+            
+            init(chatController: ChatController, llmAPI: OpenAI) {
+                self.chatController = chatController
+                self.llmAPI = llmAPI
+            }
+            
+            func startStream(
+                from query: ChatQuery
+            ) async {
+                let stream = llmAPI.chatsStream(query: query)
+                do {
+                    for try await chatResult in stream {
+                        await chatController.snapshotState.updateCurrent {
+                            $0.updateResultsFromStream(piece: chatResult)
+                        }
+                    }
+                } catch {
+                    print("[stream controller - error] \(error)")
+                }
+                
+                print("[stream controller] stream complete")
+            }
+        }
+        
         let streamController = ChatStreamController(
             chatController: controller,
             llmAPI: api
@@ -319,7 +346,7 @@ Finally, you should be able to try doing this in any requested language and deve
 \(content)
 </requested-summarization-content>
 
-\(HUMAN_PROMPT)The above content is a large set of roughly concatenated code files. It is a given that you are able to read code, roughtly determine the language from its syntax, semantics, and API usages. You are also able to determine general functionality of the code as it works together. Please read all of the context above, and determine - at least - the following:
+\(CLAUDE_HUMAN_PROMPT)The above content is a large set of roughly concatenated code files. It is a given that you are able to read code, roughtly determine the language from its syntax, semantics, and API usages. You are also able to determine general functionality of the code as it works together. Please read all of the context above, and determine - at least - the following:
 
 - What does this code seem to "do"?
 - What are some obvious bugs or issues you see in the code, if any?
@@ -327,7 +354,7 @@ Finally, you should be able to try doing this in any requested language and deve
 - What are some ways you think the code is not written well?
 - What are some suggestions you'd offer to improve the code?
 
-You may feel free to expand in any way that seems most interesting or analytically valuable.\(ASSISTANT_PROMPT)
+You may feel free to expand in any way that seems most interesting or analytically valuable.\(CLAUDE_ASSISTANT_PROMPT)
 """
         }
         
@@ -337,7 +364,7 @@ You may feel free to expand in any way that seems most interesting or analytical
 \(content)
 </requested-summarization-content>
 
-\(HUMAN_PROMPT)The above content is a large set of roughly concatenated code files. It is a given that you are able to read code, roughtly determine the language from its syntax, semantics, and API usages. You are also able to determine general functionality of the code as it works together. Please read all of the context above.
+\(CLAUDE_HUMAN_PROMPT)The above content is a large set of roughly concatenated code files. It is a given that you are able to read code, roughtly determine the language from its syntax, semantics, and API usages. You are also able to determine general functionality of the code as it works together. Please read all of the context above.
 
 Then, read and internalize these bullets:
 - The MetalLinkNode and InstancedObject abstractions are very, very close to being much more performant. I would like you to analyze that hierarchy of objects, and suggest a plan of integrating them such that *instances of nodes operate directly on their buffers*, instead of having a reference to their index so they can be updated. Ideally, *none* of the Swift node / object types will store data, and they will all be backed by whatever buffer they were instantiated from / pointing to.
@@ -349,7 +376,7 @@ Here are some ways that we interact:
 - APOLOGIES ARE NOT ALWAYS NECESSARY! Please use them sparingly.
 - Do not duplicate, suggest, or rewrite specific examples of your ideas unless I ask. Although appreciated, we need to limit the text produced in our conversation for the sake of recovery.
 
-Please start by writing a plan, and a small set of snippets to verify the plan and implementations start of matching.\(ASSISTANT_PROMPT)Here is a plan for integrating MetalLinkNode and InstancedObject to operate directly on their buffers:
+Please start by writing a plan, and a small set of snippets to verify the plan and implementations start of matching.\(CLAUDE_ASSISTANT_PROMPT)Here is a plan for integrating MetalLinkNode and InstancedObject to operate directly on their buffers:
 
 - Remove the instanceBufferIndex field from MetalLinkNode. This field stores the index into the instance buffer for a given node. Instead, nodes should hold a direct pointer to their location in the buffer.
 

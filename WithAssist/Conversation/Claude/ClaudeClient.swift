@@ -5,8 +5,8 @@
 
 let HUMAN_STOP_SEQUENCE_RAW = "\n\nHuman:"
 let HUMAN_STOP_SEQUENCE = [HUMAN_STOP_SEQUENCE_RAW]
-let HUMAN_PROMPT = "\n\nHuman: "
-let ASSISTANT_PROMPT = "\n\nAssistant: "
+let CLAUDE_HUMAN_PROMPT = "\n\nHuman: "
+let CLAUDE_ASSISTANT_PROMPT = "\n\nAssistant: "
 
 import Foundation
 
